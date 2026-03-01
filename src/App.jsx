@@ -59,7 +59,7 @@ const typeLabels = { coding: "⌨ Coding", dataset: "📊 Dataset", portfolio: "
 
 // ─── PORTFOLIO PROJECTS ───────────────────────────────────────────────────────
 const portfolioProjects = [
-  { id: "proj-churn", phase: 1, type: "portfolio", difficulty: "Beginner", title: "Customer Churn Predictor", description: "Build an end-to-end churn prediction model with full business framing — dollar value of predictions, not just accuracy.", dataset: { name: "Telco Customer Churn", url: "https://www.kaggle.com/datasets/blastchar/telco-customer-churn" }, steps: ["EDA: visualize churn rate by contract type, tenure, and monthly charges", "Feature engineering: encode categoricals, create tenure buckets", "Train Logistic Regression, Random Forest, XGBoost", "Optimize for recall (missing a churner costs more than a false alarm)", "Calculate: if we retain 20% of predicted churners at $500/year, what's the ROI?", "Deploy as a Streamlit app — keep it live", "Write a 5-slide business summary"], skills: ["Python", "Pandas", "sklearn", "XGBoost", "Streamlit"], portfolioWorthy: true },
+  { id: "proj-churn", phase: 2, type: "portfolio", difficulty: "Beginner", title: "Customer Churn Predictor", description: "Build an end-to-end churn prediction model with full business framing — dollar value of predictions, not just accuracy.", dataset: { name: "Telco Customer Churn", url: "https://www.kaggle.com/datasets/blastchar/telco-customer-churn" }, steps: ["EDA: visualize churn rate by contract type, tenure, and monthly charges", "Feature engineering: encode categoricals, create tenure buckets", "Train Logistic Regression, Random Forest, XGBoost", "Optimize for recall (missing a churner costs more than a false alarm)", "Calculate: if we retain 20% of predicted churners at $500/year, what's the ROI?", "Deploy as a Streamlit app — keep it live", "Write a 5-slide business summary"], skills: ["Python", "Pandas", "sklearn", "XGBoost", "Streamlit"], portfolioWorthy: true },
   { id: "proj-abtest", phase: 2, type: "dataset", difficulty: "Intermediate", title: "A/B Test Full Analysis", description: "Analyze a real A/B test end-to-end. Go beyond the p-value.", dataset: { name: "A/B Test Dataset", url: "https://www.kaggle.com/datasets/zhangluyuan/ab-testing" }, steps: ["Calculate conversion rates for control vs treatment", "Check sample size — was the test adequately powered?", "Run the hypothesis test and compute p-value correctly", "Calculate the confidence interval for the difference", "Discuss practical significance: is the effect size worth the cost?", "Write a 1-page recommendation memo to a product manager"], skills: ["Statistics", "Hypothesis Testing", "Python", "Business Communication"], portfolioWorthy: false },
   { id: "proj-pipeline", phase: 2, type: "coding", difficulty: "Intermediate", title: "ML Pipeline from Scratch", description: "Build a complete, reproducible sklearn Pipeline — no ad-hoc notebooks.", dataset: { name: "House Prices Dataset", url: "https://www.kaggle.com/c/house-prices-advanced-regression-techniques" }, steps: ["Write a data loading module", "Build a sklearn ColumnTransformer for numerical and categorical features", "Wrap everything in a Pipeline: preprocessor + model", "Use GridSearchCV for tuning", "Evaluate with cross-validation, plot learning curves", "Save the pipeline with joblib", "Write a predict.py script"], skills: ["sklearn Pipelines", "Feature Engineering", "Clean Code", "joblib"], portfolioWorthy: false },
   { id: "proj-nn", phase: 3, type: "coding", difficulty: "Intermediate", title: "Neural Network from Scratch (NumPy)", description: "Build a 2-layer neural network using only NumPy.", dataset: { name: "MNIST digits (via sklearn)", url: "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html" }, steps: ["Initialize weights and biases randomly", "Implement forward pass: linear + ReLU + softmax", "Implement cross-entropy loss", "Implement backpropagation manually", "Implement gradient descent update", "Train on MNIST, reach >90% accuracy", "Plot loss curve over epochs"], skills: ["NumPy", "Backpropagation", "Linear Algebra", "Deep Learning Math"], portfolioWorthy: false },
@@ -252,18 +252,36 @@ function AdminDashboard({ currentUser }) {
     setUserErr(""); setUserOk("");
     if (!newUser.username.trim() || !newUser.email.trim() || !newUser.password.trim()) { setUserErr("All fields required."); return; }
     try {
-      const cred = await createUserWithEmailAndPassword(auth, newUser.email.trim(), newUser.password);
-      await setDoc(doc(db, "users", cred.user.uid), {
+      const res = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAEuLDpruLyfYB1sm9lifPVgP4os6JIvS8`,
+        { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: newUser.email.trim(), password: newUser.password, returnSecureToken: true }) }
+      );
+      const data = await res.json();
+      if (data.error && data.error.message !== "EMAIL_EXISTS") {
+        setUserErr("Error: " + data.error.message); return;
+      }
+      // If email exists in Auth, find their UID via sign-in
+      let uid = data.localId;
+      if (!uid) {
+        const signInRes = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAEuLDpruLyfYB1sm9lifPVgP4os6JIvS8`,
+          { method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: newUser.email.trim(), password: newUser.password, returnSecureToken: true }) }
+        );
+        const signInData = await signInRes.json();
+        if (signInData.error) { setUserErr("Email already exists with a different password. Use a different email."); return; }
+        uid = signInData.localId;
+      }
+      await setDoc(doc(db, "users", uid), {
         username: newUser.username.trim(),
         email: newUser.email.trim(),
         role: "student",
         progress: {},
         joinedAt: new Date().toISOString(),
       });
-      // Sign back in as admin after creating student
-      await signInWithEmailAndPassword(auth, ADMIN_EMAIL, prompt("Re-enter your admin password to stay logged in:") || "");
       setNewUser({ username: "", email: "", password: "" });
-      setUserOk("Student added successfully!");
+      setUserOk("✅ Student added successfully!");
     } catch (e) {
       setUserErr("Error: " + e.message);
     }
@@ -846,8 +864,19 @@ function StudentDashboard({ currentUser, userDoc }) {
           <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>All Projects & Challenges</div>
             <div style={{ fontSize: 11, color: T.textDim, marginBottom: 20 }}>Build these to prove your skills — not just complete courses.</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
-              {portfolioProjects.map(proj => {
+            {[1,2,3,4].map(phaseNum => {
+              const phProjects = portfolioProjects.filter(p => p.phase === phaseNum);
+              if (phProjects.length === 0) return null;
+              const phColor = phaseColors[phaseNum - 1];
+              const phaseNames = ["Foundations", "Core ML", "Modern Skills", "Portfolio & Jobs"];
+              return (
+                <div key={phaseNum} style={{ marginBottom: 32 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: phColor }} />
+                    <span style={{ fontSize: 14, fontWeight: 700, color: phColor }}>Phase {phaseNum} — {phaseNames[phaseNum-1]}</span>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
+              {phProjects.map(proj => {
                 const phColor = phaseColors[proj.phase - 1];
                 return (
                   <div key={proj.id} style={{ background: T.bgCard, border: `1px solid ${proj.portfolioWorthy ? phColor + "55" : T.border}`, borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -881,7 +910,10 @@ function StudentDashboard({ currentUser, userDoc }) {
                   </div>
                 );
               })}
-            </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
