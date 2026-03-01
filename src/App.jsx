@@ -291,8 +291,8 @@ function AdminDashboard({ currentUser }) {
   };
 
   const removeUser = async (id) => {
-    if (!window.confirm("Remove this student?")) return;
-    await deleteDoc(doc(db, "users", id));
+    if (!window.confirm("Remove this student? They will no longer be able to log in.")) return;
+    await setDoc(doc(db, "users", id), { disabled: true }, { merge: true });
   };
 
   const sendMessage = async () => {
@@ -988,7 +988,15 @@ export default function App() {
         setAuthUser(user);
         const snap = await getDoc(doc(db, "users", user.uid));
         if (snap.exists()) {
-          setUserDoc(snap.data());
+          const data = snap.data();
+          if (data.disabled) {
+            await signOut(auth);
+            setAuthUser(null);
+            setUserDoc(null);
+            setLoading(false);
+            return;
+          }
+          setUserDoc(data);
         } else {
           // Admin user won't have a doc in users collection
           setUserDoc({ role: "admin", username: "Admin", email: user.email });
