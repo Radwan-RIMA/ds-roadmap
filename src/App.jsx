@@ -204,7 +204,7 @@ function AdminDashboard({ currentUser }) {
     await setDoc(doc(db, "config", "roadmap"), { data: r });
   };
 
-  const addUser = async () => {
+const addUser = async () => {
     setUserErr(""); setUserOk("");
     if (!newUser.username.trim() || !newUser.email.trim() || !newUser.password.trim()) { setUserErr("All fields required."); return; }
     try {
