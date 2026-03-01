@@ -223,7 +223,7 @@ function AdminDashboard({ currentUser }) {
   // Load students from Firestore
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "users"), snap => {
-      setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.role === "student" && !u.disabled));;
+      setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.role === "student" && !u.disabled));
     });
     return unsub;
   }, []);
@@ -567,6 +567,44 @@ function StudentDashboard({ currentUser, userDoc }) {
   const [students, setStudents] = useState([]);
   const [messages, setMessages] = useState([]);
   const [progress, setProgress] = useState(userDoc.progress || {});
+  const [streak, setStreak] = useState(userDoc.streak || 0);
+  const [checkins, setCheckins] = useState(userDoc.checkins || []);
+  const [checkinForm, setCheckinForm] = useState({ learned: "", difficult: "", goal: "" });
+  const [showCheckin, setShowCheckin] = useState(false);
+
+  // Update streak on load
+  useEffect(() => {
+    const updateStreak = async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const lastActive = userDoc.lastActive || "";
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+      let newStreak = userDoc.streak || 0;
+      if (lastActive === today) return; // already counted today
+      if (lastActive === yesterday) newStreak += 1;
+      else newStreak = 1; // streak broken
+      setStreak(newStreak);
+      await updateDoc(doc(db, "users", currentUser.uid), { streak: newStreak, lastActive: today });
+    };
+    updateStreak();
+  }, []);
+
+  const submitCheckin = async () => {
+    if (!checkinForm.learned.trim()) return;
+    const entry = { ...checkinForm, date: new Date().toISOString(), week: getWeekNumber() };
+    const newCheckins = [entry, ...(userDoc.checkins || [])];
+    setCheckins(newCheckins);
+    setShowCheckin(false);
+    setCheckinForm({ learned: "", difficult: "", goal: "" });
+    await updateDoc(doc(db, "users", currentUser.uid), { checkins: newCheckins });
+  };
+
+  const getWeekNumber = () => {
+    const d = new Date();
+    const startOfYear = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil(((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+  };
+
+  const thisWeekCheckin = checkins.find(c => c.week === getWeekNumber());
 
   useEffect(() => {
     const load = async () => {
@@ -713,6 +751,86 @@ function StudentDashboard({ currentUser, userDoc }) {
                 })}
               </div>
             </div>
+
+            {/* ── STREAK + CHECKIN ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+              {/* Streak */}
+              <div style={{ background: T.bgCard, border: `1px solid ${streak >= 7 ? T.gold + "88" : T.border}`, borderRadius: 14, padding: "18px 20px" }}>
+                <div style={{ fontSize: 9, color: T.gold, letterSpacing: "0.15em", fontWeight: 700, marginBottom: 10 }}>🔥 DAILY STREAK</div>
+                <div style={{ fontSize: 40, fontWeight: 700, color: streak >= 7 ? T.gold : streak >= 3 ? T.p3 : T.textDim, lineHeight: 1 }}>{streak}</div>
+                <div style={{ fontSize: 11, color: T.textFade, marginTop: 4 }}>days in a row</div>
+                <div style={{ fontSize: 10, color: T.textDim, marginTop: 8 }}>
+                  {streak === 0 ? "Complete a task today to start your streak!" :
+                   streak < 3 ? "Good start! Keep going 💪" :
+                   streak < 7 ? "You're on a roll! Don't break it!" :
+                   streak < 14 ? "🔥 One week streak! Impressive!" :
+                   "🏆 You're unstoppable!"}
+                </div>
+              </div>
+
+              {/* Weekly Check-in */}
+              <div style={{ background: T.bgCard, border: `1px solid ${thisWeekCheckin ? T.good + "88" : T.border}`, borderRadius: 14, padding: "18px 20px" }}>
+                <div style={{ fontSize: 9, color: T.good, letterSpacing: "0.15em", fontWeight: 700, marginBottom: 10 }}>📝 WEEKLY CHECK-IN</div>
+                {thisWeekCheckin ? (
+                  <div>
+                    <div style={{ fontSize: 11, color: T.good, marginBottom: 6 }}>✅ Done this week!</div>
+                    <div style={{ fontSize: 10, color: T.textDim, lineHeight: 1.6 }}>"{thisWeekCheckin.learned.slice(0, 80)}{thisWeekCheckin.learned.length > 80 ? "..." : ""}"</div>
+                    <div style={{ fontSize: 9, color: T.textFade, marginTop: 6 }}>{new Date(thisWeekCheckin.date).toLocaleDateString()}</div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 11, color: T.textDim, marginBottom: 12, lineHeight: 1.6 }}>You haven't checked in this week yet. Reflect on your progress!</div>
+                    <button onClick={() => setShowCheckin(true)}
+                      style={{ width: "100%", padding: "8px", background: T.good + "18", border: `1px solid ${T.good}55`, color: T.good, borderRadius: 7, cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
+                      + Check In Now
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Check-in Modal */}
+            {showCheckin && (
+              <div style={{ position: "fixed", inset: 0, background: "#00000088", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+                <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 16, padding: "32px", width: 480, maxWidth: "90vw" }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>📝 Weekly Check-in</div>
+                  <div style={{ fontSize: 11, color: T.textDim, marginBottom: 20 }}>Take 2 minutes to reflect on your week.</div>
+                  {[
+                    { key: "learned", label: "What did you learn this week?", placeholder: "e.g. I finally understood how backpropagation works..." },
+                    { key: "difficult", label: "What was difficult?", placeholder: "e.g. Window functions in SQL were confusing..." },
+                    { key: "goal", label: "What's your goal for next week?", placeholder: "e.g. Finish the ML pipeline project..." },
+                  ].map(q => (
+                    <div key={q.key} style={{ marginBottom: 14 }}>
+                      <div style={{ fontSize: 11, color: T.textDim, marginBottom: 6 }}>{q.label}</div>
+                      <textarea
+                        value={checkinForm[q.key]}
+                        onChange={e => setCheckinForm(p => ({ ...p, [q.key]: e.target.value }))}
+                        placeholder={q.placeholder} rows={2}
+                        style={{ width: "100%", background: T.bgDeep, border: `1px solid ${T.borderHi}`, borderRadius: 8, padding: "8px 12px", color: T.text, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button onClick={submitCheckin} style={{ flex: 1, padding: "10px", background: T.good + "18", border: `1px solid ${T.good}55`, color: T.good, borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Submit</button>
+                    <button onClick={() => setShowCheckin(false)} style={{ padding: "10px 16px", background: "none", border: `1px solid ${T.border}`, color: T.textDim, borderRadius: 8, cursor: "pointer", fontSize: 13 }}>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Past Check-ins */}
+            {checkins.length > 0 && (
+              <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 20px", marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 14 }}>📚 Past Check-ins</div>
+                {checkins.slice(0, 3).map((c, i) => (
+                  <div key={i} style={{ padding: "12px", background: T.bgDeep, borderRadius: 10, marginBottom: 8 }}>
+                    <div style={{ fontSize: 9, color: T.textFade, marginBottom: 6 }}>Week {c.week} — {new Date(c.date).toLocaleDateString()}</div>
+                    <div style={{ fontSize: 11, color: T.good, marginBottom: 4 }}>✅ {c.learned}</div>
+                    {c.difficult && <div style={{ fontSize: 11, color: T.warn, marginBottom: 4 }}>⚠ {c.difficult}</div>}
+                    {c.goal && <div style={{ fontSize: 11, color: T.info }}>🎯 {c.goal}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {messages.length > 0 && (
               <div style={{ background: T.bgCard, border: `1px solid ${T.p4}33`, borderRadius: 14, padding: "18px 20px" }}>
