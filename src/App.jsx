@@ -223,7 +223,7 @@ function AdminDashboard({ currentUser }) {
   // Load students from Firestore
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "users"), snap => {
-      setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.role === "student"));
+      setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.role === "student" && !u.disabled));;
     });
     return unsub;
   }, []);
