@@ -130,8 +130,11 @@ function LoginPage(){
             </span>
           </h1>
 
-          <p style={{fontSize:16,color:"#7b78a0",maxWidth:480,margin:"0 auto 36px",lineHeight:1.7}}>
-            A structured, hands-on platform that takes you from complete beginner to competitive DS candidate — with interactive lessons, real projects, and a clear roadmap.
+          <p style={{fontSize:16,color:"#7b78a0",maxWidth:500,margin:"0 auto 12px",lineHeight:1.7}}>
+            A structured, hands-on platform that takes you from <strong style={{color:"#e8e4ff"}}>complete beginner</strong> to job-ready — starting with Python from scratch. No prior coding experience needed.
+          </p>
+          <p style={{fontSize:13,color:"#3a3860",maxWidth:480,margin:"0 auto 36px",fontFamily:"monospace"}}>
+            → Data Scientist &nbsp;·&nbsp; Data Analyst &nbsp;·&nbsp; ML Engineer &nbsp;·&nbsp; Python Developer
           </p>
 
           <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:56}}>
@@ -175,8 +178,43 @@ function LoginPage(){
         </div>
       </div>
 
-      {/* FEATURES */}
+      {/* JOBS */}
       <div style={{padding:"80px 20px",background:"#0d0c18"}}>
+        <div style={{maxWidth:1000,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// career outcomes</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>What jobs can you land?</h2>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:520}}>The curriculum is designed around real job requirements. Here's what graduates are prepared to apply for:</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))",gap:16}}>
+            {[
+              {icon:"📊",title:"Data Analyst",skills:["SQL","Python","Pandas","Visualization","Statistics"],color:"#7eb8f7",desc:"Turn raw data into business insights. Most in-demand DS role in the market."},
+              {icon:"🤖",title:"Data Scientist",skills:["ML","sklearn","Statistics","Python","Communication"],color:"#8b7cf6",desc:"Build predictive models and drive data-informed decisions across the company."},
+              {icon:"⚙️",title:"ML Engineer",skills:["sklearn","Pipelines","Docker","APIs","Python"],color:"#6dd6a0",desc:"Deploy and maintain ML models in production. Bridge between DS and engineering."},
+              {icon:"🐍",title:"Python Developer (Data)",skills:["Python","Pandas","APIs","Automation","SQL"],color:"#f7c96e",desc:"Automate data workflows, build internal tools, and work with data pipelines."},
+            ].map((job,i)=>(
+              <div key={i} style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",transition:"all 0.2s"}}>
+                <div style={{fontSize:28,marginBottom:12}}>{job.icon}</div>
+                <div style={{fontWeight:700,fontSize:16,marginBottom:6,color:job.color}}>{job.title}</div>
+                <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>{job.desc}</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                  {job.skills.map(s=>(
+                    <span key={s} style={{fontSize:10,fontFamily:"monospace",padding:"2px 8px",borderRadius:100,background:job.color+"15",color:job.color}}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:24,padding:"16px 20px",background:"#11101c",border:"1px solid #1e1c35",borderRadius:10,display:"flex",alignItems:"center",gap:12}}>
+            <span style={{fontSize:20}}>🐍</span>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:"#e8e4ff",marginBottom:3}}>Never coded before? That's fine.</div>
+              <div style={{fontSize:12,color:"#7b78a0"}}>The curriculum starts with Python from absolute zero. Every concept is explained with analogies, code examples, and quizzes before moving on.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FEATURES */}
+      <div style={{padding:"80px 20px",background:"#0b0a12"}}>
         <div style={{maxWidth:1000,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// platform</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Built differently.</h2>
@@ -189,6 +227,94 @@ function LoginPage(){
                 <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6}}>{f.desc}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* WHAT YOU'LL BUILD */}
+      <div style={{padding:"80px 20px",background:"#0b0a12"}}>
+        <div style={{maxWidth:1000,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// projects</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>What you'll actually build.</h2>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:520}}>Not toy exercises. Real projects you can show in interviews and deploy live. Every project has a business context, real data, and a deployed demo.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}}>
+            {[
+              {
+                icon:"📉",title:"Customer Churn Predictor",
+                desc:"Predict which customers will leave before they do. Calculate the dollar value of retention. Deploy as a live Streamlit app.",
+                stack:["Python","XGBoost","Streamlit","Pandas"],
+                color:"#7eb8f7",
+                outcome:"Live demo URL you can share in interviews"
+              },
+              {
+                icon:"🔍",title:"Fraud Detection Model",
+                desc:"Handle 99.8% class imbalance on real credit card data. Optimize for recall. Build a pipeline that works in production.",
+                stack:["sklearn","SMOTE","Random Forest","Pipelines"],
+                color:"#f472b6",
+                outcome:"Kaggle dataset, real business framing"
+              },
+              {
+                icon:"📊",title:"Full A/B Test Analysis",
+                desc:"Go beyond the p-value. Calculate confidence intervals, practical significance, and write a recommendation memo to a PM.",
+                stack:["Python","NumPy","Statistics","scipy"],
+                color:"#6dd6a0",
+                outcome:"Business memo + technical notebook"
+              },
+              {
+                icon:"🗄️",title:"Business KPI Dashboard in SQL",
+                desc:"Answer 10 real business questions using CTEs, window functions, and joins on a real music store database.",
+                stack:["SQL","CTEs","Window Functions","Chinook DB"],
+                color:"#f7c96e",
+                outcome:"Portfolio-ready SQL showcase"
+              },
+              {
+                icon:"🤖",title:"RAG-Powered Document Q&A",
+                desc:"Build a system that lets users ask questions about any document. Uses embeddings, vector search, and an LLM API.",
+                stack:["LangChain","FAISS","OpenAI API","Streamlit"],
+                color:"#a78bfa",
+                outcome:"Deployed on Hugging Face Spaces"
+              },
+              {
+                icon:"🧠",title:"Fine-tuned BERT Classifier",
+                desc:"Fine-tune a pretrained BERT model on real domain text. Wrap in FastAPI and deploy to Hugging Face Spaces.",
+                stack:["Hugging Face","BERT","FastAPI","NLP"],
+                color:"#34d399",
+                outcome:"Live API endpoint + model card"
+              },
+            ].map((p,i)=>(
+              <div key={i} style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",position:"relative",overflow:"hidden",transition:"all 0.2s"}}>
+                <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:p.color+"66"}}/>
+                <div style={{fontSize:28,marginBottom:12}}>{p.icon}</div>
+                <div style={{fontWeight:700,fontSize:15,color:"#e8e4ff",marginBottom:6}}>{p.title}</div>
+                <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>{p.desc}</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
+                  {p.stack.map(s=>(
+                    <span key={s} style={{fontSize:10,fontFamily:"monospace",padding:"2px 8px",borderRadius:100,background:p.color+"15",color:p.color}}>{s}</span>
+                  ))}
+                </div>
+                <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace",borderTop:"1px solid #1e1c35",paddingTop:10}}>
+                  ✓ {p.outcome}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ABOUT */}
+      <div style={{padding:"60px 20px",background:"#0d0c18"}}>
+        <div style={{maxWidth:600,margin:"0 auto",display:"flex",alignItems:"center",gap:28,flexWrap:"wrap",justifyContent:"center"}}>
+          <div style={{width:72,height:72,borderRadius:"50%",background:"linear-gradient(135deg,#8b7cf6,#f472b6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>
+            👨‍💻
+          </div>
+          <div style={{flex:1,minWidth:220}}>
+            <div style={{fontWeight:700,fontSize:16,color:"#e8e4ff",marginBottom:6}}>Built by Radwan</div>
+            <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7,marginBottom:12}}>
+              A researcher transitioning into data science — I built DS Academy because I couldn't find a structured, practical path that actually prepares you for the job market. Everything in this curriculum is what I wish I had from day one.
+            </div>
+            <a href="https://wa.me/96181590474" target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(37,211,102,0.1)",border:"1px solid rgba(37,211,102,0.3)",color:"#25d366",padding:"8px 16px",borderRadius:8,fontSize:13,fontWeight:600,textDecoration:"none"}}>
+              <span>💬</span> WhatsApp me with any questions
+            </a>
           </div>
         </div>
       </div>
