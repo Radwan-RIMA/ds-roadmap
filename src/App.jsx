@@ -15,7 +15,7 @@ const T = {
   p1:"#7eb8f7", p2:"#6dd6a0", p3:"#f7c96e", p4:"#c792ea",
   gold:"#f7c96e", warn:"#f28b82", good:"#6dd6a0", info:"#7eb8f7",
 };
-const phaseColors = ["#7eb8f7","#6dd6a0","#f7c96e","#c792ea"];
+const phaseColors = ["#7eb8f7","#a78bfa","#6dd6a0","#f7c96e","#c792ea"];
 const ADMIN_EMAIL = "radwanrima0@gmail.com";
 
 import { LearnTab, LESSONS, LEARN_PHASES, SECTION_TO_FIRST_LESSON, LESSON_COMPLETES_TASK } from "./lessons";
@@ -32,12 +32,14 @@ function Btn({onClick,children,color=T.info,style={}}){
   return <button onClick={onClick} style={{background:color+"18",border:`1px solid ${color}55`,color,padding:"7px 14px",borderRadius:7,cursor:"pointer",fontSize:12,fontWeight:600,...style}}>{children}</button>;
 }
 
-// ── LOGIN PAGE
+// ── LANDING PAGE (shown to logged-out visitors)
 function LoginPage(){
+  const [showLogin,setShowLogin]=useState(false);
   const [email,setEmail]=useState("");
   const [password,setPassword]=useState("");
   const [error,setError]=useState("");
   const [loading,setLoading]=useState(false);
+
   const handleLogin=async()=>{
     setError("");
     if(!email.trim()||!password.trim()){setError("Please enter email and password.");return;}
@@ -46,27 +48,202 @@ function LoginPage(){
     catch(e){setError("Invalid email or password.");}
     setLoading(false);
   };
-  const inp={background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:8,padding:"10px 14px",color:T.text,fontSize:13,width:"100%",outline:"none",boxSizing:"border-box"};
+
+  const inp={background:"#0f0e1a",border:"1px solid #2a2845",borderRadius:8,padding:"10px 14px",color:"#e8e4ff",fontSize:13,width:"100%",outline:"none",boxSizing:"border-box"};
+
+  const phases=[
+    {num:"01",icon:"🐍",title:"Python & Data Tools",desc:"NumPy, Pandas, SQL, Statistics, EDA",color:"#7eb8f7",time:"Months 1–2"},
+    {num:"02",icon:"🤖",title:"Machine Learning",desc:"Linear models, Random Forests, sklearn",color:"#a78bfa",time:"Months 2–4"},
+    {num:"03",icon:"📊",title:"Advanced ML",desc:"XGBoost, feature engineering, SHAP",color:"#6dd6a0",time:"Months 3–7"},
+    {num:"04",icon:"🧠",title:"Deep Learning & LLMs",desc:"Neural nets, NLP, transformers, RAG",color:"#f7c96e",time:"Months 7–12"},
+    {num:"05",icon:"🚀",title:"Portfolio & Jobs",desc:"Projects, interview prep, networking",color:"#c792ea",time:"Months 12–18"},
+  ];
+
+  const features=[
+    {icon:"📚",title:"Interactive Lessons",desc:"Code examples, quizzes, and explanations — all inside the platform. No external links."},
+    {icon:"🗺️",title:"Connected Roadmap",desc:"Lessons link directly to your roadmap. Complete a lesson → task gets checked off automatically."},
+    {icon:"🔥",title:"Streak Tracking",desc:"Daily streaks and weekly check-ins keep you consistent when motivation dips."},
+    {icon:"🚀",title:"Real Projects",desc:"11 portfolio-worthy projects built into the curriculum with real datasets and deployment."},
+    {icon:"🏅",title:"Leaderboard",desc:"See where you stand. Friendly competition keeps the energy high."},
+    {icon:"💬",title:"Instructor Access",desc:"Direct messaging with your instructor. Small cohorts, personal guidance."},
+  ];
+
   return(
-    <div style={{minHeight:"100vh",background:T.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
-      <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:16,padding:"40px 36px",width:360}}>
-        <div style={{textAlign:"center",marginBottom:28}}>
-          <div style={{fontSize:28,marginBottom:8}}>🎓</div>
-          <div style={{fontSize:20,fontWeight:700,color:T.text,marginBottom:4}}>DS Roadmap Platform</div>
-          <div style={{fontSize:12,color:T.textDim}}>Sign in to continue your learning journey</div>
+    <div style={{minHeight:"100vh",background:"#0b0a12",color:"#e8e4ff",fontFamily:"'Segoe UI',system-ui,sans-serif",overflowX:"hidden"}}>
+
+      {/* NAV */}
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 32px",background:"rgba(11,10,18,0.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid #1e1c35"}}>
+        <div style={{fontWeight:800,fontSize:17,letterSpacing:"-0.02em",display:"flex",alignItems:"center",gap:8}}>
+          <div style={{width:8,height:8,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 10px #8b7cf6"}}/>
+          DS Academy
         </div>
-        <div style={{marginBottom:14}}>
-          <div style={{fontSize:11,color:T.textDim,marginBottom:6}}>EMAIL</div>
-          <input style={inp} value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="Enter your email"/>
+        <button onClick={()=>setShowLogin(true)} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"9px 20px",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:600}}>
+          Student Login →
+        </button>
+      </nav>
+
+      {/* LOGIN MODAL */}
+      {showLogin&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,backdropFilter:"blur(6px)"}}>
+          <div style={{background:"#11101c",border:"1px solid #2a2845",borderRadius:16,padding:"36px",width:340,maxWidth:"90vw",position:"relative"}}>
+            <button onClick={()=>setShowLogin(false)} style={{position:"absolute",top:14,right:14,background:"none",border:"none",color:"#4a4665",cursor:"pointer",fontSize:18}}>✕</button>
+            <div style={{textAlign:"center",marginBottom:24}}>
+              <div style={{fontSize:26,marginBottom:8}}>🎓</div>
+              <div style={{fontSize:17,fontWeight:700,marginBottom:4}}>Welcome back</div>
+              <div style={{fontSize:12,color:"#7b78a0"}}>Sign in to your DS Academy account</div>
+            </div>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:11,color:"#7b78a0",marginBottom:5}}>EMAIL</div>
+              <input style={inp} value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="Enter your email"/>
+            </div>
+            <div style={{marginBottom:18}}>
+              <div style={{fontSize:11,color:"#7b78a0",marginBottom:5}}>PASSWORD</div>
+              <input style={inp} type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="Enter your password"/>
+            </div>
+            {error&&<div style={{fontSize:11,color:"#f28b82",marginBottom:12,background:"rgba(242,139,130,0.1)",padding:"8px 12px",borderRadius:6}}>{error}</div>}
+            <button onClick={handleLogin} disabled={loading} style={{width:"100%",padding:"11px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,opacity:loading?0.7:1}}>
+              {loading?"Signing in...":"Sign In"}
+            </button>
+            <div style={{marginTop:14,fontSize:11,color:"#3a3860",textAlign:"center"}}>Contact your instructor to get credentials.</div>
+          </div>
         </div>
-        <div style={{marginBottom:20}}>
-          <div style={{fontSize:11,color:T.textDim,marginBottom:6}}>PASSWORD</div>
-          <input style={inp} type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="Enter your password"/>
+      )}
+
+      {/* HERO */}
+      <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"120px 20px 80px",position:"relative",overflow:"hidden"}}>
+        {/* grid bg */}
+        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(#1e1c35 1px, transparent 1px),linear-gradient(90deg, #1e1c35 1px, transparent 1px)",backgroundSize:"50px 50px",WebkitMaskImage:"radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 100%)",maskImage:"radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 100%)",opacity:0.4}}/>
+        {/* glow */}
+        <div style={{position:"absolute",width:500,height:500,background:"rgba(139,124,246,0.1)",borderRadius:"50%",filter:"blur(80px)",top:-100,left:-100,zIndex:0}}/>
+        <div style={{position:"absolute",width:400,height:400,background:"rgba(110,231,183,0.06)",borderRadius:"50%",filter:"blur(80px)",bottom:-50,right:-50,zIndex:0}}/>
+
+        <div style={{position:"relative",zIndex:1,maxWidth:720}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#17162a",border:"1px solid #2a2845",borderRadius:100,padding:"5px 14px",fontSize:11,color:"#8b7cf6",letterSpacing:"0.08em",marginBottom:28,fontFamily:"monospace"}}>
+            <div style={{width:5,height:5,background:"#6ee7b7",borderRadius:"50%",boxShadow:"0 0 6px #6ee7b7"}}/>
+            STRUCTURED · PRACTICAL · JOB-FOCUSED
+          </div>
+
+          <h1 style={{fontWeight:800,fontSize:"clamp(36px, 7vw, 68px)",lineHeight:1.05,letterSpacing:"-0.03em",marginBottom:20}}>
+            From Zero<br/>
+            <span style={{background:"linear-gradient(135deg, #8b7cf6, #f472b6, #6ee7b7)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
+              to Data Scientist
+            </span>
+          </h1>
+
+          <p style={{fontSize:16,color:"#7b78a0",maxWidth:480,margin:"0 auto 36px",lineHeight:1.7}}>
+            A structured, hands-on platform that takes you from complete beginner to competitive DS candidate — with interactive lessons, real projects, and a clear roadmap.
+          </p>
+
+          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:56}}>
+            <a href="#apply" style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"13px 28px",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6}}>
+              Apply for Access →
+            </a>
+            <a href="#curriculum" style={{background:"transparent",color:"#7b78a0",border:"1px solid #2a2845",padding:"13px 24px",borderRadius:8,cursor:"pointer",fontSize:14,textDecoration:"none"}}>
+              See the curriculum
+            </a>
+          </div>
+
+          {/* Stats */}
+          <div style={{display:"flex",justifyContent:"center",gap:0,border:"1px solid #1e1c35",borderRadius:12,overflow:"hidden",background:"#11101c",flexWrap:"wrap"}}>
+            {[{n:"18+",l:"Lessons"},{n:"5",l:"Phases"},{n:"11",l:"Projects"},{n:"0 → Job",l:"The Goal"}].map((s,i)=>(
+              <div key={i} style={{padding:"16px 28px",textAlign:"center",borderRight:"1px solid #1e1c35",flex:"1 1 80px"}}>
+                <div style={{fontWeight:800,fontSize:22,letterSpacing:"-0.02em",color:"#e8e4ff"}}>{s.n}</div>
+                <div style={{fontSize:10,color:"#3a3860",letterSpacing:"0.08em",marginTop:2,fontFamily:"monospace"}}>{s.l}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        {error&&<div style={{fontSize:11,color:T.warn,marginBottom:14,background:T.warn+"15",padding:"8px 12px",borderRadius:6}}>{error}</div>}
-        <button onClick={handleLogin} disabled={loading} style={{width:"100%",padding:"11px",background:`linear-gradient(135deg, ${T.p1}33, ${T.p4}33)`,border:`1px solid ${T.p1}55`,color:T.text,borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,opacity:loading?0.7:1}}>{loading?"Signing in...":"Sign In"}</button>
-        <div style={{marginTop:16,fontSize:11,color:T.textFade,textAlign:"center"}}>Contact your instructor to get your login credentials.</div>
       </div>
+
+      {/* CURRICULUM */}
+      <div id="curriculum" style={{padding:"80px 20px",background:"#0b0a12"}}>
+        <div style={{maxWidth:1000,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// curriculum</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>A clear path. No guessing.</h2>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:480}}>Every phase builds on the last. No tutorial hell — just a structured sequence designed around what employers hire for.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))",gap:2,border:"1px solid #1e1c35",borderRadius:12,overflow:"hidden"}}>
+            {phases.map(p=>(
+              <div key={p.num} style={{background:"#11101c",padding:"22px 18px",transition:"background 0.2s"}}>
+                <div style={{fontFamily:"monospace",fontSize:10,color:"#3a3860",marginBottom:12,letterSpacing:"0.08em"}}>{p.num}</div>
+                <div style={{fontSize:22,marginBottom:10}}>{p.icon}</div>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:6,color:"#e8e4ff"}}>{p.title}</div>
+                <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.5,marginBottom:12}}>{p.desc}</div>
+                <span style={{fontSize:10,fontFamily:"monospace",padding:"2px 8px",borderRadius:100,background:p.color+"18",color:p.color}}>{p.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FEATURES */}
+      <div style={{padding:"80px 20px",background:"#0d0c18"}}>
+        <div style={{maxWidth:1000,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// platform</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Built differently.</h2>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:480}}>No passive videos. No disconnected tutorials. Everything is connected, tracked, and designed to get you hired.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}}>
+            {features.map((f,i)=>(
+              <div key={i} style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",transition:"all 0.2s"}}>
+                <div style={{fontSize:22,marginBottom:12}}>{f.icon}</div>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>{f.title}</div>
+                <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6}}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* APPLY */}
+      <div id="apply" style={{padding:"80px 20px",background:"#0b0a12",textAlign:"center"}}>
+        <div style={{maxWidth:500,margin:"0 auto",background:"#11101c",border:"1px solid #2a2845",borderRadius:18,padding:"52px 36px",position:"relative"}}>
+          <div style={{position:"absolute",top:-1,left:"20%",right:"20%",height:2,background:"linear-gradient(90deg, transparent, #8b7cf6, #f472b6, transparent)"}}/>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:16}}>// apply for access</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px, 4vw, 34px)",letterSpacing:"-0.02em",marginBottom:12}}>Ready to start?</h2>
+          <p style={{color:"#7b78a0",fontSize:14,marginBottom:32,lineHeight:1.7}}>DS Academy runs in small cohorts. Drop your info and we'll reach out with next steps within 48 hours.</p>
+          <div id="lp-form"><div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left"}}>
+            <input id="lp-name" style={inp} placeholder="Your name"/>
+            <input id="lp-email" style={{...inp,marginBottom:0}} type="email" placeholder="Your email"/>
+            <select id="lp-bg" style={{...inp,color:"#7b78a0",cursor:"pointer",appearance:"none"}}>
+              <option value="" disabled selected>Your background</option>
+              <option>Complete beginner — no coding experience</option>
+              <option>Some Python, want to learn DS</option>
+              <option>University student / fresh graduate</option>
+              <option>Career switcher from another field</option>
+            </select>
+            <button
+              onClick={async()=>{
+                const n=document.getElementById("lp-name").value.trim();
+                const e=document.getElementById("lp-email").value.trim();
+                const b=document.getElementById("lp-bg").value;
+                if(!n||!e||!b){alert("Please fill in all fields.");return;}
+                try{
+                  await fetch("https://formspree.io/f/xreykgey",{
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({name:n,email:e,background:b})
+                  });
+                }catch(err){console.log("Form error",err);}
+                document.getElementById("lp-form").style.display="none";
+                document.getElementById("lp-success").style.display="block";
+              }}
+              style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"13px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:14,marginTop:4}}
+            >
+              Apply for Access →
+            </button>
+            <div style={{fontSize:11,color:"#3a3860",textAlign:"center",fontFamily:"monospace"}}>No payment required yet.</div>
+          </div>
+          </div><div id="lp-success" style={{display:"none",background:"rgba(110,231,183,0.08)",border:"1px solid rgba(110,231,183,0.2)",borderRadius:10,padding:"20px",color:"#6ee7b7",fontSize:13,lineHeight:1.7,marginTop:16}}>
+            ✅ Application received! We'll reach out within 48 hours.
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div style={{padding:"24px 32px",borderTop:"1px solid #1e1c35",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+        <div style={{fontWeight:800,fontSize:14,color:"#3a3860"}}>DS Academy</div>
+        <div style={{fontFamily:"monospace",fontSize:11,color:"#3a3860"}}>Zero → Competitive Candidate</div>
+      </div>
+
     </div>
   );
 }

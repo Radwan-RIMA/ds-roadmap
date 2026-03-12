@@ -16,6 +16,11 @@ const sectionProjects = {
   "stats-dist": [{type:"coding",title:"Distribution Fitting",desc:"Take 3 real datasets. Plot histogram, identify best-fit distribution, fit with scipy, verify with Q-Q plot."},{type:"coding",title:"CLT Visualizer",desc:"Demonstrate the CLT: sample from non-normal distributions in increasing sample sizes and visualize."}],
   "stats-inf": [{type:"dataset",title:"A/B Test from Scratch",desc:"Calculate test statistic, p-value, and CI using only numpy — no scipy. Then verify with scipy.",url:"https://www.kaggle.com/datasets/zhangluyuan/ab-testing"}],
   "linalg": [{type:"coding",title:"PCA from Scratch",desc:"Implement PCA using NumPy: center data, compute covariance matrix, find eigenvectors, project data."}],
+  "ml-core": [
+    {type:"coding",title:"End-to-End ML Pipeline",desc:"Load any Kaggle tabular dataset. Run the full pipeline: EDA → split → train RF → evaluate → cross-validate. Document every step in a notebook.",url:"https://www.kaggle.com/datasets/blastchar/telco-customer-churn"},
+    {type:"coding",title:"Regression vs Classification Sprint",desc:"Pick two datasets — one regression, one classification. Train Linear/Logistic Regression + Random Forest on each. Compare metrics and explain which model won and why."},
+    {type:"coding",title:"Overfit Then Fix",desc:"Deliberately overfit a Decision Tree (no max_depth). Measure the train/test gap. Then fix it using: max_depth, Random Forest, and cross-validation. Document what changed."},
+  ],
   "ml-framework": [{type:"coding",title:"Overfit Then Fix",desc:"Deliberately overfit a decision tree. Then apply regularization, cross-validation, early stopping."}],
   "ml-regression": [{type:"coding",title:"Linear Regression from Scratch",desc:"Implement OLS and gradient descent, compare both against sklearn.",url:"https://www.kaggle.com/c/house-prices-advanced-regression-techniques"}],
   "ml-class": [{type:"dataset",title:"Fraud Detection Challenge",desc:"Handle 99.8% class imbalance. Optimize for recall.",url:"https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud"}],
@@ -65,7 +70,45 @@ const DEFAULT_ROADMAP = [
     {id:"cli-git",title:"Command Line & Git",weeks:"Week 1 (do this first!)",why:"Every single DS job requires Git.",warning:"Learn the mental model first: what is a commit, a branch, a remote.",goldAdvice:"Your GitHub profile is your DS resume. Push something every day.",resources:[{name:"The Missing Semester of CS Education",type:"Free MIT course",url:"https://missing.csail.mit.edu"},{name:"Learn Git Branching",type:"Free interactive",url:"https://learngitbranching.js.org"}],tasks:["Navigate folders: cd, ls, mkdir, rm, cp, mv","Run Python scripts from terminal","Virtual environments: python -m venv, activate, pip install","Git init, add, commit, push, pull","Branching: create, switch, merge branches","Write meaningful commit messages","Create a professional GitHub profile with a README","Push every project to GitHub with a proper README"]},
     {id:"jupyter",title:"Jupyter & Dev Environment",weeks:"Week 1–2 (parallel)",why:"Bad notebook habits will slow you down for years.",warning:"Notebooks with cells run out of order are not reproducible.",goldAdvice:"Learn keyboard shortcuts for Jupyter — they save hours.",resources:[{name:"VS Code Python setup",type:"Docs",url:"https://code.visualstudio.com/docs/python/python-tutorial"}],tasks:["Set up VS Code with Python extension","Learn Jupyter keyboard shortcuts (A, B, DD, Shift+Enter, M, Y)","Always restart kernel and run all before sharing","Use markdown cells to document your thinking","Understand the difference between script (.py) and notebook (.ipynb)","Know when to use a notebook vs a script"]},
   ]},
-  {phase:2,title:"Core ML",duration:"Months 3–7",color:"#6dd6a0",sections:[
+  {phase:2,title:"Machine Learning Essentials",duration:"Months 2–4",color:"#a78bfa",sections:[
+    {id:"ml-core",title:"ML Foundations",weeks:"Week 1–3",
+     why:"This is the core of every DS job. Every algorithm you learn later builds on these concepts.",
+     warning:"Don't skip straight to neural networks. Master the fundamentals first — interviewers will expose gaps.",
+     goldAdvice:"Run the full sklearn pipeline on 3 different datasets before moving on. Repetition builds real understanding.",
+     resources:[
+       {name:"Hands-On ML — Aurélien Géron",type:"Book (the bible)",url:"https://www.oreilly.com/library/view/hands-on-machine-learning/9781492032632/"},
+       {name:"StatQuest ML playlist",type:"YouTube (free)",url:"https://www.youtube.com/@statquest"},
+     ],
+     tasks:[
+       "Train/test split — why it exists and the golden rule",
+       "Linear Regression: fit, predict, interpret R² and RMSE",
+       "Logistic Regression: predict classes, use predict_proba",
+       "Decision Trees: splitting, max_depth, why they overfit",
+       "Random Forest: how bagging reduces variance, feature importances",
+       "Model Evaluation: pick the right metric for the right problem",
+       "Overfitting vs underfitting: diagnose from train/test gap",
+       "Regularization: Ridge vs Lasso intuitively",
+       "Cross-validation: k-fold, why it beats single split",
+       "Sklearn Pipeline: chain preprocessing + model, prevent leakage",
+     ]},
+    {id:"ml-advanced",title:"Advanced ML",weeks:"Week 4–6",
+     why:"XGBoost wins most tabular Kaggle competitions. It's in almost every production DS system.",
+     warning:"Don't tune hyperparameters manually. Use GridSearchCV or Optuna.",
+     goldAdvice:"XGBoost + good feature engineering beats neural networks on most tabular data. Don't jump to deep learning too fast.",
+     resources:[
+       {name:"XGBoost docs",type:"Docs",url:"https://xgboost.readthedocs.io"},
+       {name:"Kaggle Intro to ML",type:"Free micro-course",url:"https://www.kaggle.com/learn/intro-to-machine-learning"},
+     ],
+     tasks:[
+       "Gradient Boosting — intuition: how each tree corrects the last",
+       "XGBoost: train, tune n_estimators, max_depth, learning_rate",
+       "LightGBM: why it's faster than XGBoost",
+       "SHAP values: explain any model's predictions",
+       "Hyperparameter tuning with GridSearchCV",
+       "Handle class imbalance: class_weight, SMOTE, threshold tuning",
+     ]},
+  ]},
+  {phase:3,title:"Core ML",duration:"Months 3–7",color:"#6dd6a0",sections:[
     {id:"ml-framework",title:"The ML Framework",weeks:"Week 1–2",why:"These concepts apply to every single algorithm.",warning:"Most skipped, most costly to skip.",goldAdvice:"For every model: is this overfitting? How do I know?",resources:[{name:"Hands-On ML — Aurélien Géron",type:"Book (the bible)",url:"https://www.oreilly.com/library/view/hands-on-machine-learning/9781492032632/"},{name:"Andrew Ng ML Specialization",type:"Course (free to audit)",url:"https://www.coursera.org/specializations/machine-learning-introduction"}],tasks:["Train / validation / test split — why each exists","Overfitting vs underfitting — diagnose from learning curves","Bias-variance tradeoff — explain intuitively","Cross-validation: k-fold, stratified k-fold","Regularization L1 and L2 — intuition"]},
     {id:"ml-regression",title:"Supervised — Regression",weeks:"Week 3–4",why:"Linear regression is the foundation.",warning:"Understand what coefficients mean and when the model breaks.",goldAdvice:"For each metric, ask: what business question does this answer?",resources:[{name:"StatQuest regression playlist",type:"YouTube (free)",url:"https://www.youtube.com/@statquest"}],tasks:["Linear regression with math — understand what OLS does","Ridge (L2) and Lasso (L1) regression","Polynomial regression — when to use, overfitting risk","Metrics: MAE, MSE, RMSE, R² — when to prefer each"]},
     {id:"ml-class",title:"Supervised — Classification",weeks:"Week 5–6",why:"Classification is the most common ML task.",warning:"Accuracy is a trap in imbalanced datasets.",goldAdvice:"For every algorithm: how does it work, assumptions, when does it fail, how do you tune it.",resources:[{name:"XGBoost docs",type:"Docs",url:"https://xgboost.readthedocs.io"},{name:"StatQuest Random Forest & XGBoost",type:"YouTube",url:"https://www.youtube.com/@statquest"}],tasks:["Logistic regression — understand log-odds, not just sigmoid","Decision Trees — splitting criteria, depth, pruning","Random Forests — why bagging reduces variance","XGBoost — spend extra time here","Metrics: precision, recall, F1, ROC-AUC","Class imbalance: SMOTE, class weights, threshold tuning"]},
@@ -76,7 +119,7 @@ const DEFAULT_ROADMAP = [
     {id:"eda-tools",title:"EDA & Model Explainability",weeks:"Week 9–10 (parallel)",why:"Companies want to understand WHY the model predicts what it does.",warning:"Don't just run ydata-profiling and call it EDA.",goldAdvice:"SHAP waterfall plots are a conversation-starter in every interview.",resources:[{name:"SHAP docs",type:"Docs",url:"https://shap.readthedocs.io"}],tasks:["ydata-profiling: generate automated EDA report","SHAP values: global feature importance","SHAP waterfall plot: explain single prediction","Present SHAP results as a business insight, not just a chart"]},
     {id:"api-data",title:"APIs & Real Data Sources",weeks:"Week 10 (parallel)",why:"Real data comes from APIs, not Kaggle CSVs.",warning:"Never hardcode API keys in your code. Use environment variables.",goldAdvice:"Build one project using a real public API.",resources:[{name:"requests library docs",type:"Docs",url:"https://requests.readthedocs.io"}],tasks:["HTTP basics: GET, POST, headers, status codes","requests library: fetch data from any API","Handle pagination and rate limits","Parse JSON responses into Pandas DataFrames","Use environment variables for API keys (.env file)"]},
   ]},
-  {phase:3,title:"Modern Skills",duration:"Months 7–12",color:"#f7c96e",sections:[
+  {phase:4,title:"Modern Skills",duration:"Months 7–12",color:"#f7c96e",sections:[
     {id:"dl-nn",title:"Neural Networks",weeks:"Week 1–2",why:"Deep learning is in 20%+ of DS job postings and growing.",warning:"Don't touch PyTorch yet. Build a NN from scratch in NumPy first.",goldAdvice:"The learning rate is the most important hyperparameter.",resources:[{name:"Andrej Karpathy — Neural Networks: Zero to Hero",type:"YouTube (exceptional)",url:"https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ"}],tasks:["Backpropagation — understand chain rule intuitively","Activation functions: ReLU, sigmoid, tanh","Batch size, learning rate, epochs","Dropout and batch normalization","Build NN from scratch in NumPy","Rebuild it in PyTorch"]},
     {id:"dl-cnn",title:"CNNs & Transfer Learning",weeks:"Week 3–4",why:"Transfer learning is how 90% of real computer vision work is done.",warning:"Don't get lost in architecture details.",goldAdvice:"Pick a domain and fine-tune on a real dataset from that domain.",resources:[{name:"fast.ai Part 1",type:"Free course",url:"https://course.fast.ai"}],tasks:["Convolutional layers and pooling","How CNNs see images intuitively","Transfer learning — why pretrained weights help","Fine-tune ResNet or EfficientNet on custom data","Data augmentation"]},
     {id:"dl-nlp",title:"NLP & Transformers",weeks:"Week 5–6",why:"NLP is the hottest sub-field.",warning:"You don't need to build a transformer from scratch.",goldAdvice:"Pick NLP or Vision and go deeper in one.",resources:[{name:"Hugging Face NLP course",type:"Free",url:"https://huggingface.co/learn/nlp-course"}],tasks:["Text preprocessing, tokenization, embeddings","Attention mechanism — conceptual understanding","BERT and variants","Hugging Face: load and fine-tune a model","NLP metrics: F1, BLEU, perplexity"]},
@@ -86,7 +129,7 @@ const DEFAULT_ROADMAP = [
     {id:"cloud",title:"Cloud Basics (AWS/GCP)",weeks:"Week 11–12",why:"Every DS job mentions cloud.",warning:"Don't try to learn all cloud services at once.",goldAdvice:"Get the AWS Free Tier account and actually deploy something.",resources:[{name:"AWS Free Tier",type:"Free account",url:"https://aws.amazon.com/free/"}],tasks:["Set up AWS Free Tier account","S3: upload, download, manage files with boto3","EC2: launch a basic instance, SSH into it","Deploy a FastAPI model to EC2 — get a live URL"]},
     {id:"dataviz",title:"Viz & Storytelling",weeks:"Ongoing (parallel)",why:"Being right means nothing if you can't communicate it.",warning:"Don't confuse pretty charts with storytelling.",goldAdvice:"After every project, make a 5-slide summary as if presenting to a VP.",resources:[{name:"Storytelling with Data",type:"Book",url:"https://www.storytellingwithdata.com/book"}],tasks:["Matplotlib & Seaborn for EDA","Plotly for interactive charts","Tableau or Power BI — learn one","5-slide business summary for every project"]},
   ]},
-  {phase:4,title:"Portfolio & Jobs",duration:"Months 12–18",color:"#c792ea",sections:[
+  {phase:5,title:"Portfolio & Jobs",duration:"Months 12–18",color:"#c792ea",sections:[
     {id:"portfolio",title:"Portfolio Projects",weeks:"Month 12–15",why:"Three exceptional projects beat ten mediocre ones.",warning:"'I trained a model on Titanic' is not a project.",goldAdvice:"Write a Medium article per project.",resources:[{name:"Kaggle Datasets",type:"Free",url:"https://www.kaggle.com/datasets"}],tasks:["Churn prediction with dollar-value business framing","Full A/B test analysis beyond p-value","NLP project on a real domain dataset","Recommendation system deployed as API","LLM-powered tool — keep it live","Each project: clean README, write-up, deployed demo"]},
     {id:"int-sql",title:"Interview Prep — SQL",weeks:"Month 13–16",why:"SQL is the first filter in almost every DS interview.",warning:"Practicing with autocomplete is not the same as interview SQL.",goldAdvice:"StrataScratch has questions from real companies. 50 medium/hard problems minimum.",resources:[{name:"StrataScratch",type:"DS-specific SQL practice",url:"https://www.stratascratch.com"}],tasks:["50 StrataScratch problems — medium and hard","Time yourself — 15 minutes max per problem","Practice without autocomplete","Review every wrong answer"]},
     {id:"int-stats",title:"Interview Prep — Statistics",weeks:"Month 13–16",why:"Statistics is the second major filter in DS interviews.",warning:"Most common mistake: getting p-values wrong.",goldAdvice:"Practice ALL statistics explanations spoken out loud.",resources:[{name:"Ace the Data Science Interview",type:"Book",url:"https://www.acethedatascienceinterview.com"}],tasks:["p-value: correct definition out loud without notes","Design an A/B test for a product out loud","Correlation vs causation with real example","Confidence interval: what it actually means"]},
