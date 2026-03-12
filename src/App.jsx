@@ -505,7 +505,21 @@ function AdminDashboard({currentUser}){
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:T.textFade}}>Progress</span><span style={{fontSize:10,color}}>{prog.pct}% ({prog.done}/{prog.total})</span></div>
                       <ProgressBar pct={prog.pct} color={color}/>
                     </div>
-                    <button onClick={()=>removeUser(u.id)} style={{background:T.warn+"15",border:`1px solid ${T.warn}44`,color:T.warn,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11}}>Remove</button>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {[1,2,3,4].map(pi=>{
+                        const sub=(u.projectSubmissions||{})[pi-1];
+                        const unlocked=(u.unlockedPhases||[0]).includes(pi);
+                        if(!sub&&!unlocked) return null;
+                        return sub&&sub.status==="pending"?(
+                          <div key={pi} style={{background:T.gold+"15",border:`1px solid ${T.gold}44`,borderRadius:7,padding:"5px 10px",fontSize:10,display:"flex",gap:6,alignItems:"center"}}>
+                            <span style={{color:T.gold}}>⏳ Phase {pi+1} project pending</span>
+                            <button onClick={()=>unlockPhase(u.id,pi)} style={{background:T.good+"25",border:`1px solid ${T.good}55`,color:T.good,padding:"2px 8px",borderRadius:4,cursor:"pointer",fontSize:10,fontWeight:600}}>✓ Approve</button>
+                            {sub.link&&<a href={sub.link} target="_blank" rel="noreferrer" style={{color:T.info,fontSize:10}}>view →</a>}
+                          </div>
+                        ):null;
+                      })}
+                      <button onClick={()=>removeUser(u.id)} style={{background:T.warn+"15",border:`1px solid ${T.warn}44`,color:T.warn,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11}}>Remove</button>
+                    </div>
                   </div>
                 );
               })}
@@ -617,6 +631,11 @@ function StudentDashboard({currentUser,userDoc}){
   const [checkinForm,setCheckinForm]=useState({learned:"",difficult:"",goal:""});
   const [showCheckin,setShowCheckin]=useState(false);
   const [activeLearnId,setActiveLearnId]=useState("numpy");
+  const [unlockedPhases,setUnlockedPhases]=useState(userDoc.unlockedPhases||[0]);
+  const [showProjectModal,setShowProjectModal]=useState(false);
+  const [projectPhaseIdx,setProjectPhaseIdx]=useState(null);
+  const [projectSubmission,setProjectSubmission]=useState({link:"",notes:""});
+  const [projectSubmitted,setProjectSubmitted]=useState(userDoc.projectSubmissions||{});
 
   const onLessonComplete = (lessonId) => {
     const mapping = LESSON_COMPLETES_TASK[lessonId];
@@ -665,6 +684,24 @@ function StudentDashboard({currentUser,userDoc}){
   },[currentUser.uid]);
 
   const saveProgress=async(p)=>{setProgress(p);await updateDoc(doc(db,"users",currentUser.uid),{progress:p});};
+
+  const isPhaseUnlocked=(idx)=>unlockedPhases.includes(idx);
+
+  const isPhaseComplete=(idx)=>{
+    const ph=roadmap[idx];
+    if(!ph) return false;
+    const pp=getPP(ph);
+    return pp.pct===100;
+  };
+
+  const submitProject=async()=>{
+    if(!projectSubmission.link.trim()&&!projectSubmission.notes.trim()) return;
+    const newSubs={...projectSubmitted,[projectPhaseIdx]:{...projectSubmission,date:new Date().toISOString(),status:"pending"}};
+    setProjectSubmitted(newSubs);
+    await updateDoc(doc(db,"users",currentUser.uid),{projectSubmissions:newSubs});
+    setShowProjectModal(false);
+    setProjectSubmission({link:"",notes:""});
+  };
   const toggle=(sid,i)=>{const key=`${sid}-${i}`;saveProgress({...progress,[key]:!progress[key]});};
 
   const total=getTotalProgress(progress,roadmap);
@@ -816,10 +853,10 @@ function StudentDashboard({currentUser,userDoc}){
         {tab==="roadmap"&&(
           <div style={{display:"flex",height:"calc(100vh - 120px)"}}>
             <div style={{width:210,borderRight:`1px solid ${T.border}`,padding:"16px 12px",overflowY:"auto",background:T.bgDeep,flexShrink:0}}>
-              {roadmap.map((ph,i)=>{const p2=getPP(ph);const a=i===activePhase;return(
-                <button key={i} onClick={()=>{setActivePhase(i);setExpandedSection(null);}} style={{width:"100%",background:a?ph.color+"15":"transparent",border:`1px solid ${a?ph.color+"55":"transparent"}`,color:a?ph.color:T.textDim,padding:"8px 12px",borderRadius:7,cursor:"pointer",fontSize:11,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,textAlign:"left"}}>
-                  <span>{ph.title}</span>
-                  <span style={{fontSize:10,background:ph.color+"18",color:ph.color,padding:"1px 5px",borderRadius:3}}>{p2.pct}%</span>
+              {roadmap.map((ph,i)=>{const p2=getPP(ph);const a=i===activePhase;const locked=!isPhaseUnlocked(i);return(
+                <button key={i} onClick={()=>{if(!locked){setActivePhase(i);setExpandedSection(null);}}} style={{width:"100%",background:a?ph.color+"15":locked?"#0f0e1a":"transparent",border:`1px solid ${a?ph.color+"55":locked?T.border:"transparent"}`,color:locked?T.textFade:a?ph.color:T.textDim,padding:"8px 12px",borderRadius:7,cursor:locked?"not-allowed":"pointer",fontSize:11,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,textAlign:"left",opacity:locked?0.5:1}}>
+                  <span>{locked?"🔒 ":""}{ph.title}</span>
+                  <span style={{fontSize:10,background:ph.color+"18",color:ph.color,padding:"1px 5px",borderRadius:3}}>{locked?"locked":p2.pct+"%"}</span>
                 </button>
               );})}
               <div style={{borderTop:`1px solid ${T.border}`,marginTop:8,paddingTop:12}}>
@@ -832,85 +869,135 @@ function StudentDashboard({currentUser,userDoc}){
               </div>
             </div>
             <div style={{flex:1,overflowY:"auto",padding:"20px 24px"}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-                <ProgressRing pct={getPP(phase).pct} color={C} size={40} stroke={4}/>
-                <div><div style={{fontSize:15,fontWeight:700,color:C}}>{phase.title}</div><div style={{fontSize:11,color:T.textDim}}>{phase.duration} · {getPP(phase).done}/{getPP(phase).total} tasks</div></div>
-              </div>
-              {phase.sections.map(section=>{
-                const sp=getSP(section);const isDone=sp.done===sp.total;const isExp=expandedSection===section.id;
-                return(
-                  <div key={section.id} style={{marginBottom:10,background:T.bgCard,border:`1px solid ${isDone?C+"55":isExp?C+"33":T.border}`,borderRadius:12,overflow:"hidden"}}>
-                    <div onClick={()=>setExpandedSection(isExp?null:section.id)} style={{padding:"12px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                      <div style={{flex:1}}>
-                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}><span style={{fontSize:13,fontWeight:600,color:isDone?C:T.text}}>{section.title}</span><span style={{fontSize:10,color:T.textFade}}>{section.weeks}</span></div>
-                        <ProgressBar pct={sp.pct} color={isDone?C:C+"77"} height={2}/>
-                      </div>
-                      <span style={{fontSize:11,fontWeight:600,color:isDone?C:T.textDim,marginLeft:12}}>{sp.pct}%</span>
-                    </div>
-                    {isExp&&(
-                      <div>
-                        {(section.why||section.warning)&&(
-                          <div style={{padding:"0 16px 12px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                            {section.why&&<div style={{background:T.bgDeep,border:`1px solid ${C}22`,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:8,color:C,letterSpacing:"0.15em",fontWeight:700,marginBottom:5}}>WHY THIS MATTERS</div><div style={{fontSize:11,color:T.textDim,lineHeight:1.7}}>{section.why}</div></div>}
-                            {section.warning&&<div style={{background:T.bgDeep,border:`1px solid ${T.warn}22`,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:8,color:T.warn,letterSpacing:"0.15em",fontWeight:700,marginBottom:5}}>⚠ COMMON MISTAKE</div><div style={{fontSize:11,color:T.textDim,lineHeight:1.7}}>{section.warning}</div></div>}
-                          </div>
-                        )}
-                        {section.goldAdvice&&<div style={{margin:"0 16px 12px",background:T.gold+"0d",border:`1px solid ${T.gold}33`,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:8,color:T.gold,letterSpacing:"0.15em",fontWeight:700,marginBottom:5}}>✦ GOLD ADVICE</div><div style={{fontSize:11,color:"#cfc9a0",lineHeight:1.7}}>{section.goldAdvice}</div></div>}
-                        {SECTION_TO_FIRST_LESSON[section.id]&&(
-                          <div style={{margin:"0 16px 12px"}}>
-                            <button onClick={()=>navigateToLesson(SECTION_TO_FIRST_LESSON[section.id])} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 14px",background:C+"12",border:`1px solid ${C}44`,borderRadius:8,cursor:"pointer",color:C,fontSize:12,fontWeight:600}}>
-                              <span style={{fontSize:16}}>📚</span>
-                              <span>Study this section — open interactive lesson</span>
-                              <span style={{marginLeft:"auto",fontSize:10,opacity:0.7}}>→</span>
-                            </button>
-                          </div>
-                        )}
-                        {section.resources&&section.resources.length>0&&(
-                          <div style={{margin:"0 16px 12px"}}>
-                            <div style={{fontSize:8,color:T.textFade,letterSpacing:"0.15em",fontWeight:700,marginBottom:8}}>RESOURCES</div>
-                            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                              {section.resources.map((r,i)=><a key={i} href={r.url} target="_blank" rel="noreferrer" style={{background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:7,padding:"6px 11px",textDecoration:"none"}}><div style={{fontSize:11,color:C,marginBottom:2}}>{r.name}</div><div style={{fontSize:9,color:T.textFade}}>{r.type}</div></a>)}
-                            </div>
-                          </div>
-                        )}
-                        <div style={{borderTop:`1px solid ${T.border}`}}>
-                          <div style={{fontSize:8,color:T.textFade,letterSpacing:"0.15em",padding:"10px 16px 4px"}}>TASKS — CLICK TO COMPLETE</div>
-                          <div style={{paddingBottom:6}}>
-                            {section.tasks.map((task,i)=>{
-                              const key=`${section.id}-${i}`;const ck=!!progress[key];
-                              return(
-                                <div key={i} onClick={()=>toggle(section.id,i)} style={{display:"flex",alignItems:"flex-start",gap:11,padding:"8px 16px",cursor:"pointer",background:ck?C+"0a":"transparent"}}>
-                                  <div style={{width:15,height:15,borderRadius:4,border:`1.5px solid ${ck?C:T.borderHi}`,background:ck?C+"25":"transparent",flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                    {ck&&<svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke={C} strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>}
-                                  </div>
-                                  <span style={{fontSize:12,color:ck?T.textFade:T.textDim,textDecoration:ck?"line-through":"none",lineHeight:1.6}}>{task}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                        {sectionProjects[section.id]&&sectionProjects[section.id].length>0&&(
-                          <div>
-                            <div style={{borderTop:`1px solid ${T.border}`}}/>
-                            <div style={{fontSize:8,color:T.info,letterSpacing:"0.15em",padding:"10px 16px 8px"}}>HANDS-ON EXERCISES</div>
-                            <div style={{padding:"0 16px 14px",display:"flex",flexDirection:"column",gap:8}}>
-                              {sectionProjects[section.id].map((mp,i)=>(
-                                <div key={i} style={{background:T.bgDeep,border:`1px solid ${typeColors[mp.type]}22`,borderRadius:8,padding:"11px 13px"}}>
-                                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
-                                    <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:9,color:typeColors[mp.type],background:typeColors[mp.type]+"18",padding:"2px 7px",borderRadius:3}}>{typeLabels[mp.type]}</span><span style={{fontSize:12,fontWeight:600,color:T.text}}>{mp.title}</span></div>
-                                    {mp.url&&<a href={mp.url} target="_blank" rel="noreferrer" style={{fontSize:9,color:T.info,textDecoration:"none",flexShrink:0}}>dataset →</a>}
-                                  </div>
-                                  <div style={{fontSize:11,color:T.textDim,lineHeight:1.6}}>{mp.desc}</div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+              {!isPhaseUnlocked(activePhase)?(
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"60%",textAlign:"center",padding:40}}>
+                  <div style={{fontSize:48,marginBottom:16}}>🔒</div>
+                  <div style={{fontSize:18,fontWeight:700,color:T.text,marginBottom:8}}>{phase.title} is Locked</div>
+                  <div style={{fontSize:13,color:T.textDim,maxWidth:380,lineHeight:1.7,marginBottom:24}}>
+                    Complete all tasks in the previous phase and submit your project to unlock this phase.
                   </div>
-                );
-              })}
+                  {activePhase>0&&isPhaseComplete(activePhase-1)&&(
+                    projectSubmitted[activePhase-1]?.status==="pending"?(
+                      <div style={{background:T.gold+"15",border:`1px solid ${T.gold}44`,borderRadius:10,padding:"14px 20px",color:T.gold,fontSize:13}}>
+                        ⏳ Project submitted — waiting for instructor approval
+                      </div>
+                    ):(
+                      <button onClick={()=>{setProjectPhaseIdx(activePhase-1);setShowProjectModal(true);}} style={{background:C,color:"#000",border:"none",padding:"12px 28px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:13}}>
+                        Submit Phase {activePhase} Project to Unlock →
+                      </button>
+                    )
+                  )}
+                  {activePhase>0&&!isPhaseComplete(activePhase-1)&&(
+                    <div style={{background:T.warn+"15",border:`1px solid ${T.warn}44`,borderRadius:10,padding:"14px 20px",color:T.warn,fontSize:13}}>
+                      ⚠ Finish Phase {activePhase} (100%) first
+                    </div>
+                  )}
+                </div>
+              ):(
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+                    <ProgressRing pct={getPP(phase).pct} color={C} size={40} stroke={4}/>
+                    <div><div style={{fontSize:15,fontWeight:700,color:C}}>{phase.title}</div><div style={{fontSize:11,color:T.textDim}}>{phase.duration} · {getPP(phase).done}/{getPP(phase).total} tasks</div></div>
+                  </div>
+                  {phase.sections.map(section=>{
+                    const sp=getSP(section);const isDone=sp.done===sp.total;const isExp=expandedSection===section.id;
+                    return(
+                      <div key={section.id} style={{marginBottom:10,background:T.bgCard,border:`1px solid ${isDone?C+"55":isExp?C+"33":T.border}`,borderRadius:12,overflow:"hidden"}}>
+                        <div onClick={()=>setExpandedSection(isExp?null:section.id)} style={{padding:"12px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div style={{flex:1}}>
+                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}><span style={{fontSize:13,fontWeight:600,color:isDone?C:T.text}}>{section.title}</span><span style={{fontSize:10,color:T.textFade}}>{section.weeks}</span></div>
+                            <ProgressBar pct={sp.pct} color={isDone?C:C+"77"} height={2}/>
+                          </div>
+                          <span style={{fontSize:11,fontWeight:600,color:isDone?C:T.textDim,marginLeft:12}}>{sp.pct}%</span>
+                        </div>
+                        {isExp&&(
+                          <div>
+                            {(section.why||section.warning)&&(
+                              <div style={{padding:"0 16px 12px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                                {section.why&&<div style={{background:T.bgDeep,border:`1px solid ${C}22`,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:8,color:C,letterSpacing:"0.15em",fontWeight:700,marginBottom:5}}>WHY THIS MATTERS</div><div style={{fontSize:11,color:T.textDim,lineHeight:1.7}}>{section.why}</div></div>}
+                                {section.warning&&<div style={{background:T.bgDeep,border:`1px solid ${T.warn}22`,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:8,color:T.warn,letterSpacing:"0.15em",fontWeight:700,marginBottom:5}}>⚠ COMMON MISTAKE</div><div style={{fontSize:11,color:T.textDim,lineHeight:1.7}}>{section.warning}</div></div>}
+                              </div>
+                            )}
+                            {section.goldAdvice&&<div style={{margin:"0 16px 12px",background:T.gold+"0d",border:`1px solid ${T.gold}33`,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:8,color:T.gold,letterSpacing:"0.15em",fontWeight:700,marginBottom:5}}>✦ GOLD ADVICE</div><div style={{fontSize:11,color:"#cfc9a0",lineHeight:1.7}}>{section.goldAdvice}</div></div>}
+                            {SECTION_TO_FIRST_LESSON[section.id]&&(
+                              <div style={{margin:"0 16px 12px"}}>
+                                <button onClick={()=>navigateToLesson(SECTION_TO_FIRST_LESSON[section.id])} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 14px",background:C+"12",border:`1px solid ${C}44`,borderRadius:8,cursor:"pointer",color:C,fontSize:12,fontWeight:600}}>
+                                  <span style={{fontSize:16}}>📚</span>
+                                  <span>Study this section — open interactive lesson</span>
+                                  <span style={{marginLeft:"auto",fontSize:10,opacity:0.7}}>→</span>
+                                </button>
+                              </div>
+                            )}
+                            {section.resources&&section.resources.length>0&&(
+                              <div style={{margin:"0 16px 12px"}}>
+                                <div style={{fontSize:8,color:T.textFade,letterSpacing:"0.15em",fontWeight:700,marginBottom:8}}>RESOURCES</div>
+                                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                                  {section.resources.map((r,i)=><a key={i} href={r.url} target="_blank" rel="noreferrer" style={{background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:7,padding:"6px 11px",textDecoration:"none"}}><div style={{fontSize:11,color:C,marginBottom:2}}>{r.name}</div><div style={{fontSize:9,color:T.textFade}}>{r.type}</div></a>)}
+                                </div>
+                              </div>
+                            )}
+                            <div style={{borderTop:`1px solid ${T.border}`}}>
+                              <div style={{fontSize:8,color:T.textFade,letterSpacing:"0.15em",padding:"10px 16px 4px"}}>TASKS — CLICK TO COMPLETE</div>
+                              <div style={{paddingBottom:6}}>
+                                {section.tasks.map((task,i)=>{
+                                  const key=`${section.id}-${i}`;const ck=!!progress[key];
+                                  return(
+                                    <div key={i} onClick={()=>toggle(section.id,i)} style={{display:"flex",alignItems:"flex-start",gap:11,padding:"8px 16px",cursor:"pointer",background:ck?C+"0a":"transparent"}}>
+                                      <div style={{width:15,height:15,borderRadius:4,border:`1.5px solid ${ck?C:T.borderHi}`,background:ck?C+"25":"transparent",flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                        {ck&&<svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke={C} strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>}
+                                      </div>
+                                      <span style={{fontSize:12,color:ck?T.textFade:T.textDim,textDecoration:ck?"line-through":"none",lineHeight:1.6}}>{task}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            {sectionProjects[section.id]&&sectionProjects[section.id].length>0&&(
+                              <div>
+                                <div style={{borderTop:`1px solid ${T.border}`}}/>
+                                <div style={{fontSize:8,color:T.info,letterSpacing:"0.15em",padding:"10px 16px 8px"}}>HANDS-ON EXERCISES</div>
+                                <div style={{padding:"0 16px 14px",display:"flex",flexDirection:"column",gap:8}}>
+                                  {sectionProjects[section.id].map((mp,i)=>(
+                                    <div key={i} style={{background:T.bgDeep,border:`1px solid ${typeColors[mp.type]}22`,borderRadius:8,padding:"11px 13px"}}>
+                                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                                        <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:9,color:typeColors[mp.type],background:typeColors[mp.type]+"18",padding:"2px 7px",borderRadius:3}}>{typeLabels[mp.type]}</span><span style={{fontSize:12,fontWeight:600,color:T.text}}>{mp.title}</span></div>
+                                        {mp.url&&<a href={mp.url} target="_blank" rel="noreferrer" style={{fontSize:9,color:T.info,textDecoration:"none",flexShrink:0}}>dataset →</a>}
+                                      </div>
+                                      <div style={{fontSize:11,color:T.textDim,lineHeight:1.6}}>{mp.desc}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PROJECT SUBMISSION MODAL */}
+        {showProjectModal&&(
+          <div style={{position:"fixed",inset:0,background:"#00000088",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100}}>
+            <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:16,padding:"32px",width:480,maxWidth:"90vw"}}>
+              <div style={{fontSize:16,fontWeight:700,marginBottom:6}}>🚀 Submit Phase {projectPhaseIdx!==null?projectPhaseIdx+1:""} Project</div>
+              <div style={{fontSize:11,color:T.textDim,marginBottom:20}}>Share your project link and a short note. Your instructor will review and unlock the next phase.</div>
+              <div style={{marginBottom:14}}>
+                <div style={{fontSize:11,color:T.textDim,marginBottom:6}}>PROJECT LINK (GitHub, Colab, Streamlit, etc.)</div>
+                <input value={projectSubmission.link} onChange={e=>setProjectSubmission(p=>({...p,link:e.target.value}))} placeholder="https://github.com/yourproject" style={{width:"100%",background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:8,padding:"9px 12px",color:T.text,fontSize:12,outline:"none",boxSizing:"border-box"}}/>
+              </div>
+              <div style={{marginBottom:20}}>
+                <div style={{fontSize:11,color:T.textDim,marginBottom:6}}>NOTES (what you built, what you learned)</div>
+                <textarea value={projectSubmission.notes} onChange={e=>setProjectSubmission(p=>({...p,notes:e.target.value}))} placeholder="I built a churn predictor using XGBoost..." rows={3} style={{width:"100%",background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:8,padding:"9px 12px",color:T.text,fontSize:12,outline:"none",resize:"vertical",boxSizing:"border-box"}}/>
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={submitProject} style={{flex:1,padding:"10px",background:T.good+"18",border:`1px solid ${T.good}55`,color:T.good,borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Submit Project</button>
+                <button onClick={()=>setShowProjectModal(false)} style={{padding:"10px 16px",background:"none",border:`1px solid ${T.border}`,color:T.textDim,borderRadius:8,cursor:"pointer",fontSize:13}}>Cancel</button>
+              </div>
             </div>
           </div>
         )}
