@@ -1345,6 +1345,17 @@ export default function App(){
   );
 
   if(!authUser)return <LoginPage/>;
+  if(!userDoc)return(
+    <div style={{minHeight:"100vh",background:"#0b0a12",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",marginBottom:20}}>
+          <div style={{width:8,height:8,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 10px #8b7cf6"}}/>
+          <div style={{fontWeight:800,fontSize:18,color:"#e8e4ff"}}>DS Academy</div>
+        </div>
+        <div style={{width:28,height:28,border:"2px solid #1e1c35",borderTop:"2px solid #8b7cf6",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto"}}/>
+      </div>
+    </div>
+  );
   if(userDoc?.role==="admin"||authUser.email===ADMIN_EMAIL)return <AdminDashboard currentUser={authUser}/>;
   return <StudentDashboard currentUser={authUser} userDoc={userDoc}/>;
 }
