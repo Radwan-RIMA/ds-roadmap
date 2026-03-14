@@ -280,9 +280,17 @@ function LoginPage(){
           </div>
 
           {/* Stats */}
+          <style>{`
+            .stat-box { transition: background 0.2s; }
+            .stat-box:hover { background: #1a1830 !important; }
+            .lp-card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+            .lp-card:hover { transform: translateY(-5px); box-shadow: 0 8px 24px rgba(139,124,246,0.15); border-color: #8b7cf644 !important; }
+            .lp-card-green:hover { box-shadow: 0 8px 24px rgba(110,214,160,0.15); border-color: #6dd6a044 !important; }
+            .lp-card-blue:hover { box-shadow: 0 8px 24px rgba(126,184,247,0.15); border-color: #7eb8f744 !important; }
+          `}</style>
           <div style={{display:"flex",justifyContent:"center",gap:0,border:"1px solid #1e1c35",borderRadius:12,overflow:"hidden",background:"#11101c",flexWrap:"wrap"}}>
             {[{n:"18+",l:"Lessons"},{n:"5",l:"Phases"},{n:"11",l:"Projects"},{n:studentCount!==null?studentCount+"":"...",l:"Students Enrolled"},{n:"0 → Job",l:"The Goal"}].map((s,i)=>(
-              <div key={i} style={{padding:"16px 28px",textAlign:"center",borderRight:"1px solid #1e1c35",flex:"1 1 80px"}}>
+              <div key={i} className="stat-box" style={{padding:"16px 28px",textAlign:"center",borderRight:"1px solid #1e1c35",flex:"1 1 80px",cursor:"default"}}>
                 <div style={{fontWeight:800,fontSize:22,letterSpacing:"-0.02em",color:"#e8e4ff"}}>{s.n}</div>
                 <div style={{fontSize:10,color:"#3a3860",letterSpacing:"0.08em",marginTop:2,fontFamily:"monospace"}}>{s.l}</div>
               </div>
@@ -291,91 +299,33 @@ function LoginPage(){
         </div>
       </div>
 
-      {/* CURRICULUM — ANIMATED ROADMAP */}
+      {/* CURRICULUM */}
       <div id="curriculum" style={{padding:"80px 20px",background:"#0b0a12"}}>
         <div style={{maxWidth:1000,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// curriculum</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>A clear path. No guessing.</h2>
           <p style={{color:"#7b78a0",fontSize:15,marginBottom:56,maxWidth:480}}>Every phase builds on the last. No tutorial hell — just a structured sequence designed around what employers hire for.</p>
-
           <style>{`
-            @keyframes pulseRing {
-              0% { transform: scale(1); opacity: 0.6; }
-              50% { transform: scale(1.15); opacity: 0.2; }
-              100% { transform: scale(1); opacity: 0.6; }
-            }
-            @keyframes flowLine {
-              0% { stroke-dashoffset: 200; }
-              100% { stroke-dashoffset: 0; }
-            }
-            @keyframes fadeUp {
-              from { opacity: 0; transform: translateY(20px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-            .phase-card {
-              animation: fadeUp 0.5s ease forwards;
-              opacity: 0;
-            }
-            .phase-card:nth-child(1) { animation-delay: 0.1s; }
-            .phase-card:nth-child(2) { animation-delay: 0.3s; }
-            .phase-card:nth-child(3) { animation-delay: 0.5s; }
-            .phase-card:nth-child(4) { animation-delay: 0.7s; }
-            .phase-card:nth-child(5) { animation-delay: 0.9s; }
-            .phase-card:hover { transform: translateY(-4px) !important; transition: transform 0.2s ease; }
+            @keyframes fadeUp2 { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+            .pc { animation: fadeUp2 0.5s ease forwards; opacity:0; }
+            .pc:nth-child(1){animation-delay:0.1s}
+            .pc:nth-child(2){animation-delay:0.25s}
+            .pc:nth-child(3){animation-delay:0.4s}
+            .pc:nth-child(4){animation-delay:0.55s}
+            .pc:nth-child(5){animation-delay:0.7s}
+            .pc:hover{transform:translateY(-6px)!important;transition:transform 0.2s ease;}
           `}</style>
-
-          {/* Timeline connector */}
-          <div style={{position:"relative"}}>
-            {/* Vertical line on mobile, horizontal dots on desktop */}
-            <div style={{display:"flex",flexDirection:"column",gap:0}}>
-              {phases.map((p,i)=>(
-                <div key={p.num} className="phase-card" style={{display:"flex",alignItems:"stretch",gap:0,marginBottom:0}}>
-                  {/* Left timeline */}
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:48,flexShrink:0}}>
-                    <div style={{
-                      width:36,height:36,borderRadius:"50%",
-                      background:`radial-gradient(circle, ${p.color}44, ${p.color}11)`,
-                      border:`2px solid ${p.color}`,
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:16,flexShrink:0,
-                      boxShadow:`0 0 12px ${p.color}44`,
-                      animation:"pulseRing 2s ease-in-out infinite",
-                      animationDelay:`${i*0.4}s`
-                    }}>{p.icon}</div>
-                    {i<phases.length-1&&(
-                      <div style={{
-                        width:2,flex:1,minHeight:32,
-                        background:`linear-gradient(to bottom, ${p.color}88, ${phases[i+1].color}44)`,
-                        margin:"4px 0"
-                      }}/>
-                    )}
-                  </div>
-                  {/* Card */}
-                  <div style={{
-                    flex:1,marginLeft:16,marginBottom:i<phases.length-1?8:0,
-                    background:"#11101c",
-                    border:`1px solid ${p.color}33`,
-                    borderLeft:`3px solid ${p.color}`,
-                    borderRadius:12,padding:"18px 20px",
-                    transition:"all 0.2s",
-                    cursor:"default"
-                  }}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
-                      <div>
-                        <div style={{fontFamily:"monospace",fontSize:10,color:"#3a3860",marginBottom:6,letterSpacing:"0.08em"}}>{p.num}</div>
-                        <div style={{fontWeight:700,fontSize:15,color:"#e8e4ff",marginBottom:4}}>{p.title}</div>
-                        <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6,maxWidth:480}}>{p.desc}</div>
-                      </div>
-                      <div style={{textAlign:"right",flexShrink:0}}>
-                        <span style={{fontSize:11,fontFamily:"monospace",padding:"4px 10px",borderRadius:100,background:p.color+"18",color:p.color,display:"block",marginBottom:6}}>{p.time}</span>
-                        {i===0&&<span style={{fontSize:9,color:"#6ee7b7",fontFamily:"monospace",background:"#6ee7b722",padding:"2px 8px",borderRadius:100}}>UNLOCKED</span>}
-                        {i>0&&<span style={{fontSize:9,color:"#3a3860",fontFamily:"monospace",background:"#1e1c35",padding:"2px 8px",borderRadius:100}}>🔒 LOCKED</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>
+            {phases.map((p,i)=>(
+              <div key={p.num} className="pc" style={{background:"#11101c",border:`1px solid ${p.color}33`,borderTop:`3px solid ${p.color}`,borderRadius:12,padding:"24px 18px",cursor:"default",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:0,right:0,width:60,height:60,background:p.color+"08",borderRadius:"0 0 0 60px"}}/>
+                <div style={{fontSize:28,marginBottom:12}}>{p.icon}</div>
+                <div style={{fontFamily:"monospace",fontSize:10,color:p.color,marginBottom:6,letterSpacing:"0.1em"}}>{p.num}</div>
+                <div style={{fontWeight:700,fontSize:14,color:"#e8e4ff",marginBottom:6,lineHeight:1.3}}>{p.title}</div>
+                <div style={{fontSize:11,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>{p.desc}</div>
+                <span style={{fontSize:10,fontFamily:"monospace",padding:"3px 8px",borderRadius:100,background:p.color+"18",color:p.color}}>{p.time}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -393,7 +343,7 @@ function LoginPage(){
               {icon:"⚙️",title:"ML Engineer",skills:["sklearn","Pipelines","Docker","APIs","Python"],color:"#6dd6a0",desc:"Deploy and maintain ML models in production. Bridge between DS and engineering."},
               {icon:"🐍",title:"Python Developer (Data)",skills:["Python","Pandas","APIs","Automation","SQL"],color:"#f7c96e",desc:"Automate data workflows, build internal tools, and work with data pipelines."},
             ].map((job,i)=>(
-              <div key={i} style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",transition:"all 0.2s"}}>
+              <div key={i} className="lp-card" style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px"}}>
                 <div style={{fontSize:28,marginBottom:12}}>{job.icon}</div>
                 <div style={{fontWeight:700,fontSize:16,marginBottom:6,color:job.color}}>{job.title}</div>
                 <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>{job.desc}</div>
@@ -423,7 +373,7 @@ function LoginPage(){
           <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:480}}>No passive videos. No disconnected tutorials. Everything is connected, tracked, and designed to get you hired.</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}}>
             {features.map((f,i)=>(
-              <div key={i} style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",transition:"all 0.2s"}}>
+              <div key={i} className="lp-card" style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px"}}>
                 <div style={{fontSize:22,marginBottom:12}}>{f.icon}</div>
                 <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>{f.title}</div>
                 <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6}}>{f.desc}</div>
@@ -484,7 +434,7 @@ function LoginPage(){
                 outcome:"Live API endpoint + model card"
               },
             ].map((p,i)=>(
-              <div key={i} style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",position:"relative",overflow:"hidden",transition:"all 0.2s"}}>
+              <div key={i} className="lp-card" style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",position:"relative",overflow:"hidden"}}>
                 <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:p.color+"66"}}/>
                 <div style={{fontSize:28,marginBottom:12}}>{p.icon}</div>
                 <div style={{fontWeight:700,fontSize:15,color:"#e8e4ff",marginBottom:6}}>{p.title}</div>
@@ -505,24 +455,6 @@ function LoginPage(){
 
       {/* AI JOB CALCULATOR */}
       <AIJobCalculator/>
-
-      {/* ABOUT */}
-      <div style={{padding:"60px 20px",background:"#0d0c18"}}>
-        <div style={{maxWidth:600,margin:"0 auto",display:"flex",alignItems:"center",gap:28,flexWrap:"wrap",justifyContent:"center"}}>
-          <div style={{width:72,height:72,borderRadius:"50%",background:"linear-gradient(135deg,#8b7cf6,#f472b6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>
-            👨‍💻
-          </div>
-          <div style={{flex:1,minWidth:220}}>
-            <div style={{fontWeight:700,fontSize:16,color:"#e8e4ff",marginBottom:6}}>Built by Radwan</div>
-            <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7,marginBottom:12}}>
-              A researcher transitioning into data science — I built DS Academy because I couldn't find a structured, practical path that actually prepares you for the job market. Everything in this curriculum is what I wish I had from day one.
-            </div>
-            <a href="https://wa.me/96181590474" target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(37,211,102,0.1)",border:"1px solid rgba(37,211,102,0.3)",color:"#25d366",padding:"8px 16px",borderRadius:8,fontSize:13,fontWeight:600,textDecoration:"none"}}>
-              <span>💬</span> WhatsApp me with any questions
-            </a>
-          </div>
-        </div>
-      </div>
 
       {/* APPLY */}
       <div id="apply" style={{padding:"80px 20px",background:"#0b0a12",textAlign:"center"}}>
@@ -570,9 +502,45 @@ function LoginPage(){
       </div>
 
       {/* FOOTER */}
-      <div style={{padding:"24px 32px",borderTop:"1px solid #1e1c35",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
-        <div style={{fontWeight:800,fontSize:14,color:"#3a3860"}}>DS Academy</div>
-        <div style={{fontFamily:"monospace",fontSize:11,color:"#3a3860"}}>Zero → Competitive Candidate</div>
+      <div style={{borderTop:"1px solid #1e1c35",background:"#0b0a12"}}>
+        <div style={{maxWidth:1000,margin:"0 auto",padding:"48px 32px 32px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:40}}>
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+              <div style={{width:8,height:8,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 10px #8b7cf6"}}/>
+              <div style={{fontWeight:800,fontSize:16,color:"#e8e4ff"}}>DS Academy</div>
+            </div>
+            <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.7,marginBottom:16}}>A structured, practical path from zero to job-ready data scientist. No tutorial hell — just what employers hire for.</div>
+            <div style={{fontFamily:"monospace",fontSize:10,color:"#3a3860"}}>Zero → Competitive Candidate</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:14}}>BUILT BY</div>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+              <div style={{width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#8b7cf6,#f472b6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>👨‍💻</div>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:"#e8e4ff"}}>Radwan</div>
+                <div style={{fontSize:11,color:"#7b78a0"}}>Researcher → Data Scientist</div>
+              </div>
+            </div>
+            <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>I built DS Academy because I couldn't find a structured path that actually prepares you for the job market.</div>
+            <a href="https://wa.me/96181590474" target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(37,211,102,0.08)",border:"1px solid rgba(37,211,102,0.25)",color:"#25d366",padding:"7px 14px",borderRadius:7,fontSize:12,fontWeight:600,textDecoration:"none"}}>
+              💬 WhatsApp
+            </a>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:14}}>QUICK LINKS</div>
+            {["#curriculum","#apply"].map((href,i)=>(
+              <a key={i} href={href} style={{display:"block",fontSize:12,color:"#7b78a0",textDecoration:"none",marginBottom:8,transition:"color 0.2s"}}
+                onMouseEnter={e=>e.target.style.color="#e8e4ff"}
+                onMouseLeave={e=>e.target.style.color="#7b78a0"}>
+                {i===0?"→ View Curriculum":"→ Apply for Access"}
+              </a>
+            ))}
+          </div>
+        </div>
+        <div style={{borderTop:"1px solid #1e1c35",padding:"16px 32px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+          <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>© 2025 DS Academy</div>
+          <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>Built in Lebanon 🇱🇧</div>
+        </div>
       </div>
 
     </div>
