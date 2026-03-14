@@ -266,9 +266,26 @@ function LoginPage(){
           <p style={{fontSize:16,color:"#7b78a0",maxWidth:500,margin:"0 auto 12px",lineHeight:1.7}}>
             A structured, hands-on platform that takes you from <strong style={{color:"#e8e4ff"}}>complete beginner</strong> to job-ready — starting with Python from scratch. No prior coding experience needed.
           </p>
-          <p style={{fontSize:13,color:"#3a3860",maxWidth:480,margin:"0 auto 36px",fontFamily:"monospace"}}>
-            → Data Scientist &nbsp;·&nbsp; Data Analyst &nbsp;·&nbsp; ML Engineer &nbsp;·&nbsp; Python Developer
-          </p>
+          <div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap",margin:"0 auto 36px",maxWidth:520}}>
+            {[
+              {label:"Data Scientist",color:"#8b7cf6"},
+              {label:"Data Analyst",color:"#7eb8f7"},
+              {label:"ML Engineer",color:"#6dd6a0"},
+              {label:"Python Developer",color:"#f7c96e"},
+            ].map((j,i)=>(
+              <span key={i} style={{
+                fontSize:12,fontWeight:600,padding:"5px 14px",
+                borderRadius:100,
+                background:j.color+"15",
+                color:j.color,
+                border:`1px solid ${j.color}33`,
+                fontFamily:"monospace",
+                letterSpacing:"0.03em"
+              }}>
+                {j.label}
+              </span>
+            ))}
+          </div>
 
           <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:56}}>
             <a href="#apply" style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"13px 28px",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6}}>
