@@ -1,3 +1,127 @@
+// ── AI JOB CALCULATOR
+function AIJobCalculator(){
+  const [job,setJob]=useState("");
+  const [result,setResult]=useState(null);
+  const [calculating,setCalculating]=useState(false);
+
+  const jobData={
+    "data entry":{risk:92,color:"#f28b82",label:"Very High Risk",skills:["Python","SQL","Data Analysis","Automation"],months:4,reason:"Repetitive data tasks are among the first to be automated by AI systems."},
+    "accountant":{risk:78,color:"#f7c96e",label:"High Risk",skills:["Python","SQL","Financial Analytics","Data Visualization"],months:6,reason:"Rule-based financial processing is highly automatable. DS skills shift you to strategic analysis."},
+    "data analyst":{risk:35,color:"#a78bfa",label:"Moderate Risk",skills:["ML","Advanced SQL","Storytelling","Python"],months:8,reason:"Basic analysis is at risk but strategic data scientists who drive decisions are in high demand."},
+    "journalist":{risk:55,color:"#f7c96e",label:"Moderate Risk",skills:["NLP","Text Analysis","Python","Data Journalism"],months:7,reason:"AI can generate routine content. Data journalists who find stories in numbers are thriving."},
+    "teacher":{risk:28,color:"#6dd6a0",label:"Lower Risk",skills:["EdTech Analytics","Python","Learning Data","NLP"],months:9,reason:"Human connection in education is hard to replace, but AI tools are changing how teaching works."},
+    "software engineer":{risk:22,color:"#6dd6a0",label:"Lower Risk",skills:["ML Engineering","MLOps","LLM APIs","Python"],months:6,reason:"Engineers who can build AI systems are more valuable than ever. Adapt, don't fear."},
+    "doctor":{risk:18,color:"#6dd6a0",label:"Lower Risk",skills:["Medical ML","Clinical Analytics","Python","Research"],months:10,reason:"Medical diagnosis AI assists doctors but the human judgment and responsibility remain essential."},
+    "marketer":{risk:61,color:"#f7c96e",label:"Moderate Risk",skills:["Marketing Analytics","SQL","A/B Testing","Python"],months:5,reason:"Generic marketing is being automated. Data-driven marketers who optimize with numbers are safe."},
+    "lawyer":{risk:44,color:"#a78bfa",label:"Moderate Risk",skills:["Legal Analytics","NLP","Python","Document AI"],months:8,reason:"Document review is automating fast. Strategic legal work requires human judgment."},
+    "hr":{risk:57,color:"#f7c96e",label:"Moderate Risk",skills:["People Analytics","Python","SQL","Predictive Hiring"],months:6,reason:"Screening and scheduling are automating. HR analytics is growing."},
+    "graphic designer":{risk:69,color:"#f7c96e",label:"High Risk",skills:["AI Tools","Data Visualization","UX Analytics","Python"],months:5,reason:"AI image generation is transforming design. Data visualization and UX analytics offer a safe pivot."},
+    "customer service":{risk:85,color:"#f28b82",label:"Very High Risk",skills:["Python","NLP","Chatbot Analytics","SQL"],months:4,reason:"Chatbots are replacing tier-1 support rapidly. Building and managing those systems is the opportunity."},
+    "researcher":{risk:20,color:"#6dd6a0",label:"Lower Risk",skills:["ML Research","Python","Statistics","Data Science"],months:7,reason:"Research that uses AI as a tool is accelerating. Your analytical skills translate directly to DS."},
+    "banker":{risk:67,color:"#f7c96e",label:"High Risk",skills:["FinTech Analytics","Python","Risk Modeling","SQL"],months:6,reason:"Routine banking is automating fast. Quantitative finance and risk modeling are growing fields."},
+    "translator":{risk:82,color:"#f28b82",label:"Very High Risk",skills:["NLP","Python","Language Models","Text Analytics"],months:5,reason:"Machine translation is rapidly improving. NLP engineering and localization analytics offer a pivot."},
+    "civil engineer":{risk:25,color:"#6dd6a0",label:"Lower Risk",skills:["GIS Analytics","Python","Structural Data","Simulation"],months:8,reason:"Physical engineering judgment is hard to automate. Data-driven design and simulation are growing fast."},
+    "architect":{risk:30,color:"#6dd6a0",label:"Lower Risk",skills:["Computational Design","Python","GIS","Data Visualization"],months:8,reason:"Creative design is safe but AI is transforming how architects analyze sites and optimize buildings."},
+    "pharmacist":{risk:45,color:"#a78bfa",label:"Moderate Risk",skills:["Health Analytics","Python","Drug Data","Clinical ML"],months:7,reason:"Dispensing is automating but clinical pharmacists who analyze patient data are in growing demand."},
+    "social media manager":{risk:64,color:"#f7c96e",label:"High Risk",skills:["Social Analytics","Python","NLP","Marketing Data"],months:5,reason:"AI tools generate content fast. Data-driven social strategists who measure ROI stand out."},
+    "financial analyst":{risk:70,color:"#f7c96e",label:"High Risk",skills:["Python","Financial Modeling","SQL","Quantitative Analysis"],months:5,reason:"Routine financial modeling is automating. Analysts who build ML-powered forecasts are thriving."},
+    "sales representative":{risk:58,color:"#f7c96e",label:"Moderate Risk",skills:["CRM Analytics","Python","Sales Forecasting","SQL"],months:5,reason:"Cold outreach is automating but data-driven sales people who analyze pipelines are more valuable."},
+    "project manager":{risk:38,color:"#a78bfa",label:"Moderate Risk",skills:["Project Analytics","Python","Resource Optimization","Data"],months:6,reason:"Human coordination is hard to replace but PMs who use data to predict delays and risks are essential."},
+    "economist":{risk:32,color:"#6dd6a0",label:"Lower Risk",skills:["Econometrics","Python","R","Statistical Modeling"],months:6,reason:"Economic analysis requires deep domain knowledge. Data skills amplify rather than replace economists."},
+    "logistics coordinator":{risk:72,color:"#f7c96e",label:"High Risk",skills:["Supply Chain Analytics","Python","SQL","Optimization"],months:5,reason:"Routing and scheduling are rapidly automating. Supply chain data analysts are in high demand."},
+    "content writer":{risk:75,color:"#f7c96e",label:"High Risk",skills:["NLP","Python","Content Analytics","SEO Data"],months:5,reason:"AI writes generic content fast. Writers who use data to find angles and measure performance survive."},
+    "administrative assistant":{risk:88,color:"#f28b82",label:"Very High Risk",skills:["Python","Automation","SQL","Data Entry Tools"],months:4,reason:"Scheduling, email management and document handling are being automated rapidly by AI agents."},
+    "real estate agent":{risk:42,color:"#a78bfa",label:"Moderate Risk",skills:["Real Estate Analytics","Python","Market Data","SQL"],months:6,reason:"Property search is automating but agents who use market data to advise clients add real value."},
+    "nurse":{risk:15,color:"#6dd6a0",label:"Lower Risk",skills:["Health Analytics","Python","Clinical Data","Patient ML"],months:9,reason:"Human care is irreplaceable. Nurses who understand clinical data and patient analytics are future-proof."},
+    "business analyst":{risk:40,color:"#a78bfa",label:"Moderate Risk",skills:["SQL","Python","BI Tools","Data Visualization"],months:6,reason:"Basic reporting is automating. BAs who translate data into strategy are more valuable than ever."},
+    "supply chain manager":{risk:60,color:"#f7c96e",label:"Moderate Risk",skills:["Supply Chain Analytics","Python","Forecasting","SQL"],months:6,reason:"AI is transforming logistics. Managers who use predictive analytics for inventory are in demand."},
+    "accountant":{risk:78,color:"#f7c96e",label:"High Risk",skills:["Python","SQL","Financial Analytics","Data Visualization"],months:6,reason:"Rule-based financial processing is highly automatable. DS skills shift you to strategic analysis."},
+    "dentist":{risk:12,color:"#6dd6a0",label:"Very Low Risk",skills:["Medical Imaging ML","Python","Clinical Analytics","Health Data"],months:10,reason:"Physical dental procedures require human precision. AI assists with imaging but cannot replace dentists."},
+    "psychologist":{risk:16,color:"#6dd6a0",label:"Lower Risk",skills:["Mental Health Analytics","NLP","Python","Behavioral Data"],months:9,reason:"Human empathy and therapeutic relationships are hard to automate. Data skills open research roles."},
+    "operations manager":{risk:48,color:"#a78bfa",label:"Moderate Risk",skills:["Operations Analytics","Python","Process Mining","SQL"],months:6,reason:"Routine operations are automating. Managers who optimize with data and ML are highly valued."},
+    "recruiter":{risk:62,color:"#f7c96e",label:"Moderate Risk",skills:["People Analytics","Python","SQL","Predictive Hiring"],months:5,reason:"CV screening is almost fully automated. Data-driven recruiters who predict candidate success stand out."},
+    "photographer":{risk:55,color:"#f7c96e",label:"Moderate Risk",skills:["Computer Vision","Python","Image Analytics","AI Tools"],months:6,reason:"AI generates images but photographers who combine creativity with data analytics thrive in advertising."},
+    "electrician":{risk:20,color:"#6dd6a0",label:"Lower Risk",skills:["IoT Analytics","Python","Smart Grid Data","Automation"],months:8,reason:"Physical electrical work requires human presence. Smart building analytics is a growing specialization."},
+    "chef":{risk:22,color:"#6dd6a0",label:"Lower Risk",skills:["Food Analytics","Python","Supply Chain Data","Recipe ML"],months:9,reason:"Culinary creativity is uniquely human. Data skills help optimize menus, reduce waste, and forecast demand."},
+    "social worker":{risk:18,color:"#6dd6a0",label:"Lower Risk",skills:["Social Impact Analytics","Python","Case Data","NLP"],months:9,reason:"Human connection and advocacy are irreplaceable. Data skills help identify at-risk populations earlier."},
+    "actuary":{risk:35,color:"#a78bfa",label:"Moderate Risk",skills:["ML","Python","Risk Modeling","Statistics"],months:6,reason:"Traditional actuarial work is evolving. Actuaries who use ML for risk modeling are highly sought after."},
+    "urban planner":{risk:28,color:"#6dd6a0",label:"Lower Risk",skills:["GIS Analytics","Python","Urban Data","Simulation"],months:8,reason:"City planning requires human judgment. Data-driven planners who model population and traffic trends excel."},
+    "mechanic":{risk:24,color:"#6dd6a0",label:"Lower Risk",skills:["Predictive Maintenance","Python","IoT Data","Diagnostics ML"],months:8,reason:"Physical repair needs human hands. Mechanics who use predictive analytics prevent failures before they happen."},
+    "insurance agent":{risk:74,color:"#f7c96e",label:"High Risk",skills:["Actuarial ML","Python","Risk Analytics","SQL"],months:5,reason:"Policy comparison and quoting are automating fast. Risk analysts who model claims with ML are safe."},
+    "copywriter":{risk:78,color:"#f7c96e",label:"High Risk",skills:["NLP","Python","Content Analytics","A/B Testing"],months:5,reason:"AI writes copy fast. Copywriters who test with data and optimize conversion rates are irreplaceable."},
+    "economist":{risk:32,color:"#6dd6a0",label:"Lower Risk",skills:["Econometrics","Python","R","Statistical Modeling"],months:6,reason:"Economic analysis requires deep domain knowledge. Data skills amplify rather than replace economists."},
+  };
+
+  const calculate=()=>{
+    if(!job.trim())return;
+    setCalculating(true);
+    setTimeout(()=>{
+      const key=job.toLowerCase().trim();
+      let match=null;
+      for(const k of Object.keys(jobData)){if(key.includes(k)||k.includes(key)){match=jobData[k];break;}}
+      if(!match){const risk=Math.floor(Math.random()*30)+40;match={risk,color:risk>60?"#f7c96e":"#a78bfa",label:risk>60?"Moderate-High Risk":"Moderate Risk",skills:["Python","SQL","Data Analysis","Machine Learning"],months:6,reason:"Most knowledge work roles are being transformed by AI. Data skills future-proof any career."};}
+      setResult(match);setCalculating(false);
+    },1800);
+  };
+
+  return(
+    <div style={{padding:"80px 20px",background:"#0b0a12"}}>
+      <div style={{maxWidth:700,margin:"0 auto"}}>
+        <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// career risk scanner</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Will AI replace your job?</h2>
+        <p style={{color:"#7b78a0",fontSize:15,marginBottom:40,maxWidth:520}}>Enter your current job title and find out your AI replacement risk — and exactly what data skills would make you safe.</p>
+        <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:16,padding:"32px"}}>
+          {!result&&!calculating&&(
+            <div>
+              <div style={{display:"flex",gap:10,marginBottom:12,flexWrap:"wrap"}}>
+                <input value={job} onChange={e=>setJob(e.target.value)} onKeyDown={e=>e.key==="Enter"&&calculate()} placeholder="e.g. Accountant, Marketer, Teacher..." style={{flex:1,minWidth:200,background:"#0b0a12",border:"1px solid #2a2845",borderRadius:8,padding:"12px 16px",color:"#e8e4ff",fontSize:14,outline:"none"}}/>
+                <button onClick={calculate} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"12px 24px",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,whiteSpace:"nowrap"}}>Scan My Job →</button>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                {["Accountant","Marketer","Teacher","Lawyer","Designer","Researcher"].map(j=>(
+                  <button key={j} onClick={()=>setJob(j)} style={{background:"#17162a",border:"1px solid #2a2845",color:"#7b78a0",padding:"5px 12px",borderRadius:100,cursor:"pointer",fontSize:12}}>{j}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          {calculating&&(
+            <div style={{textAlign:"center",padding:"40px 0"}}>
+              <style>{`@keyframes spin2{to{transform:rotate(360deg);}}`}</style>
+              <div style={{width:32,height:32,border:"2px solid #1e1c35",borderTop:"2px solid #8b7cf6",borderRadius:"50%",animation:"spin2 0.8s linear infinite",margin:"0 auto 16px"}}/>
+              <div style={{fontSize:13,color:"#7b78a0",fontFamily:"monospace"}}>Scanning job market data...</div>
+            </div>
+          )}
+          {result&&!calculating&&(
+            <div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:8}}>
+                <div><div style={{fontSize:13,color:"#7b78a0",marginBottom:4}}>Risk assessment for</div><div style={{fontSize:18,fontWeight:700,color:"#e8e4ff"}}>{job}</div></div>
+                <span style={{fontSize:11,fontFamily:"monospace",padding:"4px 12px",borderRadius:100,background:result.color+"18",color:result.color,border:`1px solid ${result.color}44`}}>{result.label}</span>
+              </div>
+              <div style={{marginBottom:20}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:12,color:"#7b78a0"}}>AI Replacement Risk</span><span style={{fontSize:22,fontWeight:800,color:result.color}}>{result.risk}%</span></div>
+                <div style={{height:8,background:"#1e1c35",borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${result.risk}%`,background:`linear-gradient(90deg, #6dd6a0, ${result.color})`,borderRadius:4,transition:"width 1s ease"}}/></div>
+              </div>
+              <div style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:10,padding:"14px 16px",marginBottom:20}}><div style={{fontSize:12,color:"#7b78a0",lineHeight:1.7}}>{result.reason}</div></div>
+              <div style={{marginBottom:20}}>
+                <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:12}}>SKILLS THAT PROTECT YOU</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>{result.skills.map(s=><span key={s} style={{fontSize:12,padding:"5px 12px",borderRadius:100,background:"#6dd6a011",color:"#6dd6a0",border:"1px solid #6dd6a033"}}>{s}</span>)}</div>
+              </div>
+              <div style={{background:"linear-gradient(135deg, #8b7cf611, #f472b611)",border:"1px solid #8b7cf633",borderRadius:10,padding:"16px",marginBottom:16}}>
+                <div style={{fontSize:13,color:"#e8e4ff",marginBottom:4}}>🎯 DS Academy can make you safe in <strong style={{color:"#8b7cf6"}}>{result.months} months</strong></div>
+                <div style={{fontSize:12,color:"#7b78a0"}}>The curriculum covers all the skills above — starting from Python with zero experience required.</div>
+              </div>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                <a href="#apply" style={{flex:1,minWidth:140,background:"#8b7cf6",color:"#fff",border:"none",padding:"11px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,textDecoration:"none",textAlign:"center"}}>Apply for Access →</a>
+                <button onClick={()=>{setResult(null);setJob("");}} style={{padding:"11px 16px",background:"none",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:8,cursor:"pointer",fontSize:13}}>Try another job</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 import React, { useState, useEffect } from "react";
 import { auth, db } from "./firebase";
 import {
@@ -378,6 +502,9 @@ function LoginPage(){
           </div>
         </div>
       </div>
+
+      {/* AI JOB CALCULATOR */}
+      <AIJobCalculator/>
 
       {/* ABOUT */}
       <div style={{padding:"60px 20px",background:"#0d0c18"}}>
@@ -1235,8 +1362,17 @@ export default function App(){
   },[]);
 
   if(loading)return(
-    <div style={{minHeight:"100vh",background:"#13111a",display:"flex",alignItems:"center",justifyContent:"center",color:"#e2dff0",fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
-      <div style={{textAlign:"center"}}><div style={{fontSize:32,marginBottom:12}}>🎓</div><div style={{fontSize:14,color:"#8b87a8"}}>Loading...</div></div>
+    <div style={{minHeight:"100vh",background:"#0b0a12",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",marginBottom:20}}>
+          <div style={{width:8,height:8,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 10px #8b7cf6"}}/>
+          <div style={{fontWeight:800,fontSize:18,color:"#e8e4ff"}}>DS Academy</div>
+        </div>
+        <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
+        <div style={{width:28,height:28,border:"2px solid #1e1c35",borderTop:"2px solid #8b7cf6",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto"}}/>
+      </div>
     </div>
   );
 
