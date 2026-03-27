@@ -154,6 +154,93 @@ function Quiz({questions}) {
   );
 }
 
+// ── CODE EXERCISE
+function CodeExercise({title, description, starterCode, hint, validate}) {
+  const [code, setCode] = useState(starterCode||"");
+  const [output, setOutput] = useState(null);
+  const [status, setStatus] = useState(null); // null | "running" | "pass" | "fail" | "error"
+  const [showHint, setShowHint] = useState(false);
+  const pyodideRef = React.useRef(null);
+  const loadingRef = React.useRef(false);
+
+  const loadPyodide = async () => {
+    if(pyodideRef.current) return pyodideRef.current;
+    if(loadingRef.current) return null;
+    loadingRef.current = true;
+    if(!window._pyodideInstance){
+      const py = await window.loadPyodide({indexURL:"https://cdn.jsdelivr.net/pyodide/v0.25.0/full/"});
+      await py.loadPackage(["numpy", "pandas", "scikit-learn"]);
+      window._pyodideInstance = py;
+    }
+    pyodideRef.current = window._pyodideInstance;
+    return pyodideRef.current;
+  };
+
+  const runCode = async () => {
+    setStatus("running");
+    setOutput(null);
+    try {
+      const py = await loadPyodide();
+      if(!py){ setStatus("error"); setOutput("Pyodide still loading, try again in a second."); return; }
+      let captured = "";
+      py.setStdout({batched: s => { captured += s + "\n"; }});
+      py.setStderr({batched: s => { captured += "ERROR: " + s + "\n"; }});
+      await py.runPythonAsync(code);
+      setOutput(captured.trim() || "(no output)");
+      if(validate){
+        const passed = validate(captured.trim(), py);
+        setStatus(passed ? "pass" : "fail");
+      } else {
+        setStatus("pass");
+      }
+    } catch(e) {
+      setOutput(e.message);
+      setStatus("error");
+    }
+  };
+
+  const statusColors = {pass:"#6dd6a0", fail:"#f7c96e", error:"#f28b82", running:"#7eb8f7"};
+  const statusMsg = {pass:"✓ Correct! Well done.", fail:"Not quite — check your output and try again.", error:"❌ Error in your code — check the output below.", running:"⏳ Running..."};
+
+  return (
+    <div style={{margin:"24px 0",border:"1px solid #2a3548",borderRadius:12,overflow:"hidden"}}>
+      {/* Header */}
+      <div style={{background:"#0d1520",padding:"12px 18px",borderBottom:"1px solid #1e2a3a",display:"flex",alignItems:"center",gap:8}}>
+        <div style={{width:8,height:8,background:"#6dd6a0",borderRadius:"50%",boxShadow:"0 0 6px #6dd6a0"}}/>
+        <span style={{color:"#4a5568",fontSize:"11px",fontWeight:"700",letterSpacing:"0.12em"}}>CODING EXERCISE</span>
+        {hint && <button onClick={()=>setShowHint(h=>!h)} style={{marginLeft:"auto",background:"none",border:"1px solid #2a3548",color:"#8b87a8",fontSize:10,padding:"2px 10px",borderRadius:4,cursor:"pointer"}}>{showHint?"hide hint":"💡 hint"}</button>}
+      </div>
+      <div style={{padding:"16px 18px",background:"#080e1a"}}>
+        <div style={{color:"#c8c3e0",fontSize:13,marginBottom:10,lineHeight:1.7,fontWeight:500}}>{title}</div>
+        <div style={{color:"#8b87a8",fontSize:12,marginBottom:14,lineHeight:1.7}}>{description}</div>
+        {showHint && hint && <div style={{background:"#0d1a0d",border:"1px solid #1a3a1a",borderRadius:8,padding:"10px 14px",marginBottom:12,color:"#6dd6a0",fontSize:12,lineHeight:1.7}}>💡 {hint}</div>}
+        {/* Editor */}
+        <textarea
+          value={code}
+          onChange={e=>setCode(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Tab"){e.preventDefault();const s=e.target.selectionStart;const end=e.target.selectionEnd;setCode(c=>c.substring(0,s)+"    "+c.substring(end));setTimeout(()=>{e.target.selectionStart=e.target.selectionEnd=s+4;},0);}}}
+          style={{width:"100%",boxSizing:"border-box",minHeight:120,background:"#060d18",border:"1px solid #1e2a3a",borderRadius:8,padding:"12px 14px",color:"#e2e8f0",fontFamily:"'Fira Code',monospace",fontSize:12,lineHeight:1.8,resize:"vertical",outline:"none",whiteSpace:"pre"}}
+          spellCheck={false}
+        />
+        <div style={{display:"flex",gap:10,marginTop:10,alignItems:"center"}}>
+          <button onClick={runCode} disabled={status==="running"} style={{background:"#6dd6a0",color:"#000",border:"none",padding:"8px 20px",borderRadius:7,cursor:status==="running"?"not-allowed":"pointer",fontWeight:700,fontSize:12,opacity:status==="running"?0.6:1}}>
+            {status==="running"?"Running...":"▶ Run Code"}
+          </button>
+          <button onClick={()=>{setCode(starterCode||"");setOutput(null);setStatus(null);}} style={{background:"none",border:"1px solid #2a3548",color:"#8b87a8",padding:"8px 14px",borderRadius:7,cursor:"pointer",fontSize:12}}>Reset</button>
+          {status && status!=="running" && <span style={{fontSize:12,color:statusColors[status],fontWeight:600}}>{statusMsg[status]}</span>}
+        </div>
+        {/* Output */}
+        {output!==null && (
+          <div style={{marginTop:12,background:"#040a12",border:`1px solid ${status==="pass"?"#6dd6a033":status==="error"?"#f28b8233":"#1e2a3a"}`,borderRadius:8,padding:"12px 14px"}}>
+            <div style={{fontSize:10,color:"#4a5568",marginBottom:6,letterSpacing:"0.1em",fontFamily:"monospace"}}>OUTPUT</div>
+            <pre style={{margin:0,color:status==="error"?"#f28b82":"#a8d8a8",fontFamily:"'Fira Code',monospace",fontSize:12,lineHeight:1.8,whiteSpace:"pre-wrap"}}>{output}</pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ══ LESSONS ══════════════════════════════════════════════════════════════════
 const LESSONS = [
   {id:"numpy",phase:"Python for DS",emoji:"🔢",color:"#38bdf8",title:"NumPy Arrays",subtitle:"Why arrays beat loops — the foundation of all data science",
@@ -279,17 +366,17 @@ df = pd.read_csv('telco_churn.csv')
 charges = df['MonthlyCharges'].values  # .values converts to numpy
 
 # Analyze
-print(f"Average charge: $" + f"{np.mean(charges):.2f}")
-print(f"Std deviation:  $" + f"{np.std(charges):.2f}")
-print(f"Min: $" + f"{np.min(charges):.2f}, Max: $" + f"{np.max(charges):.2f}")
+print("Average charge: $" + f"" + str(round(np.mean(charges),2)))
+print("Std deviation:  $" + f"" + str(round(np.std(charges),2)))
+print("Min: $" + f"" + str(round(np.min(charges),2)) + ", Max: $" + f"" + str(round(np.max(charges),2)))
 
 # Find high-value customers
 high_value = charges[charges > np.percentile(charges, 75)]
-print(f"High-value customers: {len(high_value)}")
+print("High-value customers: " + str(len(high_value)))
 
 # Normalize for ML (scale to 0-1)
 normalized = (charges - charges.min()) / (charges.max() - charges.min())
-print(f"Normalized range: {normalized.min():.2f} to {normalized.max():.2f}")`}</Block>
+print("Normalized range: " + str(round(normalized.min(),2)) + " to " + str(round(normalized.max(),2)))`}</Block>
       <Callout icon="★" color="#f7c96e" title="Gold rule">In practice you rarely write NumPy directly — Pandas handles most data operations. But NumPy thinking (vectorization, shapes, broadcasting) is the foundation that makes everything else click.</Callout>
 
       <LH>Common Mistakes</LH>
@@ -320,6 +407,21 @@ a = a.reshape(-1, 1)  # -1 means "figure it out"`}</Block>
         {q:"What does np.argmax(np.array([5,2,9,1,7])) return?",options:["9","2","4","0"],answer:"2",explanation:"argmax returns the INDEX of the maximum value, not the value itself. The maximum is 9, which is at index 2."},
         {q:"You need to scale an array to range 0-1. Which formula?",options:["a / np.max(a)","(a - a.mean()) / a.std()","(a - a.min()) / (a.max() - a.min())","a / np.sum(a)"],answer:"(a - a.min()) / (a.max() - a.min())",explanation:"This is min-max normalization. Subtract minimum (so smallest becomes 0), divide by range (so largest becomes 1)."},
       ]}/>
+      <CodeExercise
+        title="Filter high salaries and compute their average"
+        description="You have a salaries array. Your tasks: (1) filter salaries above 50000 using boolean masking, (2) print the average of those high salaries rounded to 2 decimal places."
+        starterCode={`import numpy as np
+
+salaries = np.array([35000, 72000, 48000, 95000, 61000, 42000, 88000])
+
+# Step 1: create 'high' — salaries above 50000
+high = ___
+
+# Step 2: print the average of 'high', rounded to 2 decimal places
+print(___)`}
+        hint="Boolean masking: salaries[salaries > 50000]. Average: np.mean(high). Wrap in round(..., 2)."
+        validate={(output) => output.trim() === "79000.0"}
+      />
     </div>
   )},
   {id:"pandas-basics",phase:"Python for DS",emoji:"🐼",color:"#a78bfa",title:"Pandas: Loading & Exploring Data",subtitle:"The tool you will use every single day as a data scientist",
@@ -436,10 +538,10 @@ df['Contract'].value_counts(normalize=True)  # percentages`}</Block>
       <LH>Real World — Telco Churn First Look</LH>
       <Block label="Full first-look pipeline">{`df = pd.read_csv('telco_churn.csv')
 
-print(f"Dataset: {df.shape[0]} customers, {df.shape[1]} features")
-print(f"Churn rate: {(df['Churn']=='Yes').mean():.1%}")
-print(f"Avg monthly charge: $" + f"{df['MonthlyCharges'].mean():.2f}")
-print(f"Missing values:\n{df.isnull().sum()[df.isnull().sum()>0]}")
+print("Dataset: " + str(df.shape[0]) + " customers, " + str(df.shape[1]) + " features")
+print("Churn rate: " + str(round((df['Churn']=='Yes').mean()*100,1)) + "%")
+print("Avg monthly charge: $" + f"" + str(round(df['MonthlyCharges'].mean(),2)))
+print("Missing values:\n" + str(df.isnull().sum()[df.isnull().sum()>0]))
 
 # Who churns more — fiber or DSL?
 df.groupby('InternetService')['Churn'].apply(
@@ -453,6 +555,32 @@ df.groupby('InternetService')['Churn'].apply(
         {q:"df['Churn'].value_counts(normalize=True) returns:",options:["Count of each unique value","Percentage of each unique value","Sorted values","Normalized numeric column"],answer:"Percentage of each unique value",explanation:"normalize=True divides each count by total, giving proportions (0 to 1). Multiply by 100 for percentages."},
         {q:"You want rows where Contract is 'Month-to-month' OR 'One year'. Best approach?",options:["Two separate filters merged","df[df['Contract'].isin(['Month-to-month','One year'])]","df.query('Contract == Month-to-month or One year')","df[df['Contract'] == 'Month-to-month' or 'One year']"],answer:"df[df['Contract'].isin(['Month-to-month','One year'])]",explanation:"isin() is the cleanest way to check membership in a list. The last option would raise a TypeError."},
       ]}/>
+      <CodeExercise
+        title="Explore a small customer DataFrame"
+        description="A small customer dataset is provided. Fill in the blanks to: (1) print the number of rows, (2) print the average age, (3) print how many customers are from 'Beirut'."
+        starterCode={`import pandas as pd
+
+data = {
+    'name': ['Ali', 'Sara', 'Omar', 'Lina', 'Karim'],
+    'age':  [25, 32, 28, 35, 22],
+    'city': ['Beirut', 'Tripoli', 'Beirut', 'Sidon', 'Beirut']
+}
+df = pd.DataFrame(data)
+
+# 1. Print number of rows
+print(___)
+
+# 2. Print average age
+print(___)
+
+# 3. Print count of customers from Beirut
+print(___)`}
+        hint="len(df) for rows. df['age'].mean() for average. (df['city'] == 'Beirut').sum() for city count."
+        validate={(output) => {
+          const lines = output.trim().split("\n");
+          return lines[0].trim()==="5" && lines[1].trim()==="28.4" && lines[2].trim()==="3";
+        }}
+      />
     </div>
   )},
   {id:"pandas-advanced",phase:"Python for DS",emoji:"🔗",color:"#34d399",title:"Pandas: Cleaning, Merging & Transforming",subtitle:"Real data is messy — here is how to fix it",
@@ -591,8 +719,8 @@ df_clean = (
     .reset_index(drop=True)
 )
 
-print(f"Clean dataset: {df_clean.shape}")
-print(f"Churn rate: {df_clean['Churn'].mean():.1%}")`}</Block>
+print("Clean dataset: " + str(df_clean.shape))
+print("Churn rate: " + str(round(df_clean['Churn'].mean()*100,1)) + "%")`}</Block>
 
       <Quiz questions={[
         {q:"pd.to_numeric(df['col'], errors='coerce') — what does errors='coerce' do?",options:["Raises error on bad values","Skips bad values","Converts bad values to NaN","Converts to string"],answer:"Converts bad values to NaN",explanation:"errors='coerce' silently converts anything that can't be turned into a number into NaN. Useful when a numeric column has some text values mixed in."},
@@ -601,6 +729,30 @@ print(f"Churn rate: {df_clean['Churn'].mean():.1%}")`}</Block>
         {q:"df['Contract'].str.contains('month', case=False) — what does this return?",options:["The matching strings","A True/False Series","Count of matches","Error"],answer:"A True/False Series",explanation:"str.contains() returns a boolean Series — True where the pattern is found. case=False makes it case-insensitive."},
         {q:"When should you use dropna() vs fillna()?",options:["Always use dropna","Always use fillna","Drop when you can afford to lose rows; fill when missing has meaning or you need all rows","Drop numeric nulls; fill text nulls"],answer:"Drop when you can afford to lose rows; fill when missing has meaning or you need all rows",explanation:"dropna loses data. fillna can introduce bias if not done carefully. For ML: never fill before train/test split — fit imputers on train, transform both."},
       ]}/>
+      <CodeExercise
+        title="Clean a messy DataFrame"
+        description="A DataFrame has missing values and duplicates. Fill in the blanks to: (1) fill missing age with the column mean, (2) drop duplicate rows, (3) print the final shape."
+        starterCode={`import pandas as pd
+import numpy as np
+
+data = {
+    'name': ['Ali', 'Sara', 'Omar', 'Ali', 'Lina'],
+    'age':  [25, np.nan, 28, 25, np.nan],
+    'city': ['Beirut', 'Tripoli', 'Beirut', 'Beirut', 'Sidon']
+}
+df = pd.DataFrame(data)
+
+# 1. Fill missing age with the column mean
+df['age'] = df['age'].fillna(___)
+
+# 2. Drop duplicate rows
+df = df.___(keep='first')
+
+# 3. Print the final shape
+print(df.___)` }
+        hint="df['age'].mean() for the fill value. drop_duplicates() removes duplicates. df.shape gives (rows, cols)."
+        validate={(output) => output.includes("(4,") || output.includes("4,")}
+      />
     </div>
   )},
   {id:"eda",phase:"Python for DS",emoji:"🔍",color:"#f472b6",title:"Exploratory Data Analysis (EDA)",subtitle:"The skill that separates good data scientists from great ones",
@@ -624,7 +776,7 @@ import numpy as np
 df = pd.read_csv('telco_churn.csv')
 
 # Shape
-print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
+print("Rows: " + str(df.shape[0]) + ", Columns: " + str(df.shape[1]))
 
 # Types and missing
 print(df.info())
@@ -662,9 +814,9 @@ plt.title('Monthly Charges Distribution')
 plt.show()
 
 # Key stats
-print(f"Mean:   $" + f"{df['MonthlyCharges'].mean():.2f}")
-print(f"Median: $" + f"{df['MonthlyCharges'].median():.2f}")
-print(f"Std:    $" + f"{df['MonthlyCharges'].std():.2f}")
+print("Mean:   $" + f"" + str(round(df['MonthlyCharges'].mean(),2)))
+print("Median: $" + f"" + str(round(df['MonthlyCharges'].median(),2)))
+print("Std:    $" + f"" + str(round(df['MonthlyCharges'].std(),2)))
 
 # If mean >> median → right skew → outliers pulling up`}</Block>
       <Block label="Categorical columns">{`# Contract type counts
@@ -675,7 +827,7 @@ plt.show()
 # All categorical columns at once
 cat_cols = df.select_dtypes(include='object').columns
 for col in cat_cols:
-    print(f"\n{col}:")
+    print("\n" + str(col) + ":")
     print(df[col].value_counts())`}</Block>
 
       <LH>5. Bivariate Analysis — how features relate to target</LH>
@@ -718,7 +870,7 @@ plt.show()`}</Block>
     lower = Q1 - 1.5 * IQR
     upper = Q3 + 1.5 * IQR
     outliers = df[(df[col] < lower) | (df[col] > upper)]
-    print(f"{col}: {len(outliers)} outliers ({len(outliers)/len(df):.1%})")
+    print(str(col) + ": " + str(len(outliers)) + " outliers (" + str(round(len(outliers)/len(df)*100,1)) + "%" + ")")
     return outliers
 
 for col in ['MonthlyCharges', 'TotalCharges', 'tenure']:
@@ -730,9 +882,9 @@ df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
 df['ChurnBinary'] = (df['Churn'] == 'Yes').astype(int)
 
 print("=== DATASET OVERVIEW ===")
-print(f"Shape: {df.shape}")
-print(f"Churn rate: {df['ChurnBinary'].mean():.1%}")
-print(f"Missing: {df.isnull().sum().sum()} total")
+print("Shape: " + str(df.shape))
+print("Churn rate: " + str(round(df['ChurnBinary'].mean()*100,1)) + "%")
+print("Missing: " + str(df.isnull().sum().sum()) + " total")
 
 print("\n=== TOP CHURN PREDICTORS ===")
 # Contract type
@@ -744,8 +896,8 @@ high_risk = df[
     (df['tenure'] < 12) &
     (df['MonthlyCharges'] > 65)
 ]
-print(f"High-risk customers: {len(high_risk)}")
-print(f"Their churn rate: {high_risk['ChurnBinary'].mean():.1%}")`}</Block>
+print("High-risk customers: " + str(len(high_risk)))
+print("Their churn rate: " + str(round(high_risk['ChurnBinary'].mean()*100,1)) + "%")`}</Block>
       <Callout icon="★" color="#f7c96e" title="Gold habit">Before every model, write 5 specific questions about the data. Answer each with code. This forces you to understand the data instead of blindly running sklearn.</Callout>
 
       <Quiz questions={[
@@ -755,6 +907,30 @@ print(f"Their churn rate: {high_risk['ChurnBinary'].mean():.1%}")`}</Block>
         {q:"Correlation of -0.4 between 'tenure' and 'Churn'. What does this mean?",options:["No relationship","Longer tenure → less likely to churn","Longer tenure → more likely to churn","The relationship is too weak to matter"],answer:"Longer tenure → less likely to churn",explanation:"Negative correlation means as one goes up, the other goes down. Customers who stay longer are less likely to churn — they're loyal."},
         {q:"What does bivariate analysis mean?",options:["Analyzing two datasets","Analyzing the relationship between two variables","Using two algorithms","Splitting data into two parts"],answer:"Analyzing the relationship between two variables",explanation:"Bivariate = two variables. You're looking at how one feature relates to another — especially how each feature relates to your target variable."},
       ]}/>
+      <CodeExercise
+        title="Run basic EDA on a dataset"
+        description="Fill in the blanks to: (1) print the shape, (2) compute churn rate as a percentage rounded to 1 decimal, (3) print the most common contract type."
+        starterCode={`import pandas as pd
+
+data = {
+    'contract': ['Month-to-month','One year','Month-to-month','Two year','Month-to-month','One year'],
+    'monthly_charges': [70, 50, 90, 45, 65, 55],
+    'churn': ['Yes','No','Yes','No','Yes','No']
+}
+df = pd.DataFrame(data)
+
+# 1. Print shape
+print(___)
+
+# 2. Churn rate % rounded to 1 decimal
+churn_rate = (df['churn'] == ___).mean() * 100
+print(round(churn_rate, ___))
+
+# 3. Most common contract type
+print(df[___].value_counts().idxmax())` }
+        hint="df.shape. 'Yes' for churn condition. round(x, 1). df['contract'].value_counts().idxmax()."
+        validate={(output) => output.includes("(6,") && output.includes("50.0") && output.includes("Month-to-month")}
+      />
     </div>
   )},
   {id:"visualization",phase:"Python for DS",emoji:"📊",color:"#fb923c",title:"Data Visualization",subtitle:"Turn numbers into insights that anyone can understand",
@@ -900,6 +1076,26 @@ plt.show()`}</Block>
         {q:"What does kde=True do in sns.histplot()?",options:["Adds a kernel density estimate curve","Makes bars wider","Shows outliers","Normalizes to percentages"],answer:"Adds a kernel density estimate curve",explanation:"KDE (Kernel Density Estimate) is a smooth curve showing the probability distribution of the data. It helps visualize the shape of the distribution beyond just bar heights."},
         {q:"You make a chart but can't write a one-sentence takeaway. What should you do?",options:["Add more data to the chart","Rethink what question the chart is answering","Add a legend","Change the chart type"],answer:"Rethink what question the chart is answering",explanation:"If you can't state a clear takeaway, the chart isn't answering a specific question. Every visualization should start with a question, not a plot command."},
       ]}/>
+      <CodeExercise
+        title="Compute chart-ready summary stats"
+        description="Before plotting, always summarize first. Fill in the blanks: compute mean charge per contract type, then print the top contract."
+        starterCode={`import pandas as pd
+
+data = {
+    'contract': ['Month-to-month','One year','Month-to-month','Two year','One year','Two year'],
+    'monthly_charges': [75, 55, 85, 40, 60, 45]
+}
+df = pd.DataFrame(data)
+
+# Mean charge per contract type
+result = df.groupby(___)[___].mean().round(1)
+print(result)
+
+# Contract with highest mean
+print(result.___)` }
+        hint="groupby('contract')['monthly_charges'].mean(). Then .idxmax() for the highest."
+        validate={(output) => output.includes("Month-to-month") && output.includes("80.0")}
+      />
     </div>
   )},
     {id:"sql-basics",phase:"SQL",emoji:"🗄️",color:"#fb923c",title:"SQL Foundations",subtitle:"SELECT, WHERE, GROUP BY — the language of data",
@@ -1059,6 +1255,26 @@ LIMIT 5;`}</Block>
         {q:"You want all customers whose email ends with '@gmail.com'. Which WHERE clause?",options:["WHERE email = '@gmail.com'","WHERE email LIKE '%@gmail.com'","WHERE email CONTAINS '@gmail.com'","WHERE email IN ('@gmail.com')"],answer:"WHERE email LIKE '%@gmail.com'",explanation:"% is a wildcard matching any number of characters. '%@gmail.com' means anything followed by @gmail.com."},
         {q:"To get the 3 most expensive products per category, you need:",options:["WHERE rank <= 3","ORDER BY price DESC LIMIT 3","GROUP BY category HAVING rank <= 3","Window function with PARTITION BY category ORDER BY price DESC, then filter WHERE rn <= 3"],answer:"Window function with PARTITION BY category ORDER BY price DESC, then filter WHERE rn <= 3",explanation:"LIMIT applies to the whole result, not per group. You need ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) to rank within each category."},
       ]}/>
+      <CodeExercise
+        title="Summarize sales data with GROUP BY logic"
+        description="Use pandas to replicate SQL GROUP BY. Fill in the blanks to: (1) compute total revenue per city sorted descending, (2) print the city with the highest revenue."
+        starterCode={`import pandas as pd
+
+data = {
+    'city':    ['Beirut','Tripoli','Beirut','Sidon','Tripoli','Beirut'],
+    'revenue': [500, 300, 700, 200, 450, 600]
+}
+df = pd.DataFrame(data)
+
+# 1. Group by city, sum revenue, sort descending
+result = df.groupby(___)[___].sum().sort_values(ascending=___)
+print(result.to_string())
+
+# 2. Print the city with the highest revenue
+print(result.___())`}
+        hint="groupby('city')['revenue'].sum().sort_values(ascending=False). Then .idxmax() gives the top city."
+        validate={(output) => output.includes("Beirut") && output.includes("1800")}
+      />
     </div>
   )},
   {id:"sql-joins",phase:"SQL",emoji:"🔀",color:"#f472b6",title:"SQL JOINs & Subqueries",subtitle:"Connecting tables — tested in every DS interview",
@@ -1176,6 +1392,29 @@ LIMIT 1;`}</Block>
         {q:"customers INNER JOIN orders ON customer_id — Omar has no orders. Does Omar appear?",options:["Yes with NULL in order columns","No — INNER JOIN drops non-matching rows","Yes — INNER JOIN keeps all rows","Depends on the database"],answer:"No — INNER JOIN drops non-matching rows",explanation:"INNER JOIN only returns rows that have a match in BOTH tables. Omar with no orders is excluded."},
         {q:"You're asked to find the top 3 customers by total spending in each city. What do you need?",options:["GROUP BY city ORDER BY SUM(amount) DESC LIMIT 3","PARTITION BY city ORDER BY SUM(amount) DESC, then WHERE rn <= 3","WHERE city IN (SELECT TOP 3...)","Two separate queries combined with UNION"],answer:"PARTITION BY city ORDER BY SUM(amount) DESC, then WHERE rn <= 3",explanation:"LIMIT 3 is global. For top N per group, use ROW_NUMBER() OVER (PARTITION BY city ORDER BY total_spending DESC) in a CTE, then filter WHERE rn <= 3."},
       ]}/>
+      <CodeExercise
+        title="Simulate a JOIN with pandas merge"
+        description="Fill in the blanks to merge two DataFrames (INNER JOIN) and print total spending per customer name."
+        starterCode={`import pandas as pd
+
+customers = pd.DataFrame({
+    'customer_id': [1, 2, 3],
+    'name': ['Ahmed', 'Sara', 'Omar']
+})
+orders = pd.DataFrame({
+    'customer_id': [1, 1, 2],
+    'amount': [250, 180, 320]
+})
+
+# Merge on customer_id (INNER JOIN)
+merged = customers.___(orders, on=___, how=___)
+
+# Total amount per customer name
+result = merged.groupby(___)['amount'].sum()
+print(result.to_string())` }
+        hint="customers.merge(orders, on='customer_id', how='inner'). groupby('name')."
+        validate={(output) => output.includes("Ahmed") && output.includes("430")}
+      />
     </div>
   )},
   {id:"sql-window",phase:"SQL",emoji:"🪟",color:"#c084fc",title:"Window Functions",subtitle:"The SQL skill that makes you dangerous",
@@ -1280,6 +1519,27 @@ FROM customers;`}</Block>
         {q:"SUM(amount) OVER (ORDER BY date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) computes:",options:["Total sum of all rows","Running total from start to current row","Sum of last N rows","Sum partitioned by date"],answer:"Running total from start to current row",explanation:"UNBOUNDED PRECEDING means from the very beginning. This is a cumulative sum — each row shows the sum of all previous rows including itself."},
         {q:"You need the 2nd highest paid employee in each department. What's your approach?",options:["WHERE salary = 2nd_max subquery","RANK() OVER (PARTITION BY dept ORDER BY salary DESC) then WHERE rnk = 2","ORDER BY salary DESC LIMIT 2 per dept","GROUP BY dept HAVING salary = MAX-1"],answer:"RANK() OVER (PARTITION BY dept ORDER BY salary DESC) then WHERE rnk = 2",explanation:"Use RANK or DENSE_RANK (DENSE_RANK handles ties better) to rank within each department, wrap in a CTE, then filter WHERE rnk = 2."},
       ]}/>
+      <CodeExercise
+        title="Add running total and rank columns"
+        description="Fill in the blanks to add: (1) a running_total column using cumsum, (2) a rank column based on sales descending."
+        starterCode={`import pandas as pd
+
+data = {
+    'month': ['Jan','Feb','Mar','Apr','May'],
+    'sales': [100, 150, 120, 200, 180]
+}
+df = pd.DataFrame(data)
+
+# 1. Running total
+df['running_total'] = df[___].___
+
+# 2. Rank by sales descending (1 = highest)
+df['rank'] = df[___].rank(ascending=___, method='min').astype(int)
+
+print(df.to_string(index=False))` }
+        hint="df['sales'].cumsum(). df['sales'].rank(ascending=False, method='min')."
+        validate={(output) => output.includes("750") && output.includes("1") && output.includes("Apr")}
+      />
     </div>
   )},
   {id:"probability",phase:"Statistics",emoji:"🎲",color:"#818cf8",title:"Probability & Bayes",subtitle:"The foundation of every ML prediction",
@@ -1312,14 +1572,14 @@ df = pd.read_csv('telco_churn.csv')
 # P(churn | month-to-month)
 month_to_month = df[df['Contract'] == 'Month-to-month']
 p_churn_given_monthly = (month_to_month['Churn'] == 'Yes').mean()
-print(f"P(churn | month-to-month) = {p_churn_given_monthly:.1%}")
+print("P(churn | month-to-month) = " + str(round(p_churn_given_monthly*100,1)) + "%")
 # ≈ 42.7% — much higher than overall 26.5%
 
 # Compare:
 for contract in df['Contract'].unique():
     subset = df[df['Contract'] == contract]
     rate = (subset['Churn'] == 'Yes').mean()
-    print(f"P(churn | {contract}) = {rate:.1%}")`}</Block>
+    print("P(churn | " + contract + ") = " + str(round(rate*100,1)) + "%")`}</Block>
 
       <LH>3. Bayes' Theorem</LH>
       <LP>Bayes' theorem is how you update your belief when you get new evidence. It's the foundation of spam filters, medical tests, and Naive Bayes classifiers.</LP>
@@ -1341,7 +1601,7 @@ p_free = p_free_given_spam * p_spam + p_free_given_not_spam * p_not_spam
 
 # P(spam | "FREE")
 p_spam_given_free = (p_free_given_spam * p_spam) / p_free
-print(f"P(spam | email contains FREE) = {p_spam_given_free:.1%}")
+print("P(spam | email contains FREE) = " + str(round(p_spam_given_free*100,1)) + "%")
 # ≈ 75% — seeing "FREE" strongly suggests spam`}</Block>
 
       <LH>4. Independence vs Dependence</LH>
@@ -1368,7 +1628,7 @@ p_heads_twice = 0.5 * 0.5  # = 0.25 ✓
 # 25% chance customer churns in 3 months paying $65/mo = $195
 
 e_ltv = (0.40 * 780) + (0.35 * 390) + (0.25 * 195)
-print(f"Expected LTV: $" + f"{e_ltv:.2f}")
+print("Expected LTV: $" + f"" + str(round(e_ltv,2)))
 # = $312 + $136.5 + $48.75 = $497.25`}</Block>
 
       <Quiz questions={[
@@ -1378,6 +1638,21 @@ print(f"Expected LTV: $" + f"{e_ltv:.2f}")
         {q:"Bayes theorem updates what?",options:["The algorithm weights","Your prior belief based on new evidence","The training data","The model architecture"],answer:"Your prior belief based on new evidence",explanation:"Bayes theorem is about updating beliefs. You start with a prior probability, observe evidence, and calculate the posterior probability — your updated belief."},
         {q:"E[revenue] = (0.6 × $1000) + (0.4 × $200). What is the expected revenue?",options:["$600","$680","$1200","$800"],answer:"$680",explanation:"0.6 × 1000 = 600. 0.4 × 200 = 80. Total = $680. Expected value is the probability-weighted average outcome."},
       ]}/>
+      <CodeExercise
+        title="Compute expected value"
+        description="Fill in the blanks to compute the expected revenue from two scenarios."
+        starterCode={`# Scenario A: 60% chance of $1000
+# Scenario B: 40% chance of $200
+prob_a = ___
+rev_a  = ___
+prob_b = ___
+rev_b  = ___
+
+expected = (prob_a * rev_a) + (___)
+print("Expected revenue: $" + str(expected))` }
+        hint="prob_a=0.6, rev_a=1000, prob_b=0.4, rev_b=200. expected = prob_a*rev_a + prob_b*rev_b."
+        validate={(output) => output.includes("680")}
+      />
     </div>
   )},
   {id:"distributions",phase:"Statistics",emoji:"📈",color:"#fbbf24",title:"Statistical Distributions",subtitle:"Normal, Binomial, Poisson — and why they matter for ML",
@@ -1411,7 +1686,7 @@ plt.show()
 # Check if YOUR data is normal
 from scipy.stats import shapiro
 stat, p = shapiro(data[:50])  # shapiro works on small samples
-print(f"p-value: {p:.3f}")
+print("p-value: " + str(round(p,3)))
 # p > 0.05 → data is likely normal`}</Block>
       <Callout icon="💡" color="#818cf8" title="When data is normal">Linear regression, many statistical tests, and z-scores all assume normality. If your data is heavily skewed, you may need to log-transform it first.</Callout>
 
@@ -1431,7 +1706,7 @@ z_scores = (data - data.mean()) / data.std()
 # Practical use: identify outliers
 # |z| > 3 → likely outlier (beyond 3 standard deviations)
 outliers = data[np.abs(z_scores) > 3]
-print(f"Outliers: {len(outliers)}")`}</Block>
+print("Outliers: " + str(len(outliers)))`}</Block>
 
       <LH>3. Binomial Distribution</LH>
       <Block label="Counting successes">{`# Binomial(n, p): n trials, p probability of success each time
@@ -1444,15 +1719,15 @@ p = 0.265    # 26.5% churn rate
 
 # Expected number of churners
 expected = n * p
-print(f"Expected churners: {expected:.1f}")
+print("Expected churners: " + str(round(expected,1)))
 
 # Probability of exactly 30 churning
 p_exactly_30 = binom.pmf(30, n, p)
-print(f"P(exactly 30 churn) = {p_exactly_30:.3f}")
+print("P(exactly 30 churn) = " + str(round(p_exactly_30,3)))
 
 # Probability of 25 or fewer churning
 p_25_or_fewer = binom.cdf(25, n, p)
-print(f"P(25 or fewer churn) = {p_25_or_fewer:.3f}")`}</Block>
+print("P(25 or fewer churn) = " + str(round(p_25_or_fewer,3)))`}</Block>
 
       <LH>4. Central Limit Theorem (CLT)</LH>
       <LP>This is one of the most important theorems in statistics. It says: no matter what distribution your data follows, if you take enough samples and compute their means, those means follow a normal distribution.</LP>
@@ -1482,13 +1757,13 @@ plt.show()
 df = pd.read_csv('telco_churn.csv')
 df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
 
-print(f"Skewness of TotalCharges: {df['TotalCharges'].skew():.2f}")
+print("Skewness of TotalCharges: " + str(round(df['TotalCharges'].skew(),2)))
 # Positive skew = tail on right = few very high values
 
 # Fix with log transform
 import numpy as np
 df['TotalCharges_log'] = np.log1p(df['TotalCharges'])
-print(f"Skewness after log: {df['TotalCharges_log'].skew():.2f}")
+print("Skewness after log: " + str(round(df['TotalCharges_log'].skew(),2)))
 
 # Why fix skew?
 # Linear models perform better on normally distributed features
@@ -1501,6 +1776,23 @@ print(f"Skewness after log: {df['TotalCharges_log'].skew():.2f}")
         {q:"You have right-skewed data (salary). What transformation helps?",options:["Squaring the values","Subtracting the mean","Log transformation","Adding the median"],answer:"Log transformation",explanation:"Log transformation compresses the long right tail, making skewed data more symmetric. np.log1p() is used (log(1+x)) to handle zero values."},
         {q:"Binomial(100, 0.1) models what scenario?",options:["100 trials, each with 10% success probability","10 trials with 100% success","Success after 100 failures","100% probability of 10 successes"],answer:"100 trials, each with 10% success probability",explanation:"Binomial(n, p) = n independent trials, each with probability p of success. Here: 100 trials (customers), 10% chance each one churns."},
       ]}/>
+      <CodeExercise
+        title="Sample from a normal distribution"
+        description="Fill in the blanks to generate 1000 samples with mean=50, std=10, then print the sample mean and std."
+        starterCode={`import numpy as np
+np.random.seed(42)
+
+# Generate 1000 samples — mean=50, std=10
+samples = np.random.normal(loc=___, scale=___, size=___)
+
+# Print sample mean (rounded to 1 decimal)
+print(round(np.___(samples), 1))
+
+# Print sample std (rounded to 1 decimal)
+print(round(np.___(samples), 1))` }
+        hint="np.random.normal(loc=50, scale=10, size=1000). np.mean() and np.std()."
+        validate={(output) => { const lines=output.trim().split("\n"); const m=parseFloat(lines[0]); const s=parseFloat(lines[1]); return m>48&&m<52&&s>9&&s<11; }}
+      />
     </div>
   )},
   {id:"correlation",phase:"Statistics",emoji:"🔗",color:"#2dd4bf",title:"Correlation & Causation",subtitle:"The mistake that gets candidates eliminated in interviews",
@@ -1537,15 +1829,15 @@ plt.show()`}</Block>
 
 # Pearson — linear relationship between two continuous variables
 r, p = stats.pearsonr(df['tenure'], df['MonthlyCharges'])
-print(f"Pearson r = {r:.3f}, p = {p:.4f}")
+print("Pearson r = " + str(round(r,3)) + ", p = " + str(round(p,4)))
 
 # Spearman — rank-based, handles non-linear relationships and outliers
 rho, p = stats.spearmanr(df['tenure'], df['MonthlyCharges'])
-print(f"Spearman rho = {rho:.3f}, p = {p:.4f}")
+print("Spearman rho = " + str(round(rho,3)) + ", p = " + str(round(p,4)))
 
 # Point-biserial — continuous vs binary
 r, p = stats.pointbiserialr(df['ChurnBinary'], df['MonthlyCharges'])
-print(f"Point-biserial r = {r:.3f}, p = {p:.4f}")
+print("Point-biserial r = " + str(round(r,3)) + ", p = " + str(round(p,4)))
 
 # Use Spearman when: data is skewed, has outliers, or relationship is non-linear`}</Block>
 
@@ -1585,7 +1877,7 @@ low_charge = df[df['MonthlyCharges'] <= 70]
 
 for name, subset in [('High charge', high_charge), ('Low charge', low_charge)]:
     churn = subset.groupby('InternetService')['ChurnBinary'].mean()
-    print(f"\n{name}:\n{churn}")`}</Block>
+    print("\n" + str(name) + ":\n" + str(churn))`}</Block>
 
       <LH>5. When Correlation IS Useful</LH>
       <Block label="Feature selection with correlation">{`# In ML, correlation helps select features
@@ -1612,6 +1904,28 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
         {q:"Feature A has r=0.75 with the target AND r=0.90 with feature B. What's the concern?",options:["A is too important","B should be removed","Multicollinearity — A and B carry similar information","No concern"],answer:"Multicollinearity — A and B carry similar information",explanation:"High correlation between features (multicollinearity) means they carry redundant information. This can inflate feature importance and make coefficients unstable in linear models."},
         {q:"You find that customers with fiber internet churn more. You want to claim 'fiber internet CAUSES churn'. What do you need?",options:["A correlation above 0.7","A p-value below 0.05","A controlled experiment (A/B test) or controlling for all confounders","More data"],answer:"A controlled experiment (A/B test) or controlling for all confounders",explanation:"Correlation doesn't prove causation. To claim cause, you need either a randomized controlled experiment (A/B test) or careful statistical control for all potential confounders."},
       ]}/>
+      <CodeExercise
+        title="Find the most correlated feature"
+        description="Fill in the blanks to compute a correlation matrix and find which feature correlates most with churn_score."
+        starterCode={`import pandas as pd
+
+data = {
+    'tenure':         [1, 24, 6, 36, 3, 48],
+    'monthly_charge': [80, 50, 75, 45, 85, 40],
+    'support_calls':  [5, 1, 4, 1, 6, 0],
+    'churn_score':    [0.9, 0.2, 0.7, 0.1, 0.85, 0.05]
+}
+df = pd.DataFrame(data)
+
+# 1. Correlation matrix rounded to 2 decimals
+print(df.___().round(2))
+
+# 2. Feature most correlated with churn_score
+corr = df.corr()[___].drop(___).abs()
+print(corr.idxmax())` }
+        hint="df.corr(). corr()['churn_score'].drop('churn_score').abs().idxmax()."
+        validate={(output) => output.includes("support_calls") || output.includes("tenure")}
+      />
     </div>
   )},
   {id:"inference",phase:"Statistics",emoji:"🧪",color:"#f87171",title:"Statistical Inference & A/B Testing",subtitle:"Make data-driven decisions with confidence",
@@ -1651,10 +1965,10 @@ retained = df[df['Churn']=='No']['MonthlyCharges']
 
 # Two-sample t-test
 t_stat, p_value = stats.ttest_ind(churned, retained)
-print(f"Churned mean:  $" + f"{churned.mean():.2f}")
-print(f"Retained mean: $" + f"{retained.mean():.2f}")
-print(f"t-statistic: {t_stat:.3f}")
-print(f"p-value: {p_value:.6f}")
+print("Churned mean:  $" + f"" + str(round(churned.mean(),2)))
+print("Retained mean: $" + f"" + str(round(retained.mean(),2)))
+print("t-statistic: " + str(round(t_stat,3)))
+print("p-value: " + str(round(p_value,6)))
 
 if p_value < 0.05:
     print("REJECT H0 — significant difference in monthly charges")
@@ -1667,9 +1981,9 @@ contingency = pd.crosstab(df['Contract'], df['Churn'])
 print(contingency)
 
 chi2, p, dof, expected = stats.chi2_contingency(contingency)
-print(f"\nChi-square: {chi2:.2f}")
-print(f"p-value: {p:.6f}")
-print(f"Degrees of freedom: {dof}")
+print("\nChi-square: " + str(round(chi2,2)))
+print("p-value: " + str(round(p,6)))
+print("Degrees of freedom: " + str(dof))
 
 if p < 0.05:
     print("Contract type and churn are NOT independent — significant relationship")`}</Block>
@@ -1690,18 +2004,18 @@ n_treatment = 1000
 churn_treatment = 198
 rate_treatment = churn_treatment / n_treatment
 
-print(f"Control churn rate:   {rate_control:.1%}")
-print(f"Treatment churn rate: {rate_treatment:.1%}")
-print(f"Absolute reduction:   {rate_control - rate_treatment:.1%}")
-print(f"Relative reduction:   {(rate_control - rate_treatment)/rate_control:.1%}")
+print("Control churn rate:   " + str(round(rate_control*100,1)) + "%")
+print("Treatment churn rate: " + str(round(rate_treatment*100,1)) + "%")
+print("Absolute reduction:   " + str(round(rate_control - rate_treatment*100,1)) + "%")
+print("Relative reduction:   " + str(round((rate_control - rate_treatment)/rate_control*100,1)) + "%")
 
 # Statistical test for proportions
 count = np.array([churn_treatment, churn_control])
 nobs = np.array([n_treatment, n_control])
 z_stat, p_value = stats.proportions_ztest(count, nobs, alternative='smaller')
 
-print(f"\nz-statistic: {z_stat:.3f}")
-print(f"p-value: {p_value:.4f}")
+print("\nz-statistic: " + str(round(z_stat,3)))
+print("p-value: " + str(round(p_value,4)))
 print("Result:", "SIGNIFICANT ✓" if p_value < 0.05 else "NOT significant ✗")`}</Block>
 
       <LH>5. Statistical Power and Sample Size</LH>
@@ -1723,7 +2037,7 @@ effect = proportion_effectsize(p1, p2)
 from statsmodels.stats.power import NormalIndPower
 analysis = NormalIndPower()
 n = analysis.solve_power(effect_size=effect, alpha=0.05, power=0.80)
-print(f"Required sample size per group: {n:.0f}")
+print("Required sample size per group: " + str(round(n,0)))
 # You need this many users in EACH group before starting the test!`}</Block>
       <Callout icon="⚠️" color="#f28b82" title="Common A/B testing mistakes">1. Stopping early when you see significance (p-hacking). 2. Running multiple tests and using the best p-value. 3. Not calculating required sample size before starting. 4. Confusing statistical significance with practical significance.</Callout>
 
@@ -1739,15 +2053,15 @@ rate = churned / n
 # Wilson score interval (better than normal approximation)
 from statsmodels.stats.proportion import proportion_confint
 ci_low, ci_high = proportion_confint(churned, n, alpha=0.05, method='wilson')
-print(f"Churn rate: {rate:.1%}")
-print(f"95% CI: [{ci_low:.1%}, {ci_high:.1%}]")
+print("Churn rate: " + str(round(rate*100,1)) + "%")
+print("95% CI: [" + str(round(ci_low*100,1)) + "%" + ", " + str(round(ci_high*100,1)) + "%" + "]")
 # "We're 95% confident the true churn rate is between X% and Y%"
 
 # For a mean:
 data = np.random.normal(65, 15, 100)
 ci = stats.t.interval(0.95, len(data)-1, loc=np.mean(data), scale=stats.sem(data))
-print(f"Mean: {np.mean(data):.1f}")
-print(f"95% CI: [{ci[0]:.1f}, {ci[1]:.1f}]")`}</Block>
+print("Mean: " + str(round(np.mean(data),1)))
+print("95% CI: [" + str(round(ci[0],1)) + ", " + str(round(ci[1],1)) + "]")`}</Block>
 
       <Quiz questions={[
         {q:"p-value = 0.03 with α = 0.05. What do you conclude?",options:["Accept H0","Reject H0 — statistically significant result","The effect is practically significant","You need more data"],answer:"Reject H0 — statistically significant result",explanation:"p < α means you reject the null hypothesis. p=0.03 means there's only a 3% chance of seeing these results if H0 were true — unlikely enough to reject H0."},
@@ -1756,6 +2070,29 @@ print(f"95% CI: [{ci[0]:.1f}, {ci[1]:.1f}]")`}</Block>
         {q:"What does statistical power mean?",options:["The strength of the p-value","Probability of detecting a real effect when it exists","The size of your dataset","Confidence in your sample"],answer:"Probability of detecting a real effect when it exists",explanation:"Power = 1 - β (probability of a false negative). Power of 0.80 means if there IS a real effect, you have an 80% chance of detecting it. Low power → miss real effects."},
         {q:"Chi-square test is used for:",options:["Comparing two means","Testing independence between two categorical variables","Testing normality","Comparing variances"],answer:"Testing independence between two categorical variables",explanation:"Chi-square test of independence checks whether two categorical variables are related. Example: 'Is there a relationship between contract type and churn status?'"},
       ]}/>
+      <CodeExercise
+        title="Evaluate an A/B test"
+        description="Fill in the blanks to compute conversion rates, uplift %, and decide whether to launch."
+        starterCode={`# A/B Test results
+control_converts = 120
+control_users    = 1000
+test_converts    = 150
+test_users       = 1000
+
+# 1. Conversion rates
+control_rate = ___ / ___
+test_rate    = ___ / ___
+
+# 2. Relative uplift %
+uplift = ((test_rate - control_rate) / ___) * 100
+
+print("Control: " + str(round(control_rate*100,1)) + "%")
+print("Test: " + str(round(test_rate*100,1)) + "%")
+print("Uplift: " + str(round(uplift, 1)) + "%")
+print("Launch: " + str(uplift > ___))` }
+        hint="control_rate = 120/1000. uplift = (test_rate - control_rate) / control_rate * 100. Launch if uplift > 10."
+        validate={(output) => output.includes("25.0") && output.includes("True")}
+      />
     </div>
   )},
 ];
@@ -1809,8 +2146,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 # stratify=y keeps class proportions equal in both splits
 
-print(f"Train: {len(X_train)} rows, churn rate: {y_train.mean():.1%}")
-print(f"Test:  {len(X_test)} rows,  churn rate: {y_test.mean():.1%}")`}</Block>
+print("Train: " + str(len(X_train)) + " rows, churn rate: " + str(round(y_train.mean()*100,1)) + "%")
+print("Test:  " + str(len(X_test)) + " rows,  churn rate: " + str(round(y_test.mean()*100,1)) + "%")`}</Block>
 
         <LH>The Scikit-learn Pattern</LH>
         <LP>Every sklearn algorithm uses the same 3 methods. Learn this once and it works for all 50+ algorithms.</LP>
@@ -1832,7 +2169,7 @@ probs = model.predict_proba(X_test_scaled)[:, 1]
 
 # STEP 5: Evaluate
 from sklearn.metrics import accuracy_score, classification_report
-print(f"Accuracy: {accuracy_score(y_test, preds):.3f}")
+print("Accuracy: " + str(round(accuracy_score(y_test, preds),3)))
 print(classification_report(y_test, preds))`}</Block>
         <Warn>Never call fit_transform() on test data. Only transform(). Fitting on test data leaks information and gives falsely optimistic scores.</Warn>
 
@@ -1860,6 +2197,30 @@ print(classification_report(y_test, preds))`}</Block>
           {q:"scaler.transform(X_test) vs scaler.fit_transform(X_test) — which is correct?",options:["fit_transform — always use it","transform — use the scaler already fitted on train","Either works the same","Neither — don't scale test data"],answer:"transform — use the scaler already fitted on train",explanation:"You fit the scaler once on train data (learning its mean/std). Then use transform() on both train and test. Calling fit_transform on test would learn new statistics from test data — leakage."},
           {q:"What is the correct order for a new ML project?",options:["Train model → EDA → Split → Evaluate","Split → EDA → Feature Engineering → Train → Evaluate","EDA → Train → Split → Feature Engineering","Feature Engineering → Split → EDA → Train"],answer:"Split → EDA → Feature Engineering → Train → Evaluate",explanation:"Always split first to prevent leakage. EDA on train only. Feature engineering fitted on train. Then train and evaluate on held-out test. Never let test data influence any earlier step."},
         ]}/>
+      <CodeExercise
+        title="Build a train/test split"
+        description="Fill in the blanks to split data into train and test sets, then print both shapes."
+        starterCode={`import pandas as pd
+from sklearn.model_selection import train_test_split
+
+data = {'tenure':[1,12,24,36,6,48,3,18,30,9],
+        'charges':[80,60,50,45,85,40,90,65,48,75],
+        'churn':[1,0,0,0,1,0,1,0,0,1]}
+df = pd.DataFrame(data)
+
+X = df[['tenure','charges']]
+y = df['churn']
+
+# Split: 80% train, 20% test, random_state=42
+X_train, X_test, y_train, y_test = train_test_split(
+    ___, ___, test_size=___, random_state=___
+)
+
+print(X_train.shape)
+print(X_test.shape)` }
+        hint="train_test_split(X, y, test_size=0.2, random_state=42). X_train.shape gives (rows, cols)."
+        validate={(output) => output.includes("(8,") && output.includes("(2,")}
+      />
       </div>
     )
   },
@@ -1896,14 +2257,14 @@ rmse = np.sqrt(mean_squared_error(y_test, preds))
 mae  = mean_absolute_error(y_test, preds)
 r2   = r2_score(y_test, preds)
 
-print(f"RMSE: {rmse:.2f}")  # average error in dollars
-print(f"MAE:  {mae:.2f}")   # median error in dollars
-print(f"R²:   {r2:.3f}")    # 0.85 = model explains 85% of variance
+print("RMSE: " + str(round(rmse,2)))  # average error in dollars
+print("MAE:  " + str(round(mae,2)))   # median error in dollars
+print("R²:   " + str(round(r2,3)))    # 0.85 = model explains 85% of variance
 
 # What did the model learn?
 for feat, coef in zip(features, model.coef_):
-    print(f"  {feat}: {coef:.3f}")
-print(f"  intercept: {model.intercept_:.3f}")`}</Block>
+    print("  " + str(feat) + ": " + str(round(coef,3)))
+print("  intercept: " + str(round(model.intercept_,3)))`}</Block>
         <Callout icon="💡" color="#34d399" title="Reading coefficients">Each coefficient says: 'for 1 unit increase in this feature, the prediction changes by this amount, holding all else constant.' tenure coef = 60 means: each extra month of tenure adds $60 to predicted total charges.</Callout>
 
         <LH>Logistic Regression — predicting churn</LH>
@@ -1936,12 +2297,12 @@ probs = model.predict_proba(X_test_s)[:, 1]  # churn probability
 
 # Evaluate
 print(classification_report(y_test, preds, target_names=['Stay', 'Churn']))
-print(f"AUC-ROC: {roc_auc_score(y_test, probs):.3f}")
+print("AUC-ROC: " + str(round(roc_auc_score(y_test, probs),3)))
 
 # Feature importance (coefficients)
 for feat, coef in zip(features, model.coef_[0]):
     direction = "↑ churn" if coef > 0 else "↓ churn"
-    print(f"  {feat}: {coef:.3f} ({direction})")`}</Block>
+    print("  " + str(feat) + ": " + str(round(coef,3)) + " (" + str(direction) + ")")`}</Block>
         <Warn>class_weight='balanced' is critical for imbalanced data like churn. It tells sklearn to penalize mistakes on the minority class (churners) more heavily. Without it, the model learns to mostly predict 'no churn'.</Warn>
 
         <LH>Reading the Classification Report</LH>
@@ -1968,6 +2329,32 @@ preds_low = (probs >= threshold).astype(int)`}</Block>
           {q:"For churn prediction, which is more costly: false positive (predict churn but customer stays) or false negative (miss a churner)?",options:["False positive — wasted retention offer","False negative — lost customer revenue","Both are equally costly","Depends on the algorithm"],answer:"False negative — lost customer revenue",explanation:"Missing a churner means losing that customer with no intervention. A false positive just means offering a discount to a loyal customer — wasteful but not catastrophic. Optimize for recall."},
           {q:"What does AUC-ROC = 0.5 mean?",options:["50% accuracy","The model is no better than random guessing","Half the classes are correct","Very good model"],answer:"The model is no better than random guessing",explanation:"AUC-ROC measures ranking ability. 0.5 = random, 1.0 = perfect. A model with AUC=0.5 can't distinguish churners from non-churners at all."},
         ]}/>
+      <CodeExercise
+        title="Train a logistic regression model"
+        description="Fill in the blanks to train a LogisticRegression, make predictions, and print accuracy."
+        starterCode={`import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18],
+        'charges':[90,45,80,42,88,40,65,48,85,62],
+        'churn':[1,0,1,0,1,0,0,0,1,0]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges']]
+y = df['churn']
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=42)
+
+# Train model
+model = ___(random_state=42)
+model.___(X_train, y_train)
+
+# Predict and score
+preds = model.___(X_test)
+print(accuracy_score(y_test, preds))` }
+        hint="LogisticRegression(). model.fit(X_train, y_train). model.predict(X_test)."
+        validate={(output) => !isNaN(parseFloat(output.trim()))}
+      />
       </div>
     )
   },
@@ -2002,9 +2389,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 tree = DecisionTreeClassifier(max_depth=5, class_weight='balanced', random_state=42)
 tree.fit(X_train, y_train)
 
-print(f"Train accuracy: {tree.score(X_train, y_train):.3f}")
-print(f"Test accuracy:  {tree.score(X_test, y_test):.3f}")
-print(f"AUC-ROC: {roc_auc_score(y_test, tree.predict_proba(X_test)[:,1]):.3f}")`}</Block>
+print("Train accuracy: " + str(round(tree.score(X_train, y_train),3)))
+print("Test accuracy:  " + str(round(tree.score(X_test, y_test),3)))
+print("AUC-ROC: " + str(round(roc_auc_score(y_test, tree.predict_proba(X_test)[,3)))`}</Block>
         <Warn>Single decision trees overfit badly. Without max_depth, a tree reaches 100% train accuracy but 60% test accuracy — it memorized the training data. Random Forest fixes this.</Warn>
 
         <LH>Random Forest — fixing overfitting</LH>
@@ -2024,8 +2411,8 @@ rf.fit(X_train, y_train)
 preds = rf.predict(X_test)
 probs = rf.predict_proba(X_test)[:,1]
 
-print(f"Train AUC: {roc_auc_score(y_train, rf.predict_proba(X_train)[:,1]):.3f}")
-print(f"Test AUC:  {roc_auc_score(y_test, probs):.3f}")
+print("Train AUC: " + str(round(roc_auc_score(y_train, rf.predict_proba(X_train)[,3)))
+print("Test AUC:  " + str(round(roc_auc_score(y_test, probs),3)))
 print(classification_report(y_test, preds, target_names=['Stay','Churn']))`}</Block>
 
         <LH>Feature Importance — what drives churn?</LH>
@@ -2059,6 +2446,30 @@ plt.show()
           {q:"Feature importance = 0.35 for 'tenure'. What does this mean?",options:["35% of customers have this tenure","Tenure explains 35% of the target variance","The feature was used in 35% of splits — it contributes 35% to predictions","35% accuracy improvement"],answer:"The feature was used in 35% of splits — it contributes 35% to predictions",explanation:"Feature importance in Random Forest measures how much each feature reduces impurity across all splits in all trees. Higher = more useful for predictions."},
           {q:"pd.get_dummies(df, columns=['Contract']) creates:",options:["One column with numeric codes","One binary column per unique contract value","Removes the Contract column","A new DataFrame with only contract columns"],answer:"One binary column per unique contract value",explanation:"get_dummies (one-hot encoding) creates a binary column for each unique value. Contract has 3 values → 3 new columns: Contract_Month-to-month, Contract_One year, Contract_Two year."},
         ]}/>
+      <CodeExercise
+        title="Train a Random Forest and get feature importances"
+        description="Fill in the blanks to train a RandomForestClassifier and print feature importances sorted descending."
+        starterCode={`import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18],
+        'charges':[90,45,80,42,88,40,65,48,85,62],
+        'calls':[5,1,4,0,6,1,2,1,5,2],
+        'churn':[1,0,1,0,1,0,0,0,1,0]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges','calls']]
+y = df['churn']
+
+# Train a Random Forest with 50 trees
+model = ___(n_estimators=___, random_state=42)
+model.___(X, y)
+
+# Print feature importances sorted descending
+imp = pd.Series(model.___, index=X.columns).sort_values(ascending=False)
+print(imp.round(3))` }
+        hint="RandomForestClassifier(n_estimators=50). model.fit(X,y). model.feature_importances_."
+        validate={(output) => output.includes("tenure") || output.includes("charges")}
+      />
       </div>
     )
   },
@@ -2085,29 +2496,29 @@ plt.show()
 # Actual Churn:   FN (missed!)    TP (caught!)
 
 tn, fp, fn, tp = cm.ravel()
-print(f"True Negatives:  {tn}  (correctly predicted stay)")
-print(f"False Positives: {fp}  (predicted churn, actually stayed)")
-print(f"False Negatives: {fn}  (predicted stay, actually churned!)")
-print(f"True Positives:  {tp}  (correctly predicted churn)")`}</Block>
+print("True Negatives:  " + str(tn) + "  (correctly predicted stay)")
+print("False Positives: " + str(fp) + "  (predicted churn, actually stayed)")
+print("False Negatives: " + str(fn) + "  (predicted stay, actually churned!)")
+print("True Positives:  " + str(tp) + "  (correctly predicted churn)")`}</Block>
 
         <LH>2. Precision, Recall, F1</LH>
         <Block label="python — metrics from scratch">{`# Precision: Of all predicted churners, how many actually churned?
 precision = tp / (tp + fp)
-print(f"Precision: {precision:.3f}")
+print("Precision: " + str(round(precision,3)))
 # High precision = fewer false alarms
 
 # Recall (Sensitivity): Of all actual churners, how many did we catch?
 recall = tp / (tp + fn)
-print(f"Recall: {recall:.3f}")
+print("Recall: " + str(round(recall,3)))
 # High recall = fewer missed churners
 
 # F1: Harmonic mean — balances precision and recall
 f1 = 2 * (precision * recall) / (precision + recall)
-print(f"F1: {f1:.3f}")
+print("F1: " + str(round(f1,3)))
 
 # sklearn version
 from sklearn.metrics import precision_score, recall_score, f1_score
-print(f"F1 (sklearn): {f1_score(y_test, preds):.3f}")`}</Block>
+print("F1 (sklearn): " + str(round(f1_score(y_test, preds),3)))`}</Block>
         <Callout icon="🧠" color="#06b6d4" title="Precision vs Recall trade-off">Lowering the classification threshold (e.g., 0.3 instead of 0.5) catches more churners (higher recall) but also more false alarms (lower precision). For churn: prioritize recall. For spam: prioritize precision.</Callout>
 
         <LH>3. AUC-ROC — the gold standard for classification</LH>
@@ -2142,8 +2553,8 @@ cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
 scores = cross_val_score(rf, X, y, cv=cv, scoring='roc_auc', n_jobs=-1)
 
-print(f"CV AUC scores: {scores.round(3)}")
-print(f"Mean AUC: {scores.mean():.3f} ± {scores.std():.3f}")
+print("CV AUC scores: " + str(scores.round(3)))
+print("Mean AUC: " + str(round(scores.mean(),3)) + " ± " + str(round(scores.std(),3)))
 # Large std → model is unstable (overfitting or bad features)
 # Small std → model is consistent`}</Block>
 
@@ -2156,9 +2567,9 @@ rmse = np.sqrt(mean_squared_error(y_test, preds))
 mae  = mean_absolute_error(y_test, preds)
 r2   = r2_score(y_test, preds)
 
-print(f"RMSE: {rmse:.2f}")  # in same units as target
-print(f"MAE:  {mae:.2f}")   # more interpretable
-print(f"R²:   {r2:.3f}")    # % variance explained
+print("RMSE: " + str(round(rmse,2)))  # in same units as target
+print("MAE:  " + str(round(mae,2)))   # more interpretable
+print("R²:   " + str(round(r2,3)))    # % variance explained
 
 # RMSE vs MAE:
 # RMSE penalizes large errors more (squared)
@@ -2174,6 +2585,27 @@ print(f"R²:   {r2:.3f}")    # % variance explained
           {q:"False Negative in churn prediction means:",options:["Model predicted churn, customer stayed","Model predicted stay, customer churned","Both predictions were wrong","Model predicted correctly"],answer:"Model predicted stay, customer churned",explanation:"False Negative = model predicted the NEGATIVE class (stay) but the TRUE label was POSITIVE (churn). The model missed a churner — the most costly error in churn prediction."},
           {q:"When should you use MAE instead of RMSE?",options:["Never — RMSE is always better","When large errors are especially bad","When you want a simple average-error interpretation robust to outliers","When R² is low"],answer:"When you want a simple average-error interpretation robust to outliers",explanation:"MAE = average absolute error. RMSE = root mean squared error (penalizes big errors more). Use MAE when outlier predictions shouldn't dominate your metric. Use RMSE when large prediction errors are especially costly."},
         ]}/>
+      <CodeExercise
+        title="Compute classification metrics"
+        description="Fill in the blanks to compute precision, recall, F1, and print a confusion matrix."
+        starterCode={`from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+
+# Actual vs predicted churn labels
+y_true = [1,0,1,1,0,0,1,0,1,0]
+y_pred = [1,0,0,1,0,1,1,0,1,0]
+
+# Compute metrics
+p = ___(y_true, y_pred)
+r = ___(y_true, y_pred)
+f = ___(y_true, y_pred)
+
+print('Precision: ' + str(round(p,2)))
+print('Recall:    ' + str(round(r,2)))
+print('F1:        ' + str(round(f,2)))
+print(___(y_true, y_pred))` }
+        hint="precision_score, recall_score, f1_score. confusion_matrix(y_true, y_pred)."
+        validate={(output) => output.includes("Precision") && output.includes("Recall") && output.includes("F1")}
+      />
       </div>
     )
   },
@@ -2200,9 +2632,9 @@ for name, model in models.items():
     train_auc = roc_auc_score(y_train, model.predict_proba(X_train)[:,1])
     test_auc  = roc_auc_score(y_test,  model.predict_proba(X_test)[:,1])
     gap = train_auc - test_auc
-    print(f"{name}:")
-    print(f"  Train AUC: {train_auc:.3f} | Test AUC: {test_auc:.3f} | Gap: {gap:.3f}")
-    print(f"  {'⚠ OVERFITTING' if gap > 0.05 else '✓ OK'}")`}</Block>
+    print(str(name) + ":")
+    print("  Train AUC: " + str(round(train_auc,3)) + " | Test AUC: " + str(round(test_auc,3)) + " | Gap: " + str(round(gap,3)))
+    print("  " + str('⚠ OVERFITTING' if gap > 0.05 else '✓ OK'))`}</Block>
         <Compare items={[
           {color:"#f28b82",label:"Overfitting",text:"Train score high, test score much lower. Model memorized training data including noise."},
           {color:"#f7c96e",label:"Underfitting",text:"Both train and test scores are low. Model is too simple to capture the pattern."},
@@ -2256,13 +2688,13 @@ elastic.fit(X_train_s, y_train)
 
 # Check which features Lasso eliminated
 zero_features = sum(1 for c in lasso.coef_ if c == 0)
-print(f"Lasso eliminated {zero_features}/{len(lasso.coef_)} features")
+print("Lasso eliminated " + str(zero_features) + "/" + str(len(lasso.coef_)) + " features")
 
 # Find best alpha with cross-validation
 from sklearn.linear_model import RidgeCV
 ridge_cv = RidgeCV(alphas=[0.01, 0.1, 1.0, 10.0], cv=5)
 ridge_cv.fit(X_train_s, y_train)
-print(f"Best alpha: {ridge_cv.alpha_}")`}</Block>
+print("Best alpha: " + str(ridge_cv.alpha_))`}</Block>
 
         <LH>4. Cross-Validation — the proper way to evaluate</LH>
         <Block label="python — nested cross-validation">{`from sklearn.model_selection import cross_validate
@@ -2277,7 +2709,7 @@ results = cross_validate(
 
 for metric, scores in results.items():
     if metric.startswith('test_'):
-        print(f"{metric[5:]}: {scores.mean():.3f} ± {scores.std():.3f}")`}</Block>
+        print(str(metric[5) + ": " + str(round(scores.mean(),3)) + " ± " + str(round(scores.std(),3)))`}</Block>
         <Warn>Never use the test set to tune hyperparameters. If you try 50 different settings and pick the best one on the test set, you've effectively trained on the test set. Use cross-validation on the train set for tuning, then evaluate once on test.</Warn>
 
         <Quiz questions={[
@@ -2287,6 +2719,34 @@ for metric, scores in results.items():
           {q:"You tune hyperparameters by evaluating on the test set 50 times. What went wrong?",options:["Nothing — test set is for evaluation","Test set contamination — you effectively trained on it","50 iterations is too many","Should use train set instead"],answer:"Test set contamination — you effectively trained on it",explanation:"If you repeatedly evaluate on the test set and pick the best result, the test set becomes part of your training process. Your final score is optimistically biased. Use cross-validation on train set for tuning, evaluate on test set ONCE at the end."},
           {q:"What does alpha control in Ridge regularization?",options:["Learning rate","Number of features","Strength of regularization penalty","Train/test split ratio"],answer:"Strength of regularization penalty",explanation:"Higher alpha = stronger regularization = smaller coefficients. alpha=0 is no regularization (ordinary regression). Large alpha shrinks all coefficients strongly toward zero, reducing variance but increasing bias."},
         ]}/>
+      <CodeExercise
+        title="Detect overfitting with train vs test scores"
+        description="Fill in the blanks to train a model and compare train vs test accuracy to detect overfitting."
+        starterCode={`from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import pandas as pd
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18,2,42,8,28,4],
+        'charges':[90,45,80,42,88,40,65,48,85,62,91,41,78,50,87],
+        'churn':[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges']]
+y = df['churn']
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=42)
+
+# Overfit model — no depth limit
+model = DecisionTreeClassifier(max_depth=___)
+model.fit(X_train, y_train)
+
+train_acc = accuracy_score(y_train, model.___(X_train))
+test_acc  = accuracy_score(y_test,  model.___(X_test))
+print('Train: ' + str(round(train_acc,2)))
+print('Test:  ' + str(round(test_acc,2)))
+print('Overfit: ' + str(train_acc - test_acc > 0.15))` }
+        hint="max_depth=None for no limit. model.predict(X_train) and model.predict(X_test)."
+        validate={(output) => output.includes("Train:") && output.includes("Test:")}
+      />
       </div>
     )
   },
@@ -2335,7 +2795,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
-print(f"Features: {X.shape[1]}, Train: {len(X_train)}, Test: {len(X_test)}")`}</Block>
+print("Features: " + str(X.shape[1]) + ", Train: " + str(len(X_train)) + ", Test: " + str(len(X_test)))`}</Block>
 
         <LH>2. The sklearn Pipeline — proper way</LH>
         <Block label="python — Pipeline class">{`from sklearn.pipeline import Pipeline
@@ -2363,7 +2823,7 @@ preds = pipeline.predict(X_test)
 probs = pipeline.predict_proba(X_test)[:,1]
 
 from sklearn.metrics import roc_auc_score, classification_report
-print(f"AUC-ROC: {roc_auc_score(y_test, probs):.3f}")
+print("AUC-ROC: " + str(round(roc_auc_score(y_test, probs),3)))
 print(classification_report(y_test, preds, target_names=['Stay','Churn']))`}</Block>
         <Callout icon="💡" color="#8b5cf6" title="Why Pipeline?">Without Pipeline, you must manually call fit_transform on train and transform on test for every step. With Pipeline, pipeline.fit(X_train) does everything correctly. pipeline.predict(X_new) always applies the right transformations.</Callout>
 
@@ -2388,9 +2848,9 @@ search = GridSearchCV(
 
 search.fit(X_train, y_train)
 
-print(f"Best params: {search.best_params_}")
-print(f"Best CV AUC: {search.best_score_:.3f}")
-print(f"Test AUC:    {roc_auc_score(y_test, search.predict_proba(X_test)[:,1]):.3f}")`}</Block>
+print("Best params: " + str(search.best_params_))
+print("Best CV AUC: " + str(round(search.best_score_,3)))
+print("Test AUC:    " + str(round(roc_auc_score(y_test, search.predict_proba(X_test)[,3)))`}</Block>
 
         <LH>4. Saving and Loading a Model</LH>
         <Block label="python — production deployment">{`import joblib
@@ -2409,8 +2869,8 @@ new_customer = pd.DataFrame({
 })
 
 churn_prob = loaded_pipeline.predict_proba(new_customer)[0, 1]
-print(f"Churn probability: {churn_prob:.1%}")
-print(f"Action: {'Intervene' if churn_prob > 0.5 else 'Monitor'}")`}</Block>
+print("Churn probability: " + str(round(churn_prob*100,1)) + "%")
+print("Action: " + str('Intervene' if churn_prob > 0.5 else 'Monitor'))`}</Block>
 
         <LH>5. Comparing Multiple Models</LH>
         <Block label="python — model comparison">{`from sklearn.linear_model import LogisticRegression
@@ -2443,6 +2903,36 @@ pd.DataFrame(results).sort_values('AUC', ascending=False)`}</Block>
           {q:"param_grid = {'model__n_estimators': [100,200]} — why the 'model__' prefix?",options:["It's required by sklearn","'model' is the step name in the Pipeline — __ navigates into that step's parameters","It sets a model-level parameter","It prevents parameter conflicts"],answer:"'model' is the step name in the Pipeline — __ navigates into that step's parameters",explanation:"In GridSearchCV with a Pipeline, use stepname__param_name to access nested parameters. If you named the step 'clf' instead of 'model', you'd use 'clf__n_estimators'."},
           {q:"Logistic Regression AUC = 0.82. Random Forest AUC = 0.84. Which should you deploy?",options:["Always Random Forest — higher AUC","Always Logistic Regression — simpler","Depends: if 0.02 improvement justifies complexity, Random Forest; otherwise Logistic","Random Forest only if n > 10000"],answer:"Depends: if 0.02 improvement justifies complexity, Random Forest; otherwise Logistic",explanation:"A 0.02 AUC improvement may not justify the extra complexity. Logistic Regression is faster, more interpretable, easier to explain to stakeholders, and easier to maintain. Always evaluate: is the performance gain worth the cost?"},
         ]}/>
+      <CodeExercise
+        title="Build a full sklearn pipeline"
+        description="Fill in the blanks to build a Pipeline with a scaler and logistic regression, then print the test accuracy."
+        starterCode={`from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import pandas as pd
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18,2,42,8,28,4],
+        'charges':[90,45,80,42,88,40,65,48,85,62,91,41,78,50,87],
+        'churn':[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges']]
+y = df['churn']
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=42)
+
+# Build pipeline: scaler + logistic regression
+pipe = Pipeline([
+    ('scaler', ___()),
+    ('model',  ___(random_state=42))
+])
+
+pipe.fit(___, ___)
+preds = pipe.predict(___)
+print(round(accuracy_score(y_test, preds), 2))` }
+        hint="StandardScaler(). LogisticRegression(). pipe.fit(X_train, y_train). pipe.predict(X_test)."
+        validate={(output) => !isNaN(parseFloat(output.trim()))}
+      />
       </div>
     )
   },
@@ -2452,64 +2942,127 @@ const ADVANCED_ML_LESSONS = [
   {
     id:"adv-xgboost", title:"XGBoost & Gradient Boosting", subtitle:"The algorithm that wins Kaggle competitions",
     emoji:"⚡", phase:"Advanced ML", color:"#f7c96e",
-    body:()=><div>
-      <LP>XGBoost is one of the most powerful ML algorithms ever built. It won hundreds of Kaggle competitions and is used at every major tech company. Let's understand why.</LP>
-      <LH>What is Gradient Boosting?</LH>
-      <LP>Gradient Boosting builds trees <strong>sequentially</strong> — each tree corrects the mistakes of the previous one. XGBoost is an optimized, faster version of this idea.</LP>
-      <Block label="python">{`import xgboost as xgb
+    body:()=>(
+    <div>
+      <LP>XGBoost is one of the most powerful ML algorithms ever built. It won hundreds of Kaggle competitions and is used at every major tech company. Let us understand why.</LP>
+
+      <LH>1. What is Gradient Boosting?</LH>
+      <LP>Gradient Boosting builds trees <strong style={{color:T.text}}>sequentially</strong> — each new tree corrects the mistakes of the previous one. XGBoost is a fast, optimized version of this idea.</LP>
+      <Callout icon="🧠" color="#f7c96e" title="Core idea">Random Forest builds trees in parallel and averages them. XGBoost builds trees one by one, each fixing what the last got wrong. That is why it is more accurate — but also slower to train.</Callout>
+
+      <LH>2. XGBoost in Code</LH>
+      <Block label="python">{`from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_auc_score
+import pandas as pd
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+df = pd.read_csv('telco_churn.csv')
+X = df[['tenure','MonthlyCharges','TotalCharges']].fillna(0)
+y = (df['Churn'] == 'Yes').astype(int)
 
-model = xgb.XGBClassifier(
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = GradientBoostingClassifier(
     n_estimators=100,
     learning_rate=0.1,
     max_depth=4,
-    use_label_encoder=False,
-    eval_metric='logloss'
-)
-
-model.fit(X_train, y_train,
-          eval_set=[(X_test, y_test)],
-          verbose=False)
-
-preds = model.predict(X_test)
-print(f"Accuracy: {accuracy_score(y_test, preds):.3f}")`}</Block>
-      <LH>Key Hyperparameters</LH>
-      <ul style={{color:"#8b87a8",lineHeight:2,paddingLeft:20,fontSize:13}}>
-        <li><code style={{color:"#f7c96e"}}>n_estimators</code> — number of trees (more = better but slower)</li>
-        <li><code style={{color:"#f7c96e"}}>learning_rate</code> — how much each tree contributes (lower = more robust)</li>
-        <li><code style={{color:"#f7c96e"}}>max_depth</code> — depth of each tree (lower = less overfitting)</li>
-        <li><code style={{color:"#f7c96e"}}>subsample</code> — fraction of data used per tree (prevents overfitting)</li>
-      </ul>
-      <LH>XGBoost vs Random Forest</LH>
-      <div style={{background:"#0d1520",borderRadius:8,padding:16,fontSize:12,color:"#8b87a8",lineHeight:1.8,border:"1px solid #1e2a3a"}}>
-        <div>🌲 <strong style={{color:T.text}}>Random Forest</strong> — trees built in parallel, easy to tune, great baseline</div>
-        <div>⚡ <strong style={{color:T.text}}>XGBoost</strong> — trees built sequentially, higher accuracy, needs more tuning</div>
-        <div style={{marginTop:8}}>Rule of thumb: start with Random Forest, switch to XGBoost when you need more performance.</div>
-      </div>
-    </div>
-  },
-  {
-    id:"adv-lightgbm", title:"LightGBM & CatBoost", subtitle:"Faster boosting for large datasets",
-    emoji:"🚀", phase:"Advanced ML", color:"#f7c96e",
-    body:()=><div>
-      <LP>LightGBM (by Microsoft) and CatBoost (by Yandex) are XGBoost alternatives that are faster on large datasets and handle categorical features better.</LP>
-      <LH>LightGBM</LH>
-      <Block label="python">{`import lightgbm as lgb
-
-model = lgb.LGBMClassifier(
-    n_estimators=200,
-    learning_rate=0.05,
-    num_leaves=31,
     random_state=42
 )
 
 model.fit(X_train, y_train)
+probs = model.predict_proba(X_test)[:,1]
+print("AUC-ROC: " + str(round(roc_auc_score(y_test, probs), 3)))`}</Block>
+
+      <LH>3. Key Hyperparameters</LH>
+      <ul style={{color:"#8b87a8",lineHeight:2,paddingLeft:20,fontSize:13}}>
+        <li><code style={{color:"#f7c96e"}}>n_estimators</code> — number of trees. More = better but slower. Start with 100.</li>
+        <li><code style={{color:"#f7c96e"}}>learning_rate</code> — how much each tree contributes. Lower = more robust. Try 0.05-0.1.</li>
+        <li><code style={{color:"#f7c96e"}}>max_depth</code> — depth of each tree. Lower = less overfitting. Try 3-5.</li>
+        <li><code style={{color:"#f7c96e"}}>subsample</code> — fraction of rows used per tree. 0.8 helps prevent overfitting.</li>
+      </ul>
+
+      <LH>4. XGBoost vs Random Forest</LH>
+      <Compare items={[
+        {color:"#6dd6a0",label:"Random Forest",text:"Trees in parallel. Easy to tune. Great baseline. Less prone to overfitting."},
+        {color:"#f7c96e",label:"XGBoost",text:"Trees in sequence. Higher accuracy. More hyperparameters. Can overfit if not tuned."},
+      ]}/>
+      <Tip>Always start with Random Forest as your baseline. Switch to XGBoost when you need to squeeze out more performance.</Tip>
+
+      <LH>5. Feature Importance</LH>
+      <Block label="python">{`import pandas as pd
+
+# After fitting the model
+imp = pd.Series(model.feature_importances_, index=X.columns)
+print(imp.sort_values(ascending=False).round(3))
+
+# tenure         0.421
+# MonthlyCharges 0.318
+# TotalCharges   0.261`}</Block>
+
+      <Quiz questions={[
+        {q:"What makes XGBoost different from Random Forest?",options:["XGBoost uses deeper trees","XGBoost builds trees sequentially, each correcting the previous","XGBoost uses more features","XGBoost is always faster"],answer:"XGBoost builds trees sequentially, each correcting the previous",explanation:"Random Forest builds trees in parallel and averages them. XGBoost builds trees one by one, each one focused on fixing the errors of the last — this is gradient boosting."},
+        {q:"learning_rate=0.01 vs learning_rate=0.3 — which is more robust?",options:["0.3 — faster learning","0.01 — smaller steps, less overfitting","They are identical","Depends on max_depth"],answer:"0.01 — smaller steps, less overfitting",explanation:"A smaller learning rate means each tree contributes less. You need more trees (higher n_estimators) but the model is more robust and less prone to overfitting."},
+        {q:"Your XGBoost model has train AUC=0.98 and test AUC=0.71. What should you try?",options:["Increase n_estimators","Decrease max_depth and increase learning_rate","Add more features","Remove the test set"],answer:"Decrease max_depth and increase learning_rate",explanation:"Train much higher than test = overfitting. Reduce max_depth (simpler trees) and lower learning_rate. Also try subsample < 1.0."},
+        {q:"feature_importances_ gives you:",options:["SHAP values for each prediction","Which features the model used most across all trees","Correlation with the target","The number of times each feature appears"],answer:"Which features the model used most across all trees",explanation:"Feature importance measures how much each feature contributed to reducing the loss function across all trees. Higher = more important to the model globally."},
+        {q:"When would you choose Random Forest over XGBoost?",options:["Never — XGBoost is always better","When you need a quick baseline, have limited time to tune, or the dataset is small","When you have more than 100 features","When you need probabilities"],answer:"When you need a quick baseline, have limited time to tune, or the dataset is small",explanation:"Random Forest works well out of the box with minimal tuning. XGBoost needs careful hyperparameter tuning to shine. For quick prototyping, start with Random Forest."},
+      ]}/>
+
+      <CodeExercise
+        title="Train a Gradient Boosting model and get feature importances"
+        description="Fill in the blanks to train a GradientBoostingClassifier with 50 trees and learning rate 0.1, then print feature importances sorted descending."
+        starterCode={`from sklearn.ensemble import GradientBoostingClassifier
+import pandas as pd
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18,2,42,8,28,4],
+        'charges':[90,45,80,42,88,40,65,48,85,62,91,41,78,50,87],
+        'calls':[5,1,4,0,6,1,2,1,5,2,6,0,4,1,5],
+        'churn':[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges','calls']]
+y = df['churn']
+
+# Train with 50 trees and learning_rate=0.1
+model = ___(n_estimators=___, learning_rate=___, random_state=42)
+model.___(X, y)
+
+# Print feature importances sorted descending
+imp = pd.Series(model.___, index=X.columns)
+print(imp.sort_values(ascending=False).round(3))`}
+        hint="GradientBoostingClassifier(n_estimators=50, learning_rate=0.1). model.fit(X,y). model.feature_importances_."
+        validate={(output) => output.includes("tenure") || output.includes("calls")}
+      />
+    </div>
+  )},
+  {
+    id:"adv-lightgbm", title:"LightGBM & CatBoost", subtitle:"Faster boosting for large datasets",
+    emoji:"🚀", phase:"Advanced ML", color:"#f7c96e",
+    body:()=>(
+    <div>
+      <LP>LightGBM (by Microsoft) and CatBoost (by Yandex) are XGBoost alternatives that are faster on large datasets and handle categorical features better. You will see them in every serious ML competition.</LP>
+
+      <LH>1. Why LightGBM is Faster</LH>
+      <LP>XGBoost grows trees level by level. LightGBM grows trees leaf by leaf, only expanding the most promising leaf. This makes it much faster on large datasets.</LP>
+      <Callout icon="🧠" color="#f7c96e" title="Key difference">LightGBM is 5-10x faster than XGBoost on large datasets. Same accuracy, less time. On small datasets (under 10k rows) the difference is negligible.</Callout>
+
+      <LH>2. LightGBM Code</LH>
+      <Block label="python — LightGBM">{`# pip install lightgbm
+import lightgbm as lgb
+
+model = lgb.LGBMClassifier(
+    n_estimators=200,
+    learning_rate=0.05,
+    num_leaves=31,       # controls complexity
+    random_state=42,
+    verbose=-1           # suppress output
+)
+
+model.fit(X_train, y_train)
 preds = model.predict(X_test)`}</Block>
-      <LH>CatBoost — handles categories automatically</LH>
-      <Block label="python">{`from catboost import CatBoostClassifier
+
+      <LH>3. CatBoost — No Encoding Needed</LH>
+      <LP>CatBoost handles categorical features automatically. You do not need to one-hot encode or label encode them — just tell the model which columns are categorical.</LP>
+      <Block label="python — CatBoost">{`# pip install catboost
+from catboost import CatBoostClassifier
 
 model = CatBoostClassifier(
     iterations=200,
@@ -2519,184 +3072,467 @@ model = CatBoostClassifier(
 )
 
 model.fit(X_train, y_train)`}</Block>
-      <LH>When to use which?</LH>
-      <ul style={{color:"#8b87a8",lineHeight:2,paddingLeft:20,fontSize:13}}>
-        <li>🔢 <strong style={{color:T.text}}>Mostly numerical data</strong> → XGBoost or LightGBM</li>
-        <li>🏷️ <strong style={{color:T.text}}>Many categorical columns</strong> → CatBoost</li>
-        <li>📦 <strong style={{color:T.text}}>Very large dataset (millions of rows)</strong> → LightGBM</li>
-        <li>🏆 <strong style={{color:T.text}}>Kaggle competition</strong> → Try all three and ensemble</li>
-      </ul>
+
+      <LH>4. When to Use Which</LH>
+      <Compare items={[
+        {color:"#7eb8f7",label:"XGBoost",text:"Best known. Great default choice. Huge community. Works on any size dataset."},
+        {color:"#6dd6a0",label:"LightGBM",text:"Fastest. Best for large datasets (100k+ rows). Slightly harder to tune."},
+        {color:"#c792ea",label:"CatBoost",text:"Best for datasets with many categorical columns. Minimal preprocessing needed."},
+      ]}/>
+
+      <Quiz questions={[
+        {q:"LightGBM is faster than XGBoost because:",options:["It uses fewer trees","It grows trees leaf-by-leaf instead of level-by-level","It uses a different loss function","It skips cross-validation"],answer:"It grows trees leaf-by-leaf instead of level-by-level",explanation:"LightGBM uses leaf-wise tree growth, only expanding the most promising leaf at each step. XGBoost grows level-by-level. Leaf-wise is faster and often more accurate."},
+        {q:"CatBoost's main advantage is:",options:["It is faster than all other boosting libraries","It handles categorical features without manual encoding","It requires no hyperparameter tuning","It works without any training data"],answer:"It handles categorical features without manual encoding",explanation:"CatBoost uses a special algorithm to handle categorical features internally. You just specify which columns are categorical — no get_dummies or LabelEncoder needed."},
+        {q:"You have 2 million rows and 50 features. Which boosting library would you try first?",options:["XGBoost — most popular","LightGBM — fastest on large data","CatBoost — most accurate","All three simultaneously"],answer:"LightGBM — fastest on large data",explanation:"LightGBM was designed specifically for large datasets. On millions of rows it can be 10x faster than XGBoost with similar or better accuracy."},
+        {q:"num_leaves=31 in LightGBM controls:",options:["Number of trees","Number of features used","Maximum leaves per tree — controls model complexity","Learning rate"],answer:"Maximum leaves per tree — controls model complexity",explanation:"num_leaves is LightGBM's main complexity parameter (like max_depth in XGBoost). Higher = more complex model. Default is 31. Increase for more power, decrease to prevent overfitting."},
+        {q:"For a Kaggle competition, what is the typical approach?",options:["Use only XGBoost","Use only LightGBM","Train all three and ensemble their predictions","Pick the fastest one"],answer:"Train all three and ensemble their predictions",explanation:"In competitions, ensembling (averaging predictions from multiple models) almost always beats any single model. Top Kaggle solutions typically blend XGBoost, LightGBM, and CatBoost."},
+      ]}/>
+
+      <CodeExercise
+        title="Compare GradientBoosting vs RandomForest"
+        description="Fill in the blanks to train both models and compare their accuracy on the test set."
+        starterCode={`from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import pandas as pd
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18,2,42,8,28,4],
+        'charges':[90,45,80,42,88,40,65,48,85,62,91,41,78,50,87],
+        'churn':[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges']]
+y = df['churn']
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=42)
+
+# Train both models with 50 estimators
+gb = ___(n_estimators=50, random_state=42)
+rf = ___(n_estimators=50, random_state=42)
+gb.___(X_train, y_train)
+rf.___(X_train, y_train)
+
+print('GradientBoosting: ' + str(round(accuracy_score(y_test, gb.___(X_test)), 2)))
+print('RandomForest:     ' + str(round(accuracy_score(y_test, rf.___(X_test)), 2)))`}
+        hint="GradientBoostingClassifier(). RandomForestClassifier(). .fit(X_train, y_train). .predict(X_test)."
+        validate={(output) => output.includes("GradientBoosting:") && output.includes("RandomForest:")}
+      />
     </div>
-  },
+  )},
   {
     id:"adv-shap", title:"SHAP & Model Explainability", subtitle:"Understand why your model makes predictions",
     emoji:"🔍", phase:"Advanced ML", color:"#f7c96e",
-    body:()=><div>
+    body:()=>(
+    <div>
       <LP>SHAP (SHapley Additive exPlanations) answers the most important question in ML: <strong style={{color:T.text}}>"Why did the model predict this?"</strong></LP>
-      <LP>This is critical for real-world ML — businesses need to explain decisions to customers, regulators, and stakeholders.</LP>
-      <LH>Basic SHAP Usage</LH>
-      <Block label="python">{`import shap
+      <LP>This is critical in real jobs — businesses need to explain decisions to customers, managers, and regulators. A model you cannot explain is hard to trust and deploy.</LP>
 
-# Train your model first
-model = xgb.XGBClassifier().fit(X_train, y_train)
+      <LH>1. The Problem with Feature Importance</LH>
+      <LP>Regular feature importance tells you which features matter globally. SHAP tells you which features pushed a specific prediction up or down — for each individual row.</LP>
+      <Compare items={[
+        {color:"#8b87a8",label:"Feature Importance",text:"tenure is the most important feature globally. That is all it tells you."},
+        {color:"#f7c96e",label:"SHAP",text:"For this customer: tenure pushed churn probability UP by 0.32, MonthlyCharges pushed it DOWN by 0.15."},
+      ]}/>
+
+      <LH>2. SHAP Values Explained</LH>
+      <Callout icon="🧠" color="#f7c96e" title="How to read SHAP values">
+        A SHAP value of +0.3 means that feature pushed the prediction 0.3 higher than the baseline.
+        A SHAP value of -0.2 means it pushed the prediction 0.2 lower.
+        The sum of all SHAP values equals the final prediction minus the baseline.
+      </Callout>
+      <Block label="python — SHAP with sklearn">{`# pip install shap
+import shap
+from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
 
 # Create explainer
 explainer = shap.TreeExplainer(model)
 shap_values = explainer.shap_values(X_test)
 
-# Summary plot — which features matter most overall
-shap.summary_plot(shap_values, X_test)
+# For binary classification, shap_values is a list [class0, class1]
+# Use class 1 (churn)
+import numpy as np
+mean_shap = pd.Series(
+    np.abs(shap_values[1]).mean(axis=0),
+    index=X_test.columns
+)
+print(mean_shap.sort_values(ascending=False))`}</Block>
 
-# Explain one prediction
-shap.force_plot(explainer.expected_value, 
-                shap_values[0], X_test.iloc[0])`}</Block>
-      <LH>How to Read SHAP Values</LH>
-      <ul style={{color:"#8b87a8",lineHeight:2,paddingLeft:20,fontSize:13}}>
-        <li><strong style={{color:"#6dd6a0"}}>Positive SHAP value</strong> → feature pushed prediction higher</li>
-        <li><strong style={{color:"#f28b82"}}>Negative SHAP value</strong> → feature pushed prediction lower</li>
-        <li><strong style={{color:T.text}}>Larger absolute value</strong> → more impact on this prediction</li>
-      </ul>
-      <LH>SHAP in a Job Interview</LH>
-      <div style={{background:"#0d1520",borderRadius:8,padding:16,fontSize:12,color:"#8b87a8",lineHeight:1.8,border:"1px solid #1e2a3a"}}>
-        If asked "How do you explain your model to non-technical stakeholders?" — SHAP is your answer. It shows which features matter and by how much, in a way anyone can understand.
-      </div>
+      <LH>3. Permutation Importance — Simpler Alternative</LH>
+      <LP>If you cannot install SHAP, permutation importance is a great alternative. It measures how much accuracy drops when you shuffle each feature randomly.</LP>
+      <Block label="python — permutation importance">{`from sklearn.inspection import permutation_importance
+
+result = permutation_importance(model, X_test, y_test, random_state=42)
+
+imp = pd.Series(result.importances_mean, index=X_test.columns)
+print(imp.sort_values(ascending=False).round(3))
+
+# tenure         0.087
+# MonthlyCharges 0.054
+# TotalCharges   0.021`}</Block>
+
+      <LH>4. In a Job Interview</LH>
+      <Callout icon="💼" color="#6dd6a0" title="What to say">
+        "I use SHAP to explain model predictions at both global and individual levels.
+        For each prediction I can show which features pushed the score up or down and by how much.
+        This makes the model trustworthy and auditable for business stakeholders."
+      </Callout>
+
+      <Quiz questions={[
+        {q:"Feature importance says 'tenure' is most important. SHAP adds what information?",options:["It confirms the same thing with more math","For each prediction, how much did tenure push the score up or down","The correlation between tenure and churn","The p-value of tenure"],answer:"For each prediction, how much did tenure push the score up or down",explanation:"Feature importance gives global rankings. SHAP gives local explanations — for each individual row, it shows the exact contribution of each feature to that prediction."},
+        {q:"A SHAP value of -0.25 for 'tenure' means:",options:["Tenure is 25% correlated with churn","Tenure pushed this prediction 0.25 lower than the baseline","Tenure has 25% feature importance","The model ignores tenure"],answer:"Tenure pushed this prediction 0.25 lower than the baseline",explanation:"Negative SHAP value means the feature reduced the prediction for this specific row. For churn prediction, this means tenure is making this customer less likely to churn."},
+        {q:"Permutation importance works by:",options:["Removing features one at a time","Randomly shuffling one feature and measuring accuracy drop","Training a separate model per feature","Computing gradient of the loss"],answer:"Randomly shuffling one feature and measuring accuracy drop",explanation:"Permutation importance shuffles a feature (breaking its relationship with the target) and measures how much model accuracy drops. Big drop = important feature. No drop = irrelevant feature."},
+        {q:"When would a business REQUIRE model explainability?",options:["Never — accuracy is all that matters","When the model is used for loan approvals, hiring, or medical decisions","Only for neural networks","Only when AUC is below 0.8"],answer:"When the model is used for loan approvals, hiring, or medical decisions",explanation:"Regulations like GDPR and financial lending laws require models to explain their decisions. If your model denies someone a loan, you must be able to say why. SHAP makes this possible."},
+        {q:"shap_values[1] vs shap_values[0] — what is the difference?",options:["No difference","shap_values[1] is for class 1 (e.g. churn=Yes), shap_values[0] is for class 0","shap_values[1] is the second feature","shap_values[0] is more accurate"],answer:"shap_values[1] is for class 1 (e.g. churn=Yes), shap_values[0] is for class 0",explanation:"For binary classification, TreeExplainer returns a list with SHAP values for each class. Index [1] gives explanations for predicting the positive class (churn=Yes), which is usually what you want."},
+      ]}/>
+
+      <CodeExercise
+        title="Compute permutation importance"
+        description="Fill in the blanks to train a RandomForest, compute permutation importance, and print features sorted by importance."
+        starterCode={`from sklearn.ensemble import RandomForestClassifier
+from sklearn.inspection import permutation_importance
+import pandas as pd
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18,2,42,8,28,4],
+        'charges':[90,45,80,42,88,40,65,48,85,62,91,41,78,50,87],
+        'calls':[5,1,4,0,6,1,2,1,5,2,6,0,4,1,5],
+        'churn':[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges','calls']]
+y = df['churn']
+
+model = RandomForestClassifier(n_estimators=50, random_state=42)
+model.___(X, y)
+
+result = ___(model, X, y, random_state=42)
+
+imp = pd.Series(result.___, index=X.columns)
+print(imp.sort_values(ascending=False).round(3))`}
+        hint="model.fit(X, y). permutation_importance(model, X, y, random_state=42). result.importances_mean."
+        validate={(output) => output.includes("tenure") || output.includes("calls")}
+      />
     </div>
-  },
+  )},
   {
     id:"adv-feature-eng", title:"Feature Engineering", subtitle:"Turn raw data into powerful signals",
     emoji:"🔧", phase:"Advanced ML", color:"#f7c96e",
-    body:()=><div>
-      <LP>Feature engineering is the art of creating new input variables from raw data. It's often more impactful than choosing a better algorithm.</LP>
-      <LH>Common Techniques</LH>
-      <Block label="python">{`import pandas as pd
-import numpy as np
+    body:()=>(
+    <div>
+      <LP>Feature engineering is the process of creating new input variables from raw data. It is often more impactful than switching to a better algorithm. A simple model with great features beats a complex model with bad features.</LP>
 
-df = pd.read_csv('customers.csv')
+      <LH>1. Date Features</LH>
+      <LP>Dates contain hidden signals — day of week, month, time since an event. Always extract these.</LP>
+      <Block label="python — date features">{`import pandas as pd
 
-# 1. Date features
 df['signup_date'] = pd.to_datetime(df['signup_date'])
-df['account_age_days'] = (pd.Timestamp.now() - df['signup_date']).dt.days
-df['signup_month'] = df['signup_date'].dt.month
-df['signup_dayofweek'] = df['signup_date'].dt.dayofweek
 
-# 2. Interaction features
+df['account_age_days']  = (pd.Timestamp.now() - df['signup_date']).dt.days
+df['signup_month']      = df['signup_date'].dt.month
+df['signup_dayofweek']  = df['signup_date'].dt.dayofweek  # 0=Monday
+df['is_weekend_signup'] = (df['signup_dayofweek'] >= 5).astype(int)`}</Block>
+
+      <LH>2. Interaction Features</LH>
+      <LP>Combine two features to capture relationships that neither expresses alone.</LP>
+      <Block label="python — interaction features">{`# Charge efficiency — high charges for short tenure = risky customer
 df['charges_per_month'] = df['total_charges'] / (df['tenure'] + 1)
+
+# Service density — how many services per dollar
 df['services_per_dollar'] = df['num_services'] / (df['monthly_charges'] + 1)
 
-# 3. Binning
-df['tenure_group'] = pd.cut(df['tenure'], 
-                             bins=[0, 12, 24, 60, 999],
-                             labels=['new', 'growing', 'mature', 'loyal'])
+# High value flag
+df['high_value'] = ((df['tenure'] > 24) & (df['monthly_charges'] > 70)).astype(int)`}</Block>
 
-# 4. Encoding categoricals
-df = pd.get_dummies(df, columns=['contract_type', 'payment_method'])`}</Block>
-      <LH>The Golden Rule</LH>
-      <div style={{background:"#0d1520",borderRadius:8,padding:16,fontSize:12,color:"#8b87a8",lineHeight:1.8,border:"1px solid #1e2a3a"}}>
-        Always create features based on <strong style={{color:T.text}}>business logic</strong>, not just math. Ask: "What would a domain expert think matters here?" Then test if it actually improves your model with cross-validation.
-      </div>
+      <LH>3. Binning</LH>
+      <LP>Convert continuous values into meaningful groups. This helps the model find non-linear patterns.</LP>
+      <Block label="python — binning">{`# Tenure groups — business-meaningful bins
+df['tenure_group'] = pd.cut(
+    df['tenure'],
+    bins=[0, 6, 12, 24, 60, 999],
+    labels=['new', 'settling', 'established', 'loyal', 'champion']
+)
+
+# Charge tier
+df['charge_tier'] = pd.qcut(
+    df['MonthlyCharges'],
+    q=4,
+    labels=['budget', 'standard', 'premium', 'enterprise']
+)`}</Block>
+
+      <LH>4. Encoding Categoricals</LH>
+      <Block label="python — encoding">{`# One-hot encoding — for low cardinality columns
+df = pd.get_dummies(df, columns=['Contract', 'PaymentMethod'], drop_first=True)
+
+# Label encoding — for ordinal columns (where order matters)
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+df['TechSupport_encoded'] = le.fit_transform(df['TechSupport'])`}</Block>
+
+      <LH>5. The Golden Rule</LH>
+      <Callout icon="★" color="#f7c96e" title="Always think business first">Create features based on business logic, not just math. Ask: what would a domain expert think matters here? A churn analyst would say: customers who pay a lot relative to tenure and call support often are high risk. That insight becomes a feature.</Callout>
+      <Warn>Always create features AFTER train/test split, or you will leak test data into training. Use a Pipeline to apply feature engineering consistently at prediction time.</Warn>
+
+      <Quiz questions={[
+        {q:"charges_per_month = total_charges / tenure is an example of:",options:["Binning","An interaction feature","One-hot encoding","Label encoding"],answer:"An interaction feature",explanation:"Interaction features combine two or more columns to capture a relationship neither expresses alone. charges/tenure captures how expensive the customer is relative to how long they have stayed."},
+        {q:"pd.cut(df['tenure'], bins=[0,12,24,60,999]) creates:",options:["A normalized column","Groups based on fixed boundaries","Groups based on equal frequencies","A binary flag"],answer:"Groups based on fixed boundaries",explanation:"pd.cut splits data into bins based on value ranges you define. pd.qcut splits into bins with equal numbers of observations. Use pd.cut when the boundaries have business meaning (e.g. 0-12 months = new customer)."},
+        {q:"Why is drop_first=True used in pd.get_dummies?",options:["To speed up computation","To avoid multicollinearity — one category is implied by all others being 0","To save memory","To improve accuracy"],answer:"To avoid multicollinearity — one category is implied by all others being 0",explanation:"If you have 3 categories and encode all 3, one is redundant (you can infer it from the others). drop_first removes one column to avoid this redundancy, which matters especially for linear models."},
+        {q:"You create a feature using the test set before splitting. This causes:",options:["Better accuracy","Data leakage — test information contaminates training","No problem if you use cross-validation","Faster training"],answer:"Data leakage — test information contaminates training",explanation:"Data leakage happens when information from the test set influences the training process. Always split first, then engineer features using only training data statistics. Use sklearn Pipeline to prevent this automatically."},
+        {q:"A simple model with great features vs a complex model with raw features — which wins?",options:["Always the complex model","Usually the simple model with good features","They are always equal","Depends on dataset size only"],answer:"Usually the simple model with good features",explanation:"Feature engineering is often more impactful than model complexity. A logistic regression with well-engineered features frequently beats a random forest on raw data. Good features make every model better."},
+      ]}/>
+
+      <CodeExercise
+        title="Engineer interaction and flag features"
+        description="Fill in the blanks to create two new features: charge_per_tenure (charges divided by tenure+1) and high_risk flag (tenure less than 6 AND charges greater than 70)."
+        starterCode={`import pandas as pd
+
+data = {'tenure':[1,24,6,36,3,48,12],
+        'charges':[90,45,80,42,88,40,65]}
+df = pd.DataFrame(data)
+
+# Feature 1: charge per tenure month
+df['charge_per_tenure'] = df[___] / (df[___] + 1)
+
+# Feature 2: high risk flag — tenure < 6 AND charges > 70
+df['high_risk'] = ((df[___] < ___) & (df[___] > ___)).astype(int)
+
+print(df.round(2).to_string(index=False))`}
+        hint="df['charges'] / (df['tenure'] + 1). (df['tenure'] < 6) & (df['charges'] > 70). .astype(int)."
+        validate={(output) => output.includes("charge_per_tenure") && output.includes("high_risk")}
+      />
     </div>
-  },
+  )},
   {
     id:"adv-pipelines", title:"ML Pipelines & Production", subtitle:"Build ML systems that work in the real world",
     emoji:"⚙️", phase:"Advanced ML", color:"#f7c96e",
-    body:()=><div>
-      <LP>A production ML pipeline ensures your model gets the same preprocessing at training time and prediction time. This is one of the most common sources of ML bugs.</LP>
-      <LH>The Problem</LH>
-      <Block label="python — wrong way">{`# BAD — preprocessing done separately
+    body:()=>(
+    <div>
+      <LP>A production ML pipeline ensures your model gets exactly the same preprocessing at training time and prediction time. Forgetting this is one of the most common ML bugs in the industry.</LP>
+
+      <LH>1. The Problem</LH>
+      <Block label="python — wrong way">{`# BAD — preprocessing done separately outside the model
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 model.fit(X_train_scaled, y_train)
 
-# Later in production...
-X_new = get_new_data()
-# Forgot to scale! Model gets wrong input`}</Block>
-      <LH>The Solution — sklearn Pipeline</LH>
-      <Block label="python">{`from sklearn.pipeline import Pipeline
+# Later in production you get new customer data...
+X_new = get_new_customer()
+preds = model.predict(X_new)  # WRONG — forgot to scale!
+# The model now gets unscaled input and predicts garbage`}</Block>
+      <Warn>Training-serving skew is when your model gets different input at prediction time than at training time. It silently destroys model performance in production and is very hard to debug.</Warn>
+
+      <LH>2. The Fix — sklearn Pipeline</LH>
+      <LP>A Pipeline chains preprocessing and modeling into one object. When you call predict, it automatically applies all the same transformations.</LP>
+      <Block label="python — correct way">{`from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from xgboost import XGBClassifier
+from sklearn.linear_model import LogisticRegression
 
-# Everything in one object
 pipeline = Pipeline([
-    ('imputer', SimpleImputer(strategy='median')),
-    ('scaler', StandardScaler()),
-    ('model', XGBClassifier(n_estimators=100))
+    ('imputer', SimpleImputer(strategy='median')),  # step 1: fill nulls
+    ('scaler',  StandardScaler()),                   # step 2: scale features
+    ('model',   LogisticRegression())                # step 3: train model
 ])
 
-# Train
+# Train — all steps applied automatically
 pipeline.fit(X_train, y_train)
 
-# Predict — preprocessing happens automatically  # OK
-predictions = pipeline.predict(X_new)
+# Predict — same preprocessing applied automatically
+predictions = pipeline.predict(X_new)  # correct!`}</Block>
 
-# Save the whole pipeline
-import joblib
-joblib.dump(pipeline, 'churn_model.pkl')
+      <LH>3. Save and Load the Pipeline</LH>
+      <Block label="python — save and load">{`import joblib
 
-# Load later
-loaded_pipeline = joblib.load('churn_model.pkl')`}</Block>
-      <LH>Why This Matters for Jobs</LH>
-      <div style={{background:"#0d1520",borderRadius:8,padding:16,fontSize:12,color:"#8b87a8",lineHeight:1.8,border:"1px solid #1e2a3a"}}>
-        Companies don't want models in notebooks. They want models they can deploy. Knowing how to build proper pipelines and save/load models signals you're ready for production work.
-      </div>
+# Save the entire pipeline (preprocessing + model)
+joblib.dump(pipeline, 'churn_pipeline.pkl')
+
+# Load it later or on a different machine
+loaded = joblib.load('churn_pipeline.pkl')
+
+# Make predictions — works identically
+loaded.predict(X_new)`}</Block>
+
+      <LH>4. ColumnTransformer — Different Steps for Different Columns</LH>
+      <Block label="python — ColumnTransformer">{`from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+
+numeric_features = ['tenure', 'MonthlyCharges', 'TotalCharges']
+categorical_features = ['Contract', 'PaymentMethod']
+
+numeric_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+categorical_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+
+preprocessor = ColumnTransformer([
+    ('num', numeric_transformer, numeric_features),
+    ('cat', categorical_transformer, categorical_features)
+])
+
+full_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', LogisticRegression())
+])`}</Block>
+
+      <Callout icon="💼" color="#6dd6a0" title="Why this matters for jobs">Companies do not want models in notebooks. They want models they can deploy and maintain. Knowing how to build proper pipelines signals you are production-ready — not just a notebook data scientist.</Callout>
+
+      <Quiz questions={[
+        {q:"What is training-serving skew?",options:["When train accuracy is higher than test accuracy","When the model gets different preprocessing at prediction time vs training time","When the model is too slow in production","When features are different between datasets"],answer:"When the model gets different preprocessing at prediction time vs training time",explanation:"Training-serving skew means your model was trained on data processed one way but gets data processed differently in production. This silently destroys performance. A Pipeline prevents this by bundling preprocessing and model together."},
+        {q:"pipeline.fit(X_train, y_train) does what?",options:["Only trains the model","Fits only the preprocessors","Fits all steps in order — each preprocessor learns from training data, then the model trains","Fits preprocessors on X_train and model on X_test"],answer:"Fits all steps in order — each preprocessor learns from training data, then the model trains",explanation:"Pipeline.fit runs each step in sequence. The imputer learns the median, the scaler learns mean and std, then the model trains on the transformed data — all from training data only."},
+        {q:"Why must you NOT call fit_transform on X_test?",options:["It is slower","It leaks test statistics into your evaluation — use transform only","It does not work on test data","It changes the number of features"],answer:"It leaks test statistics into your evaluation — use transform only",explanation:"fit_transform computes statistics (mean, std) from the data. On test data, you must use transform only — applying the statistics learned from training. Recomputing on test data leaks information and gives overoptimistic results."},
+        {q:"joblib.dump(pipeline, 'model.pkl') saves:",options:["Only the model weights","Only the preprocessor parameters","The entire pipeline including all preprocessing steps and model","A summary of the model"],answer:"The entire pipeline including all preprocessing steps and model",explanation:"joblib serializes the entire Pipeline object — all fitted transformers and the trained model. Loading it with joblib.load gives you a fully functional object that can immediately make predictions on new raw data."},
+        {q:"ColumnTransformer lets you:",options:["Train different models on different columns","Apply different preprocessing to numeric vs categorical columns","Merge multiple datasets","Select the best features automatically"],answer:"Apply different preprocessing to numeric vs categorical columns",explanation:"ColumnTransformer routes different columns to different preprocessing pipelines. Numeric columns get imputation + scaling. Categorical columns get imputation + one-hot encoding. The outputs are concatenated automatically."},
+      ]}/>
+
+      <CodeExercise
+        title="Build a preprocessing pipeline"
+        description="Fill in the blanks to build a Pipeline with mean imputation and standard scaling, then fit and transform the data."
+        starterCode={`from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
+
+data = {'tenure':[1,24,np.nan,36,3,48,12],
+        'charges':[90,45,80,np.nan,88,40,65]}
+df = pd.DataFrame(data)
+
+# Pipeline: fill nulls with mean, then scale
+pipe = Pipeline([
+    ('imputer', ___(strategy=___)),
+    ('scaler',  ___())
+])
+
+result = pipe.fit_transform(df)
+print(result.round(2))`}
+        hint="SimpleImputer(strategy='mean'). StandardScaler(). pipe.fit_transform(df)."
+        validate={(output) => output.includes("[") && !output.includes("nan")}
+      />
     </div>
-  },
+  )},
   {
     id:"adv-hypertuning", title:"Hyperparameter Tuning", subtitle:"Squeeze every bit of performance from your model",
     emoji:"🎯", phase:"Advanced ML", color:"#f7c96e",
-    body:()=><div>
-      <LP>Hyperparameter tuning finds the best settings for your model. The difference between default settings and tuned settings can be 2-5% accuracy — which matters a lot in real applications.</LP>
-      <LH>GridSearchCV — try all combinations</LH>
-      <Block label="python">{`from sklearn.model_selection import GridSearchCV
-from xgboost import XGBClassifier
+    body:()=>(
+    <div>
+      <LP>Hyperparameter tuning finds the best settings for your model. The difference between default settings and well-tuned settings is typically 2-5% in AUC — which is a lot in real applications.</LP>
+
+      <LH>1. What are Hyperparameters?</LH>
+      <LP>Hyperparameters are settings you choose before training — like max_depth, learning_rate, n_estimators. They are not learned from data. Tuning means finding the combination that gives the best cross-validated score.</LP>
+      <Compare items={[
+        {color:"#8b87a8",label:"Parameters",text:"Learned during training. Example: the weights in a linear regression or the split thresholds in a tree."},
+        {color:"#f7c96e",label:"Hyperparameters",text:"Set before training. Example: max_depth=4, learning_rate=0.1, n_estimators=100."},
+      ]}/>
+
+      <LH>2. GridSearchCV — Try Every Combination</LH>
+      <Block label="python — GridSearchCV">{`from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import GradientBoostingClassifier
 
 param_grid = {
-    'n_estimators': [100, 200, 300],
-    'max_depth': [3, 4, 5],
-    'learning_rate': [0.01, 0.05, 0.1]
+    'n_estimators': [50, 100, 200],
+    'max_depth':    [2, 3, 4],
+    'learning_rate':[0.05, 0.1, 0.2]
 }
+# Total combinations: 3 x 3 x 3 = 27
 
 search = GridSearchCV(
-    XGBClassifier(),
+    GradientBoostingClassifier(random_state=42),
     param_grid,
-    cv=5,
-    scoring='f1',
-    n_jobs=-1,
-    verbose=1
+    cv=5,           # 5-fold cross-validation
+    scoring='roc_auc',
+    n_jobs=-1       # use all CPU cores
 )
 
 search.fit(X_train, y_train)
 print("Best params:", search.best_params_)
-print("Best score:", search.best_score_)`}</Block>
-      <LH>RandomizedSearchCV — faster for large grids</LH>
-      <Block label="python">{`from sklearn.model_selection import RandomizedSearchCV
+print("Best AUC:   ", round(search.best_score_, 3))`}</Block>
+
+      <LH>3. RandomizedSearchCV — Faster for Large Grids</LH>
+      <LP>When your grid has hundreds of combinations, trying all of them is too slow. RandomizedSearchCV randomly samples a fixed number of combinations.</LP>
+      <Block label="python — RandomizedSearchCV">{`from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform
 
 param_dist = {
-    'n_estimators': randint(50, 500),
-    'max_depth': randint(2, 8),
-    'learning_rate': uniform(0.01, 0.3),
-    'subsample': uniform(0.6, 0.4)
+    'n_estimators':  randint(50, 500),    # random int between 50 and 500
+    'max_depth':     randint(2, 8),
+    'learning_rate': uniform(0.01, 0.29), # random float between 0.01 and 0.3
+    'subsample':     uniform(0.6, 0.4)    # random float between 0.6 and 1.0
 }
 
 search = RandomizedSearchCV(
-    XGBClassifier(),
+    GradientBoostingClassifier(random_state=42),
     param_dist,
-    n_iter=50,  # try 50 random combinations
+    n_iter=30,        # try 30 random combinations
     cv=5,
-    scoring='f1',
+    scoring='roc_auc',
     random_state=42
 )
 
 search.fit(X_train, y_train)`}</Block>
-      <LH>Rule of Thumb</LH>
+
+      <LH>4. Cross-Validation — Honest Evaluation</LH>
+      <Block label="python — cross_val_score">{`from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+scores = cross_val_score(model, X, y, cv=5, scoring='roc_auc')
+print("CV AUC scores: " + str(scores.round(3)))
+print("Mean AUC:      " + str(round(scores.mean(), 3)))
+print("Std:           " + str(round(scores.std(), 3)))`}</Block>
+      <Tip>If your std is high (above 0.05), your model results are unstable — the training set matters too much. Try more data or simpler models.</Tip>
+
+      <LH>5. Tuning Rules of Thumb</LH>
       <ul style={{color:"#8b87a8",lineHeight:2,paddingLeft:20,fontSize:13}}>
-        <li>Small param grid (&lt;100 combos) → GridSearchCV</li>
-        <li>Large param grid → RandomizedSearchCV</li>
-        <li>Want best results + have time → Optuna (Bayesian optimization)</li>
+        <li>Small grid (under 100 combos) → GridSearchCV</li>
+        <li>Large grid (100+ combos) → RandomizedSearchCV with n_iter=50</li>
+        <li>Want best results and have compute budget → Optuna (Bayesian optimization)</li>
+        <li>Always tune with cross-validation, never on the test set</li>
+        <li>Start with the most impactful params: n_estimators, max_depth, learning_rate</li>
       </ul>
+      <Warn>Never tune hyperparameters using the test set. If you do, your test set is no longer an honest evaluation — it has been used to make decisions. Use cross-validation on the training set only.</Warn>
+
+      <Quiz questions={[
+        {q:"What is the difference between a parameter and a hyperparameter?",options:["They are the same thing","Parameters are learned during training, hyperparameters are set before training","Hyperparameters are learned, parameters are set manually","Parameters are only in neural networks"],answer:"Parameters are learned during training, hyperparameters are set before training",explanation:"Model parameters (like tree split thresholds or linear regression weights) are learned from data. Hyperparameters (like max_depth or learning_rate) are settings you choose before training that control how the model learns."},
+        {q:"GridSearchCV with 3 values for each of 4 hyperparameters and cv=5 runs how many fits?",options:["12","15","405","81"],answer:"405",explanation:"3^4 = 81 combinations. Each evaluated with 5-fold CV = 81 x 5 = 405 model fits. This is why large grids are slow and RandomizedSearchCV is preferred for big search spaces."},
+        {q:"Your GridSearchCV best_score_ is 0.87 but test set AUC is 0.79. What likely happened?",options:["Nothing — this is normal","Overfitting to the training folds during search — use a held-out test set","The model is underfitting","cross-validation is not working"],answer:"Overfitting to the training folds during search — this gap is expected but large gaps signal a problem",explanation:"Some gap between CV score and test score is expected. A large gap means the tuning process overfit to the specific training folds. Use more CV folds or a larger dataset. Never tune on the test set."},
+        {q:"n_iter=30 in RandomizedSearchCV means:",options:["Train for 30 epochs","Try 30 random combinations from the distribution","Use 30 cross-validation folds","Train 30 separate models in parallel"],answer:"Try 30 random combinations from the distribution",explanation:"n_iter controls how many random hyperparameter combinations to try. Each combination is evaluated with cross-validation. Higher n_iter = better search but more compute time."},
+        {q:"cross_val_score std=0.08. What does this tell you?",options:["The model is 8% accurate","Results vary significantly across folds — the model may be unstable or data is small","The model is overfitting by 8%","Nothing — std is not meaningful here"],answer:"Results vary significantly across folds — the model may be unstable or data is small",explanation:"High std means the model performs very differently depending on which data it trains on. This signals instability — possibly too little data, too complex a model, or too few CV folds. Aim for std below 0.03."},
+      ]}/>
+
+      <CodeExercise
+        title="Run GridSearchCV"
+        description="Fill in the blanks to run a GridSearchCV on a DecisionTree and print the best parameters and best score."
+        starterCode={`from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import GridSearchCV
+import pandas as pd
+
+data = {'tenure':[1,24,6,36,3,48,12,30,5,18,2,42,8,28,4],
+        'charges':[90,45,80,42,88,40,65,48,85,62,91,41,78,50,87],
+        'churn':[1,0,1,0,1,0,0,0,1,0,1,0,1,0,1]}
+df = pd.DataFrame(data)
+X = df[['tenure','charges']]
+y = df['churn']
+
+param_grid = {
+    'max_depth': [2, 3, 4],
+    'min_samples_split': [2, 5]
+}
+
+grid = ___(DecisionTreeClassifier(random_state=42), ___, cv=3, scoring='accuracy')
+grid.___(X, y)
+print('Best params:', grid.___)
+print('Best score:', round(grid.___, 2))`}
+        hint="GridSearchCV(model, param_grid, cv=3). grid.fit(X,y). grid.best_params_. grid.best_score_."
+        validate={(output) => output.includes("Best params:") && output.includes("Best score:")}
+      />
     </div>
-  },
+  )},
 ];
 
 LESSONS.push(...ML_LESSONS);

@@ -620,7 +620,14 @@ function AdminDashboard({currentUser}){
   const updateTask=(pi,si,ti,value)=>{const r=JSON.parse(JSON.stringify(roadmap));r[pi].sections[si].tasks[ti]=value;saveRoadmap(r);setEditingTask(null);};
   const deleteTask=(pi,si,ti)=>{if(!window.confirm("Delete this task?"))return;const r=JSON.parse(JSON.stringify(roadmap));r[pi].sections[si].tasks.splice(ti,1);saveRoadmap(r);};
   const addTask=(pi,si)=>{if(!newTaskText.trim())return;const r=JSON.parse(JSON.stringify(roadmap));r[pi].sections[si].tasks.push(newTaskText.trim());saveRoadmap(r);setAddingTask(null);setNewTaskText("");};
-
+const unlockPhase=async(studentId,phaseIndex)=>{
+  const studentRef=doc(db,"users",studentId);
+  const snap=await getDoc(studentRef);
+  if(!snap.exists())return;
+  const current=snap.data().unlockedPhases||[0];
+  if(current.includes(phaseIndex))return;
+  await updateDoc(studentRef,{unlockedPhases:[...current,phaseIndex]});
+};
   const inp={background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:7,padding:"8px 12px",color:T.text,fontSize:12,outline:"none"};
   const tabs=[{id:"overview",label:"📈 Overview"},{id:"students",label:"👥 Students"},{id:"messages",label:"💬 Messages"},{id:"roadmap",label:"✅ Edit Roadmap"}];
 
