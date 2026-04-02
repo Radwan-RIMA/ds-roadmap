@@ -3533,21 +3533,698 @@ print('Best score:', round(grid.___, 2))`}
       />
     </div>
   )},
+
+  // ── PYTHON BASICS
+  {
+    id:"python-basics", phase:"Python Basics", emoji:"🐍", color:"#6ee7b7",
+    title:"Python Basics", subtitle:"Variables, loops, functions — the foundation before everything else",
+    body:()=>(
+    <div>
+      <LP>Before NumPy or Pandas, you need to understand Python itself. This lesson covers everything a beginner needs — variables, data types, loops, conditions, and functions. If you already know these, skim fast and move on.</LP>
+
+      <LH>1. Variables & Data Types</LH>
+      <LP>A variable is a box that holds a value. Python has 4 basic types you'll use constantly.</LP>
+      <Block label="python — variables">{`name = "Ahmed"          # str — text
+age  = 25               # int — whole number
+gpa  = 3.7              # float — decimal
+is_student = True       # bool — True or False
+
+print(name, age)        # Ahmed 25
+print(type(age))        # <class 'int'>`}</Block>
+      <Tip>You don't need to declare types in Python. It figures it out automatically.</Tip>
+
+      <LH>2. Lists & Dictionaries</LH>
+      <LP>These are the two most important data structures in Python.</LP>
+      <Block label="python — lists">{`scores = [85, 92, 78, 96, 88]
+
+print(scores[0])        # 85 — first item (index starts at 0)
+print(scores[-1])       # 88 — last item
+print(len(scores))      # 5 — how many items
+
+scores.append(100)      # add to end
+print(scores[:3])       # [85, 92, 78] — first 3 items`}</Block>
+      <Block label="python — dictionaries">{`student = {
+    "name": "Sara",
+    "age": 22,
+    "grade": "A"
+}
+
+print(student["name"])  # Sara
+student["city"] = "Beirut"  # add new key
+print(student.keys())   # dict_keys(['name', 'age', 'grade', 'city'])`}</Block>
+
+      <LH>3. Loops</LH>
+      <Block label="python — for loop">{`scores = [85, 92, 78, 96]
+
+for score in scores:
+    print(score)
+
+# Loop with index
+for i, score in enumerate(scores):
+    print(f"Student {i+1}: {score}")
+
+# Loop over range
+for i in range(5):
+    print(i)  # 0, 1, 2, 3, 4`}</Block>
+
+      <LH>4. Conditions</LH>
+      <Block label="python — if/elif/else">{`score = 85
+
+if score >= 90:
+    print("A")
+elif score >= 80:
+    print("B")
+elif score >= 70:
+    print("C")
+else:
+    print("F")
+
+# One-liner (ternary)
+grade = "pass" if score >= 60 else "fail"`}</Block>
+
+      <LH>5. Functions</LH>
+      <LP>Functions let you reuse code. In DS you'll write dozens of helper functions.</LP>
+      <Block label="python — functions">{`def calculate_average(scores):
+    """Calculate the average of a list of scores."""
+    return sum(scores) / len(scores)
+
+# Call the function
+scores = [85, 92, 78, 96]
+avg = calculate_average(scores)
+print(f"Average: {avg:.2f}")  # Average: 87.75
+
+# Function with default parameter
+def greet(name, greeting="Hello"):
+    return f"{greeting}, {name}!"
+
+print(greet("Radwan"))           # Hello, Radwan!
+print(greet("Sara", "Welcome")) # Welcome, Sara!`}</Block>
+
+      <LH>6. List Comprehensions</LH>
+      <LP>A Python superpower — create lists in one clean line.</LP>
+      <Block label="python — comprehensions">{`numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# Old way
+squares = []
+for n in numbers:
+    squares.append(n**2)
+
+# Python way — list comprehension
+squares = [n**2 for n in numbers]
+evens   = [n for n in numbers if n % 2 == 0]
+
+print(squares)  # [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+print(evens)    # [2, 4, 6, 8, 10]`}</Block>
+
+      <Callout icon="🎯" color="#6ee7b7" title="WHAT TO MEMORIZE" type="tip">
+        These 6 things cover 90% of what you need for data science Python: variables, lists, dicts, loops, conditions, functions. Everything else you'll learn as you need it.
+      </Callout>
+
+      <Quiz questions={[
+        {q:"What does scores[-1] return for the list [10, 20, 30, 40]?",options:["10","20","30","40"],answer:"40"},
+        {q:"What type is the value True in Python?",options:["str","int","bool","float"],answer:"bool"},
+        {q:"What does len([1, 2, 3, 4, 5]) return?",options:["4","5","6","0"],answer:"5"},
+      ]}/>
+    </div>
+    ),
+  },
+
+  // ── GIT BASICS
+  {
+    id:"git-basics", phase:"Python Basics", emoji:"🌿", color:"#f97316",
+    title:"Git & GitHub", subtitle:"Every DS job requires this — and most candidates are bad at it",
+    body:()=>(
+    <div>
+      <LP>Git is how you save and share your code. Every data science job will expect you to use Git. It takes one hour to learn the basics — and it's one of the highest ROI things you can do right now.</LP>
+
+      <Callout icon="⚠️" color="#f28b82" title="WHY THIS MATTERS" type="warn">
+        "Most DS candidates are bad at Git" — this is directly from hiring managers. Knowing Git properly sets you apart from 80% of candidates.
+      </Callout>
+
+      <LH>1. The Core Concept</LH>
+      <LP>Think of Git as a save system for your code — like checkpoints in a video game. Every time you make a meaningful change, you create a checkpoint (called a commit). You can always go back.</LP>
+      <Block label="terminal — the 3 commands you'll use 90% of the time">{`git add .              # stage all changes
+git commit -m "message" # save checkpoint
+git push               # send to GitHub`}</Block>
+
+      <LH>2. Setting Up a Project</LH>
+      <Block label="terminal — start a new project">{`# Create a new folder and initialize Git
+mkdir my-ds-project
+cd my-ds-project
+git init
+
+# Connect to GitHub (after creating repo on github.com)
+git remote add origin https://github.com/yourusername/my-ds-project.git
+
+# First push
+git add .
+git commit -m "Initial commit"
+git push -u origin main`}</Block>
+
+      <LH>3. The Daily Workflow</LH>
+      <Block label="terminal — daily git workflow">{`# 1. Check what changed
+git status
+
+# 2. See the exact changes
+git diff
+
+# 3. Stage and commit
+git add .
+git commit -m "Add customer churn model with 87% accuracy"
+
+# 4. Push to GitHub
+git push
+
+# 5. Pull latest changes (when working with others)
+git pull`}</Block>
+
+      <LH>4. Writing Good Commit Messages</LH>
+      <Compare items={[
+        {color:"#f28b82", label:"❌ Bad", text:"'fixed stuff' / 'update' / 'asdfgh' / 'changes'"},
+        {color:"#6dd6a0", label:"✅ Good", text:"'Add XGBoost model with SHAP explainability' / 'Fix data leakage in train/test split' / 'Add EDA notebook for Airbnb dataset'"},
+      ]}/>
+
+      <LH>5. .gitignore — What NOT to Push</LH>
+      <LP>Some files should never go on GitHub — API keys, large data files, cached files.</LP>
+      <Block label=".gitignore">{`# Data files (too large for GitHub)
+*.csv
+*.xlsx
+data/
+
+# Environment and secrets
+.env
+*.key
+
+# Python cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/`}</Block>
+
+      <Tip>Never push your .env file or API keys to GitHub. This is a serious security mistake that happens to beginners all the time.</Tip>
+
+      <LH>6. Branching (Basic)</LH>
+      <Block label="terminal — branches">{`# Create a new branch for a new feature
+git checkout -b feature/add-neural-network
+
+# Work on your feature, commit as usual
+git add .
+git commit -m "Add neural network baseline"
+
+# Switch back to main
+git checkout main
+
+# Merge your feature
+git merge feature/add-neural-network`}</Block>
+
+      <Quiz questions={[
+        {q:"What command stages all changed files?",options:["git push","git commit","git add .","git pull"],answer:"git add ."},
+        {q:"What should you NEVER push to GitHub?",options:["README.md","Your .env file with API keys","Python scripts","Notebooks"],answer:"Your .env file with API keys"},
+        {q:"What does git pull do?",options:["Sends code to GitHub","Gets latest changes from GitHub","Creates a new branch","Deletes a commit"],answer:"Gets latest changes from GitHub"},
+      ]}/>
+    </div>
+    ),
+  },
+
+  // ── NEURAL NETWORKS
+  {
+    id:"dl-neural-nets", phase:"Deep Learning", emoji:"🧠", color:"#818cf8",
+    title:"Neural Networks", subtitle:"How machines actually learn — from scratch",
+    body:()=>(
+    <div>
+      <LP>Neural networks are the engine behind ChatGPT, image recognition, and most modern AI. Understanding how they work — even at a high level — makes you a much stronger data scientist.</LP>
+
+      <LH>1. The Big Idea</LH>
+      <LP>A neural network is loosely inspired by the brain. It takes inputs, passes them through layers of "neurons", and produces an output. Each connection has a weight — and training adjusts those weights until the network makes good predictions.</LP>
+      <Callout icon="🧠" color="#818cf8" title="INTUITION FIRST" type="brain">
+        Think of a neural network as a chain of functions. Input goes in, gets transformed layer by layer, and an output comes out. Training is just finding the right transformations.
+      </Callout>
+
+      <LH>2. Your First Neural Network with PyTorch</LH>
+      <Block label="python — simple neural network">{`import torch
+import torch.nn as nn
+
+# Define the network
+class SimpleNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layers = nn.Sequential(
+            nn.Linear(10, 64),   # input: 10 features → 64 neurons
+            nn.ReLU(),           # activation function
+            nn.Linear(64, 32),  # 64 → 32 neurons
+            nn.ReLU(),
+            nn.Linear(32, 1),   # 32 → 1 output
+            nn.Sigmoid()        # output between 0 and 1 (for classification)
+        )
+
+    def forward(self, x):
+        return self.layers(x)
+
+model = SimpleNet()
+print(model)`}</Block>
+
+      <LH>3. Training Loop</LH>
+      <Block label="python — training a neural network">{`import torch.optim as optim
+
+# Loss function and optimizer
+criterion = nn.BCELoss()                    # Binary Cross Entropy
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training loop
+for epoch in range(100):
+    optimizer.zero_grad()      # clear gradients
+    outputs = model(X_train)   # forward pass
+    loss = criterion(outputs, y_train)  # calculate loss
+    loss.backward()            # backpropagation
+    optimizer.step()           # update weights
+
+    if epoch % 10 == 0:
+        print(f"Epoch {epoch}, Loss: {loss.item():.4f}")`}</Block>
+
+      <LH>4. Key Concepts</LH>
+      <Compare items={[
+        {color:"#818cf8",label:"Activation Functions",text:"ReLU, Sigmoid, Tanh. They add non-linearity so the network can learn complex patterns."},
+        {color:"#6dd6a0",label:"Loss Function",text:"Measures how wrong the network is. Training tries to minimize this."},
+        {color:"#f7c96e",label:"Backpropagation",text:"The algorithm that calculates gradients — how much each weight contributed to the error."},
+        {color:"#f472b6",label:"Optimizer",text:"Adam, SGD. Uses gradients to update weights. Adam is almost always the best choice."},
+      ]}/>
+
+      <LH>5. Neural Networks vs Traditional ML</LH>
+      <Compare items={[
+        {color:"#7eb8f7",label:"Traditional ML (XGBoost)",text:"Works great on tabular data. Faster to train. Easier to interpret. Use this first."},
+        {color:"#818cf8",label:"Neural Networks",text:"Wins on images, text, audio. Needs more data and compute. Harder to interpret."},
+      ]}/>
+
+      <Tip>For tabular data (rows and columns), XGBoost almost always beats neural networks. Use deep learning for images, text, and sequences.</Tip>
+
+      <Quiz questions={[
+        {q:"What does backpropagation do?",options:["Makes predictions","Loads data","Calculates gradients to update weights","Creates the network architecture"],answer:"Calculates gradients to update weights"},
+        {q:"Which activation function is most commonly used in hidden layers?",options:["Sigmoid","Tanh","ReLU","Softmax"],answer:"ReLU"},
+        {q:"For tabular data, what usually wins?",options:["Neural Networks","XGBoost/Gradient Boosting","Linear Regression","SVM"],answer:"XGBoost/Gradient Boosting"},
+      ]}/>
+    </div>
+    ),
+  },
+
+  // ── NLP & TRANSFORMERS
+  {
+    id:"dl-nlp", phase:"Deep Learning", emoji:"💬", color:"#c084fc",
+    title:"NLP & Transformers", subtitle:"Text data, BERT, and the technology behind ChatGPT",
+    body:()=>(
+    <div>
+      <LP>NLP (Natural Language Processing) is the hottest area in DS right now. Understanding transformers and how to use Hugging Face models is a massive career differentiator.</LP>
+
+      <LH>1. The NLP Pipeline</LH>
+      <Block label="python — basic NLP pipeline">{`# Step 1: Text cleaning
+import re
+
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-zA-Z0-9 ]', '', text)  # remove punctuation
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+# Step 2: Tokenization
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+texts = ["I love data science", "Machine learning is great", "Python is powerful"]
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(texts)
+print(X.shape)  # (3, unique_words)`}</Block>
+
+      <LH>2. Hugging Face — Use Pretrained Models</LH>
+      <LP>Don't build transformers from scratch. Use Hugging Face — a library of thousands of pretrained models.</LP>
+      <Block label="python — sentiment analysis with Hugging Face">{`from transformers import pipeline
+
+# Load a pretrained sentiment analysis model
+classifier = pipeline("sentiment-analysis")
+
+results = classifier([
+    "I love this product!",
+    "This is terrible and I hate it.",
+    "It's okay, nothing special."
+])
+
+for result in results:
+    print(f"{result['label']}: {result['score']:.2%}")`}</Block>
+
+      <LH>3. Fine-tuning BERT</LH>
+      <Block label="python — fine-tune DistilBERT for classification">{`from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import TrainingArguments, Trainer
+
+# Load pretrained model and tokenizer
+model_name = "distilbert-base-uncased"
+tokenizer  = AutoTokenizer.from_pretrained(model_name)
+model      = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+
+# Tokenize your dataset
+def tokenize(batch):
+    return tokenizer(batch["text"], truncation=True, padding=True)
+
+# Training arguments
+training_args = TrainingArguments(
+    output_dir="./results",
+    num_train_epochs=3,
+    per_device_train_batch_size=16,
+    evaluation_strategy="epoch",
+    save_strategy="epoch",
+)
+
+# Train
+trainer = Trainer(model=model, args=training_args, train_dataset=train_data)
+trainer.train()`}</Block>
+
+      <LH>4. Key NLP Concepts</LH>
+      <Compare items={[
+        {color:"#c084fc",label:"Tokenization",text:"Breaking text into tokens (words or subwords). BERT uses subword tokenization."},
+        {color:"#7eb8f7",label:"Embeddings",text:"Turning words into vectors. Similar words have similar vectors."},
+        {color:"#6dd6a0",label:"Attention",text:"The mechanism that lets transformers understand context. 'Bank' means different things in 'river bank' vs 'bank account'."},
+        {color:"#f7c96e",label:"Fine-tuning",text:"Taking a pretrained model and training it a bit more on your specific task. Almost always beats training from scratch."},
+      ]}/>
+
+      <Tip>For any NLP task, start with a Hugging Face pipeline. If it's not good enough, fine-tune. Only train from scratch if you have millions of examples.</Tip>
+
+      <Quiz questions={[
+        {q:"What is fine-tuning?",options:["Training a model from scratch","Taking a pretrained model and adapting it to your task","Cleaning text data","Removing punctuation"],answer:"Taking a pretrained model and adapting it to your task"},
+        {q:"What library has thousands of pretrained NLP models?",options:["sklearn","PyTorch","Hugging Face","NLTK"],answer:"Hugging Face"},
+        {q:"What does the attention mechanism do?",options:["Speeds up training","Helps the model understand context","Removes stopwords","Tokenizes text"],answer:"Helps the model understand context"},
+      ]}/>
+    </div>
+    ),
+  },
+
+  // ── INTERVIEW PREP
+  {
+    id:"interview-prep", phase:"Portfolio & Jobs", emoji:"🎯", color:"#f472b6",
+    title:"Interview Prep", subtitle:"What interviewers actually ask — and how to answer",
+    body:()=>(
+    <div>
+      <LP>DS interviews have 4 parts: SQL, statistics, ML theory, and case studies. Most candidates fail SQL and statistics — not ML. This lesson covers what you'll actually be asked.</LP>
+
+      <LH>1. SQL Interview Questions</LH>
+      <LP>SQL is the first filter. Practice these until they're automatic.</LP>
+      <Block label="sql — common interview questions">{`-- Q: Find the top 3 highest paid employees per department
+SELECT department, name, salary,
+       RANK() OVER (PARTITION BY department ORDER BY salary DESC) as rnk
+FROM employees
+WHERE rnk <= 3;
+
+-- Q: Find users who made purchases in both Jan and Feb
+SELECT user_id
+FROM orders
+WHERE MONTH(order_date) IN (1, 2)
+GROUP BY user_id
+HAVING COUNT(DISTINCT MONTH(order_date)) = 2;
+
+-- Q: Calculate 7-day rolling average of revenue
+SELECT date,
+       revenue,
+       AVG(revenue) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) as rolling_7d
+FROM daily_revenue;`}</Block>
+
+      <LH>2. Statistics Interview Questions</LH>
+      <Compare items={[
+        {color:"#f472b6",label:"p-value",text:"Probability of seeing results at least this extreme if the null hypothesis is true. NOT the probability that the null is true."},
+        {color:"#7eb8f7",label:"Confidence Interval",text:"If we repeated the experiment 100 times, 95% of our CIs would contain the true parameter. Does NOT mean 95% chance the true value is in this specific interval."},
+        {color:"#6dd6a0",label:"Type I vs Type II Error",text:"Type I: false positive (reject null when it's true). Type II: false negative (fail to reject null when it's false)."},
+        {color:"#f7c96e",label:"Central Limit Theorem",text:"Sample means follow a normal distribution as sample size grows — regardless of the population distribution."},
+      ]}/>
+
+      <LH>3. ML Theory Questions</LH>
+      <Block label="common ml interview questions + model answers">{`Q: What is overfitting and how do you fix it?
+A: Overfitting is when a model performs well on training data but poorly on new data.
+   It memorizes instead of generalizing.
+   Fix: more data, regularization (L1/L2), cross-validation, simpler model, dropout.
+
+Q: Explain the bias-variance tradeoff.
+A: High bias = underfitting (model too simple). High variance = overfitting (model too complex).
+   The goal is to find the sweet spot.
+   Simple models have high bias. Complex models have high variance.
+
+Q: When would you use Random Forest vs XGBoost?
+A: Both are good on tabular data. XGBoost usually wins on accuracy but takes more tuning.
+   Random Forest is faster and easier to get started. Use XGBoost for competitions and production.
+
+Q: How do you handle class imbalance?
+A: Resample (SMOTE, undersampling), adjust class_weight='balanced',
+   use appropriate metric (F1, AUC instead of accuracy), or use threshold tuning.`}</Block>
+
+      <LH>4. Case Study Framework</LH>
+      <LP>When given an open-ended DS case, always use this structure:</LP>
+      <Block label="case study framework">{`1. CLARIFY → Ask questions before solving
+   "What is the business goal?"
+   "What data do we have?"
+   "What counts as success?"
+
+2. DATA → What data would you need?
+   "I'd need user behavior logs, transaction data, demographics..."
+
+3. METRIC → Define success
+   "I'd optimize for 30-day retention, not click-through rate because..."
+
+4. MODEL → Approach
+   "I'd start with a logistic regression baseline, then try XGBoost..."
+
+5. LIMITATIONS → Show you think critically
+   "One risk is data leakage if we include post-treatment variables..."
+
+6. DEPLOY → How would you put it in production?
+   "I'd wrap it in a FastAPI endpoint, monitor with MLflow..."`}</Block>
+
+      <Callout icon="🎯" color="#f472b6" title="THE #1 INTERVIEW MISTAKE" type="brain">
+        Candidates jump straight to the model. Interviewers want to see you clarify the problem first, define a metric, then think about data. The model is the last step.
+      </Callout>
+
+      <Quiz questions={[
+        {q:"What does a p-value of 0.03 mean?",options:["There is a 3% chance the null hypothesis is true","Results this extreme would occur 3% of the time if the null is true","The effect size is 3%","We are 97% confident in our result"],answer:"Results this extreme would occur 3% of the time if the null is true"},
+        {q:"What is the first step in a case study interview?",options:["Build the model","Choose an algorithm","Clarify the business goal and available data","Calculate metrics"],answer:"Clarify the business goal and available data"},
+        {q:"Which metric is better for imbalanced classification?",options:["Accuracy","F1-score or AUC","MSE","R-squared"],answer:"F1-score or AUC"},
+      ]}/>
+    </div>
+    ),
+  },
+
+  // ── STREAMLIT
+  {
+    id:"streamlit", phase:"Portfolio & Jobs", emoji:"🚀", color:"#34d399",
+    title:"Streamlit — Deploy Your Models", subtitle:"Turn any Python script into a live web app in under 1 hour",
+    body:()=>(
+    <div>
+      <LP>Streamlit is the fastest way to showcase your data science work. Instead of showing a Jupyter notebook, you can say: "Here's a live demo you can use right now." That changes everything in an interview.</LP>
+
+      <Callout icon="💡" color="#34d399" title="WHY THIS MATTERS" type="tip">
+        "I built this, you can use it right now at this URL" is the most powerful thing you can say in a data science interview.
+      </Callout>
+
+      <LH>1. Install & Run</LH>
+      <Block label="terminal">{`pip install streamlit
+
+# Create your app
+streamlit run app.py
+
+# Opens automatically at http://localhost:8501`}</Block>
+
+      <LH>2. Your First App</LH>
+      <Block label="app.py — hello world">{`import streamlit as st
+import pandas as pd
+
+st.title("My First DS App")
+st.write("This is a Streamlit app!")
+
+# Upload a file
+uploaded = st.file_uploader("Upload a CSV", type="csv")
+if uploaded:
+    df = pd.read_csv(uploaded)
+    st.write(df.head())
+    st.write(f"Shape: {df.shape}")`}</Block>
+
+      <LH>3. Churn Predictor App</LH>
+      <Block label="app.py — ML model deployment">{`import streamlit as st
+import pickle
+import pandas as pd
+
+# Load your trained model
+model = pickle.load(open("churn_model.pkl", "rb"))
+
+st.title("Customer Churn Predictor")
+st.write("Enter customer details to predict churn probability")
+
+# Input widgets
+tenure  = st.slider("Tenure (months)", 0, 72, 12)
+charges = st.number_input("Monthly charges ($)", 20.0, 120.0, 50.0)
+contract = st.selectbox("Contract type", ["Month-to-month", "One year", "Two year"])
+
+# Predict button
+if st.button("Predict Churn Risk"):
+    contract_map = {"Month-to-month": 0, "One year": 1, "Two year": 2}
+    X = pd.DataFrame([[tenure, charges, contract_map[contract]]],
+                     columns=["tenure", "MonthlyCharges", "Contract"])
+
+    prob = model.predict_proba(X)[0][1]
+
+    if prob > 0.7:
+        st.error(f"⚠️ High churn risk: {prob:.0%}")
+    elif prob > 0.4:
+        st.warning(f"⚡ Medium risk: {prob:.0%}")
+    else:
+        st.success(f"✅ Low risk: {prob:.0%}")`}</Block>
+
+      <LH>4. Deploy to Streamlit Cloud (Free)</LH>
+      <Block label="terminal — deploy in 3 steps">{`# Step 1: Push your project to GitHub
+git add .
+git commit -m "Add Streamlit churn app"
+git push
+
+# Step 2: Go to share.streamlit.io
+# Click "New app"
+# Connect your GitHub repo
+# Select your app.py file
+# Click Deploy
+
+# Step 3: Share the URL
+# https://yourname-churn-predictor.streamlit.app`}</Block>
+
+      <Tip>Add a requirements.txt file with your dependencies so Streamlit Cloud knows what to install: pandas, scikit-learn, xgboost, etc.</Tip>
+
+      <Quiz questions={[
+        {q:"What command runs a Streamlit app locally?",options:["python app.py","streamlit run app.py","streamlit start","flask run"],answer:"streamlit run app.py"},
+        {q:"Where can you deploy Streamlit apps for free?",options:["AWS","Heroku","share.streamlit.io","Azure"],answer:"share.streamlit.io"},
+        {q:"What widget lets users upload a file?",options:["st.input()","st.upload()","st.file_uploader()","st.load()"],answer:"st.file_uploader()"},
+      ]}/>
+    </div>
+    ),
+  },
+
+  // ── LLM & RAG
+  {
+    id:"llm-rag", phase:"Deep Learning", emoji:"🤖", color:"#a78bfa",
+    title:"LLMs & RAG Systems", subtitle:"Build AI-powered apps with LLM APIs and retrieval",
+    body:()=>(
+    <div>
+      <LP>LLMs (Large Language Models) are the technology behind ChatGPT, Claude, and Gemini. As a data scientist, you don't need to build them — you need to know how to use them effectively and build products on top of them.</LP>
+
+      <LH>1. Using LLM APIs</LH>
+      <Block label="python — calling the OpenAI API">{`from openai import OpenAI
+
+client = OpenAI(api_key="your-api-key")
+
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": "You are a data science tutor."},
+        {"role": "user",   "content": "Explain overfitting in simple terms."}
+    ],
+    temperature=0.7,
+    max_tokens=500
+)
+
+print(response.choices[0].message.content)`}</Block>
+
+      <LH>2. RAG — Retrieval Augmented Generation</LH>
+      <LP>RAG is the most important LLM pattern. Instead of relying on the model's training data, you retrieve relevant documents and include them in the prompt. This lets you build Q&A systems over your own data.</LP>
+      <Block label="python — simple RAG pipeline">{`from openai import OpenAI
+import faiss
+import numpy as np
+
+# Step 1: Embed your documents
+client = OpenAI()
+
+def embed(text):
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=text
+    )
+    return np.array(response.data[0].embedding)
+
+# Your documents
+docs = [
+    "DS Academy covers Python, SQL, ML, and Deep Learning.",
+    "Students can message Radwan directly on WhatsApp.",
+    "The $29/month plan includes all 18+ lessons.",
+]
+
+# Build FAISS index
+embeddings = np.array([embed(doc) for doc in docs]).astype("float32")
+index = faiss.IndexFlatL2(embeddings.shape[1])
+index.add(embeddings)
+
+# Step 2: Query — find relevant docs
+def search(query, k=2):
+    q_emb = embed(query).astype("float32").reshape(1, -1)
+    _, indices = index.search(q_emb, k)
+    return [docs[i] for i in indices[0]]
+
+# Step 3: Generate answer with context
+def rag_answer(question):
+    relevant = search(question)
+    context = "\n".join(relevant)
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": f"Answer based on this context:\n{context}"},
+            {"role": "user", "content": question}
+        ]
+    )
+    return response.choices[0].message.content
+
+print(rag_answer("How much does DS Academy cost?"))`}</Block>
+
+      <LH>3. Prompt Engineering</LH>
+      <Compare items={[
+        {color:"#f28b82",label:"❌ Bad Prompt",text:"'Tell me about machine learning'"},
+        {color:"#6dd6a0",label:"✅ Good Prompt",text:"'You are an expert ML engineer. Explain gradient boosting in 3 bullet points for a junior DS with Python experience. Use a real-world analogy.'"},
+      ]}/>
+      <Block label="python — prompt engineering techniques">{`# Few-shot prompting
+prompt = """
+Classify the sentiment of these reviews:
+
+Review: "This product is amazing!" → Positive
+Review: "Terrible experience, never again" → Negative
+Review: "It's okay, nothing special" → Neutral
+
+Review: "Best purchase I've made this year!" →
+"""
+
+# Chain of thought
+prompt = """
+Solve this step by step:
+A model has 90% accuracy on 100 samples where 95 are negative and 5 are positive.
+Is this a good model? Think through this carefully.
+"""  `}</Block>
+
+      <Tip>RAG is the pattern that gets you hired in 2025. Every company with internal documents wants to build a Q&A system. Being able to build one sets you apart.</Tip>
+
+      <Quiz questions={[
+        {q:"What does RAG stand for?",options:["Random Augmented Generation","Retrieval Augmented Generation","Recursive Algorithm Generation","Real AI Generation"],answer:"Retrieval Augmented Generation"},
+        {q:"What is the purpose of FAISS in a RAG system?",options:["To call the LLM API","To clean text data","To store and search embeddings efficiently","To tokenize text"],answer:"To store and search embeddings efficiently"},
+        {q:"What is few-shot prompting?",options:["Using a small model","Providing examples in the prompt","Training with limited data","Using only 3 neurons"],answer:"Providing examples in the prompt"},
+      ]}/>
+    </div>
+    ),
+  },
+
 ];
 
 LESSONS.push(...ML_LESSONS);
 LESSONS.push(...ADVANCED_ML_LESSONS);
 const LEARN_PHASES = [
-  {label:"🐍 Python for DS", ids:["numpy","pandas-basics","pandas-advanced","eda","visualization"]},
-  {label:"🗄️ SQL",           ids:["sql-basics","sql-joins","sql-window"]},
-  {label:"📐 Statistics",    ids:["probability","distributions","correlation","inference"]},
-  {label:"🤖 Machine Learning", ids:["ml-workflow","ml-regression","ml-trees","ml-evaluation","ml-overfitting","ml-sklearn"]},
-  {label:"⚡ Advanced ML", ids:["adv-xgboost","adv-lightgbm","adv-shap","adv-feature-eng","adv-pipelines","adv-hypertuning"]},
+  {label:"🌱 Python Basics",   ids:["python-basics","git-basics"]},
+  {label:"🐍 Python for DS",   ids:["numpy","pandas-basics","pandas-advanced","eda","visualization"]},
+  {label:"🗄️ SQL",             ids:["sql-basics","sql-joins","sql-window"]},
+  {label:"📐 Statistics",      ids:["probability","distributions","correlation","inference"]},
+  {label:"🤖 Machine Learning",ids:["ml-workflow","ml-regression","ml-trees","ml-evaluation","ml-overfitting","ml-sklearn"]},
+  {label:"⚡ Advanced ML",     ids:["adv-xgboost","adv-lightgbm","adv-shap","adv-feature-eng","adv-pipelines","adv-hypertuning"]},
+  {label:"🧠 Deep Learning",   ids:["dl-neural-nets","dl-nlp","llm-rag"]},
+  {label:"🚀 Portfolio & Jobs",ids:["streamlit","interview-prep"]},
 ];
 
 
 // Maps roadmap section id → first lesson to open when "Study this" is clicked
 const SECTION_TO_FIRST_LESSON = {
+  "python-core":"python-basics",
   "python-ds":  "numpy",
   "sql":        "sql-basics",
   "stats-prob": "probability",
@@ -3555,6 +4232,11 @@ const SECTION_TO_FIRST_LESSON = {
   "stats-inf":  "inference",
   "ml-core":    "ml-workflow",
   "ml-advanced":"adv-xgboost",
+  "dl-nn":      "dl-neural-nets",
+  "dl-nlp":     "dl-nlp",
+  "llm":        "llm-rag",
+  "mlops":      "streamlit",
+  "portfolio":  "interview-prep",
 };
 
 // Maps lesson id → which roadmap section task it completes
@@ -3583,6 +4265,13 @@ const LESSON_COMPLETES_TASK = {
   "adv-feature-eng":{section:"ml-advanced", task:3},
   "adv-pipelines":  {section:"ml-advanced", task:4},
   "adv-hypertuning":{section:"ml-advanced", task:5},
+  "python-basics":  {section:"python-core", task:0},
+  "git-basics":     {section:"python-core", task:1},
+  "dl-neural-nets": {section:"dl-nn",       task:0},
+  "dl-nlp":         {section:"dl-nlp",      task:0},
+  "llm-rag":        {section:"llm",         task:0},
+  "streamlit":      {section:"mlops",       task:0},
+  "interview-prep": {section:"int-ml",      task:0},
 };
 
 // ── LEARN TAB ─────────────────────────────────────────────────────────────────
