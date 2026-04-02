@@ -248,6 +248,165 @@ function Btn({onClick,children,color=T.info,style={}}){
   return <button onClick={onClick} style={{background:color+"18",border:`1px solid ${color}55`,color,padding:"7px 14px",borderRadius:7,cursor:"pointer",fontSize:12,fontWeight:600,...style}}>{children}</button>;
 }
 
+// ── PLATFORM PREVIEW
+function PlatformPreview(){
+  const [active,setActive]=useState(0);
+  const tabs=[
+    {
+      label:"📋 Roadmap",
+      desc:"Your complete learning path — every phase, every section, every task. Always know exactly where you are and what's next.",
+      preview:(
+        <div style={{background:"#0d0c18",borderRadius:12,padding:"20px",fontFamily:"monospace"}}>
+          {[
+            {phase:"Phase 1",title:"Python & Data Tools",icon:"🐍",color:"#7eb8f7",time:"Months 1–2",progress:100,done:["Python Basics","Git & GitHub","NumPy Arrays","Pandas Basics","Pandas Advanced","EDA","Data Visualization"]},
+            {phase:"Phase 2",title:"Machine Learning",icon:"🤖",color:"#a78bfa",time:"Months 2–4",progress:60,done:["ML Workflow","Linear & Logistic Regression","Decision Trees & Random Forests"],pending:["Model Evaluation","Overfitting & Regularization","Scikit-learn Pipelines"]},
+            {phase:"Phase 3",title:"Advanced ML",icon:"📊",color:"#6dd6a0",time:"Months 3–7",progress:0,pending:["XGBoost & Gradient Boosting","LightGBM & CatBoost","SHAP Explainability","Feature Engineering","ML Pipelines","Hyperparameter Tuning"]},
+            {phase:"Phase 4",title:"Deep Learning & LLMs",icon:"🧠",color:"#f7c96e",time:"Months 7–12",progress:0,pending:["Neural Networks","NLP & Transformers","LLMs & RAG Systems"]},
+            {phase:"Phase 5",title:"Portfolio & Jobs",icon:"🚀",color:"#c792ea",time:"Months 12–18",progress:0,pending:["Streamlit Deployment","Interview Prep","Kaggle Competitions","LinkedIn Optimization","Salary Negotiation"]},
+          ].map((ph,i)=>(
+            <div key={i} style={{marginBottom:10,background:"#13111a",border:`1px solid ${ph.color}20`,borderRadius:12,overflow:"hidden"}}>
+              {/* Phase header */}
+              <div style={{padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",background:`linear-gradient(90deg,${ph.color}08,transparent)`}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:18}}>{ph.icon}</span>
+                  <div>
+                    <div style={{fontSize:11,color:ph.color,fontFamily:"monospace",marginBottom:2}}>{ph.phase} · {ph.time}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:"#e2dff0"}}>{ph.title}</div>
+                  </div>
+                </div>
+                <span style={{fontSize:11,padding:"3px 10px",borderRadius:100,background:ph.color+"12",color:ph.color,border:`1px solid ${ph.color}25`,fontFamily:"monospace"}}>{(ph.done||[]).length+(ph.pending||[]).length} lessons</span>
+              </div>
+              {/* Tasks */}
+              <div style={{padding:"10px 16px 14px",display:"flex",flexWrap:"wrap",gap:5}}>
+                {[...(ph.done||[]),...(ph.pending||[])].map((s,j)=>(
+                  <span key={j} style={{fontSize:11,padding:"3px 10px",borderRadius:100,background:ph.color+"10",color:ph.color,border:`1px solid ${ph.color}20`}}>{s}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      label:"📚 Lessons",
+      desc:"Interactive lessons with real code, quizzes, and exercises that run Python directly in your browser. No setup needed.",
+      preview:(
+        <div style={{background:"#0d0c18",borderRadius:12,overflow:"hidden"}}>
+          <div style={{background:"#0a0914",padding:"10px 16px",borderBottom:"1px solid #1a1830",display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:14}}>🐼</span>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:"#e2dff0"}}>Pandas: Loading & Exploring Data</div>
+              <div style={{fontSize:10,color:"#3a3660",fontFamily:"monospace"}}>Python for DS · Lesson 2 of 5</div>
+            </div>
+            <span style={{marginLeft:"auto",fontSize:11,background:"#6dd6a015",color:"#6dd6a0",border:"1px solid #6dd6a033",padding:"3px 10px",borderRadius:100}}>✓ Done</span>
+          </div>
+          <div style={{padding:"16px",fontSize:13,color:"#8b87a8",lineHeight:1.8}}>
+            <p style={{marginBottom:12}}>Pandas is the tool you will use <strong style={{color:"#e2dff0"}}>every single day</strong> as a data scientist. It's built on NumPy and adds the DataFrame — a table structure that makes working with real data natural.</p>
+            <div style={{background:"#060d18",border:"1px solid #1e2a3a",borderRadius:8,padding:"12px",fontFamily:"monospace",fontSize:12,color:"#e2e8f0",lineHeight:1.8,marginBottom:12}}>
+              <div style={{color:"#475569",fontSize:10,marginBottom:8}}>▶ main.py</div>
+              <div><span style={{color:"#a78bfa"}}>import</span> <span style={{color:"#7eb8f7"}}>pandas</span> <span style={{color:"#a78bfa"}}>as</span> <span style={{color:"#7eb8f7"}}>pd</span></div>
+              <div style={{marginTop:4}}><span style={{color:"#7eb8f7"}}>df</span> = pd.<span style={{color:"#6dd6a0"}}>read_csv</span>(<span style={{color:"#f7c96e"}}>'data.csv'</span>)</div>
+              <div style={{marginTop:4}}><span style={{color:"#7b78a0"}}>print</span>(df.<span style={{color:"#6dd6a0"}}>head</span>())</div>
+              <div style={{marginTop:4}}><span style={{color:"#7b78a0"}}>print</span>(df.<span style={{color:"#6dd6a0"}}>describe</span>())</div>
+            </div>
+            <div style={{background:"#6dd6a010",border:"1px solid #6dd6a033",borderRadius:8,padding:"10px 12px",fontSize:12,color:"#6dd6a0"}}>
+              ★ df.head() shows the first 5 rows. Always run this first when you load a new dataset.
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      label:"🤖 AI Coach",
+      desc:"Your personal AI tutor available 24/7. Ask anything about Python, ML, your career — get instant expert answers.",
+      preview:(
+        <div style={{background:"#0d0c18",borderRadius:12,overflow:"hidden"}}>
+          <div style={{background:"#0a0914",padding:"12px 16px",borderBottom:"1px solid #1a1830",display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#8b7cf6,#6dd6a0)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🤖</div>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:"#e2dff0"}}>AI Career Coach</div>
+              <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:5,height:5,borderRadius:"50%",background:"#6dd6a0"}}/><span style={{fontSize:10,color:"#6dd6a0"}}>Online 24/7</span></div>
+            </div>
+          </div>
+          <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:12}}>
+            <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+              <div style={{background:"rgba(126,184,247,0.1)",border:"1px solid rgba(126,184,247,0.2)",borderRadius:"14px 4px 14px 14px",padding:"10px 14px",fontSize:13,color:"#e2dff0",maxWidth:"80%"}}>
+                What's the difference between overfitting and underfitting?
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#8b7cf6,#6dd6a0)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>🤖</div>
+              <div style={{background:"#13111a",border:"1px solid #1a1830",borderRadius:"4px 14px 14px 14px",padding:"10px 14px",fontSize:13,color:"#8b87a8",maxWidth:"80%",lineHeight:1.7}}>
+                <strong style={{color:"#e2dff0"}}>Overfitting</strong> = your model memorizes the training data but fails on new data. Like a student who memorizes answers without understanding.<br/><br/>
+                <strong style={{color:"#e2dff0"}}>Underfitting</strong> = your model is too simple and can't even learn the training data. The goal is the sweet spot between both 🎯
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      label:"🏅 Leaderboard",
+      desc:"See where you stand among all students. Friendly competition keeps you motivated and consistent.",
+      preview:(
+        <div style={{background:"#0d0c18",borderRadius:12,overflow:"hidden"}}>
+          <div style={{background:"#0a0914",padding:"12px 16px",borderBottom:"1px solid #1a1830"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"#e2dff0"}}>🏅 Student Leaderboard</div>
+          </div>
+          <div style={{padding:"12px"}}>
+            {[
+              {rank:1,name:"Ahmed K.",progress:78,streak:14,color:"#f7c96e",medal:"🥇"},
+              {rank:2,name:"Sara M.",progress:65,streak:9,color:"#8b87a8",medal:"🥈"},
+              {rank:3,name:"Omar T.",progress:52,streak:6,color:"#cd7f32",medal:"🥉"},
+              {rank:4,name:"You",progress:38,streak:3,color:"#8b7cf6",medal:"4"},
+            ].map((s,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",borderRadius:8,marginBottom:6,background:s.name==="You"?"rgba(139,124,246,0.08)":"transparent",border:s.name==="You"?"1px solid rgba(139,124,246,0.2)":"1px solid transparent"}}>
+                <span style={{fontSize:16,width:24,textAlign:"center"}}>{s.medal}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:s.name==="You"?700:500,color:s.name==="You"?"#8b7cf6":"#e2dff0",marginBottom:4}}>{s.name}</div>
+                  <div style={{height:4,background:"#1a1830",borderRadius:2}}><div style={{height:"100%",width:`${s.progress}%`,background:s.color,borderRadius:2}}/></div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:12,fontWeight:700,color:s.color}}>{s.progress}%</div>
+                  <div style={{fontSize:10,color:"#3a3660"}}>🔥 {s.streak} days</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    },
+  ];
+
+  return(
+    <div>
+      {/* Tabs */}
+      <div style={{display:"flex",gap:6,marginBottom:24,flexWrap:"wrap"}}>
+        {tabs.map((t,i)=>(
+          <button key={i} onClick={()=>setActive(i)}
+            style={{padding:"8px 18px",borderRadius:10,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.2s",
+              background:active===i?"#8b7cf6":"rgba(255,255,255,0.04)",
+              color:active===i?"#fff":"#6b6880",
+              boxShadow:active===i?"0 4px 16px rgba(139,124,246,0.3)":"none"}}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {/* Description */}
+      <p style={{fontSize:14,color:"#6b6880",marginBottom:20,lineHeight:1.7}}>{tabs[active].desc}</p>
+      {/* Preview */}
+      {tabs[active].preview}
+      {/* CTA */}
+      <div style={{textAlign:"center",marginTop:24}}>
+        <a href="https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20join%20DS%20Academy!" target="_blank" rel="noreferrer"
+          style={{display:"inline-flex",alignItems:"center",gap:8,background:"#25d366",color:"#fff",padding:"12px 28px",borderRadius:10,fontSize:14,fontWeight:700,textDecoration:"none",boxShadow:"0 4px 20px rgba(37,211,102,0.25)"}}>
+          💬 Join Now — $29/month
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ── LIVE CODE DEMO (landing page)
 function LiveCodeDemo(){
   const ex1 = [
@@ -686,6 +845,20 @@ function LoginPage(){
             </div>
           ))}
         </div>
+      </div>
+    </section>
+
+    {/* ── PLATFORM PREVIEW */}
+    <section style={{padding:"72px 24px",background:"#0c0b16"}}>
+      <div style={{maxWidth:1000,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:48}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// inside the platform</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(28px,4vw,44px)",letterSpacing:"-0.03em",marginBottom:14}}>See exactly what you're getting.</h2>
+          <p style={{color:"#6b6880",fontSize:16,maxWidth:480,margin:"0 auto",lineHeight:1.7}}>No surprises. Here's what the platform looks like from the inside.</p>
+        </div>
+
+        {/* Tab switcher */}
+        <PlatformPreview/>
       </div>
     </section>
 
