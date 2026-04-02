@@ -7,8 +7,9 @@ function AIJobCalculator(){
 
   const callDeepSeek=async(jobTitle)=>{
     try{
-      const key=import.meta?.env?.VITE_DEEPSEEK_API_KEY||"";
-      if(!key)return null;
+      const key=import.meta.env.VITE_DEEPSEEK_API_KEY||"";
+      console.log("DeepSeek key available:", !!key, key ? key.slice(-4) : "none");
+      if(!key){console.log("No key found");return null;}
       const res=await fetch("https://api.deepseek.com/chat/completions",{
         method:"POST",
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},
@@ -1239,7 +1240,7 @@ function AIChatbot({userDoc}){
     setInput("");
     setLoading(true);
     try{
-      const key=import.meta?.env?.VITE_DEEPSEEK_API_KEY||"";
+      const key=(typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_DEEPSEEK_API_KEY) ? import.meta.env.VITE_DEEPSEEK_API_KEY : "";
       const res=await fetch("https://api.deepseek.com/chat/completions",{
         method:"POST",
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},
