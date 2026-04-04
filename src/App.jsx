@@ -3,6 +3,30 @@ function AIJobCalculator(){
   const [job,setJob]=useState("");
   const [result,setResult]=useState(null);
   const [calculating,setCalculating]=useState(false);
+  const [aiPowered,setAiPowered]=useState(false);
+
+  const callDeepSeek=async(jobTitle)=>{
+    try{
+      const key=import.meta.env.VITE_DS_AI_TOKEN||"";
+      console.log("Key available:",!!key);
+      if(!key)return null;
+      const res=await fetch("https://api.deepseek.com/chat/completions",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},
+        body:JSON.stringify({
+          model:"deepseek-chat",
+          messages:[{role:"user",content:`You are an AI automation expert. Analyze this job: "${jobTitle}". Return ONLY raw JSON no markdown: {"risk":<0-100>,"label":"<Very Low Risk|Lower Risk|Moderate Risk|High Risk|Very High Risk>","reason":"<2 sentences specific to this job>","skills":["<skill1>","<skill2>","<skill3>","<skill4>"],"months":<4-12>}`}],
+          max_tokens:300
+        })
+      });
+      const data=await res.json();
+      const text=data.choices[0].message.content.trim().replace(/```json|```/g,"").trim();
+      const parsed=JSON.parse(text);
+      const risk=Number(parsed.risk);
+      const color=risk>=80?"#f28b82":risk>=60?"#f7c96e":risk>=40?"#a78bfa":"#6dd6a0";
+      return{...parsed,risk,color};
+    }catch(e){console.log("DeepSeek error:",e);return null;}
+  };
 
   const jobData={
     "data entry":{risk:92,color:"#f28b82",label:"Very High Risk",skills:["Python","SQL","Data Analysis","Automation"],months:4,reason:"Repetitive data tasks are among the first to be automated by AI systems."},
@@ -10,34 +34,56 @@ function AIJobCalculator(){
     "data analyst":{risk:35,color:"#a78bfa",label:"Moderate Risk",skills:["ML","Advanced SQL","Storytelling","Python"],months:8,reason:"Basic analysis is at risk but strategic data scientists who drive decisions are in high demand."},
     "journalist":{risk:55,color:"#f7c96e",label:"Moderate Risk",skills:["NLP","Text Analysis","Python","Data Journalism"],months:7,reason:"AI can generate routine content. Data journalists who find stories in numbers are thriving."},
     "teacher":{risk:28,color:"#6dd6a0",label:"Lower Risk",skills:["EdTech Analytics","Python","Learning Data","NLP"],months:9,reason:"Human connection in education is hard to replace, but AI tools are changing how teaching works."},
+    "professor":{risk:22,color:"#6dd6a0",label:"Lower Risk",skills:["Research Analytics","Python","NLP","Statistical Modeling"],months:9,reason:"Academic research is being supercharged by AI tools. Professors who use data methods publish faster and better."},
+    "lecturer":{risk:26,color:"#6dd6a0",label:"Lower Risk",skills:["EdTech Analytics","Python","Learning Data","NLP"],months:9,reason:"Teaching roles are resilient but AI is transforming how content is delivered. Data skills open ed-tech opportunities."},
     "software engineer":{risk:22,color:"#6dd6a0",label:"Lower Risk",skills:["ML Engineering","MLOps","LLM APIs","Python"],months:6,reason:"Engineers who can build AI systems are more valuable than ever. Adapt, don't fear."},
+    "developer":{risk:24,color:"#6dd6a0",label:"Lower Risk",skills:["ML Engineering","Python","LLM APIs","MLOps"],months:6,reason:"AI generates boilerplate but developers who build intelligent systems are commanding higher salaries."},
+    "web developer":{risk:38,color:"#a78bfa",label:"Moderate Risk",skills:["Python","Analytics","A/B Testing","Data-Driven UI"],months:6,reason:"AI tools are automating front-end code. Web devs who use data to drive UX decisions stay ahead."},
     "doctor":{risk:18,color:"#6dd6a0",label:"Lower Risk",skills:["Medical ML","Clinical Analytics","Python","Research"],months:10,reason:"Medical diagnosis AI assists doctors but the human judgment and responsibility remain essential."},
+    "physician":{risk:18,color:"#6dd6a0",label:"Lower Risk",skills:["Medical ML","Clinical Analytics","Python","Health Data"],months:10,reason:"AI assists diagnosis but clinical judgment, patient relationships and liability remain human."},
+    "surgeon":{risk:10,color:"#6dd6a0",label:"Very Low Risk",skills:["Surgical Robotics Data","Python","Clinical Analytics","Imaging ML"],months:12,reason:"Surgical precision requires human hands. AI assists with imaging and planning but cannot replace surgeons."},
     "marketer":{risk:61,color:"#f7c96e",label:"Moderate Risk",skills:["Marketing Analytics","SQL","A/B Testing","Python"],months:5,reason:"Generic marketing is being automated. Data-driven marketers who optimize with numbers are safe."},
+    "digital marketer":{risk:63,color:"#f7c96e",label:"Moderate Risk",skills:["Marketing Analytics","Python","A/B Testing","SQL"],months:5,reason:"AI handles ad copy and targeting automation. Marketers who measure ROI with data and run experiments thrive."},
     "lawyer":{risk:44,color:"#a78bfa",label:"Moderate Risk",skills:["Legal Analytics","NLP","Python","Document AI"],months:8,reason:"Document review is automating fast. Strategic legal work requires human judgment."},
+    "attorney":{risk:44,color:"#a78bfa",label:"Moderate Risk",skills:["Legal Analytics","NLP","Python","Document AI"],months:8,reason:"Contract review and legal research are automating. Litigators and strategic advisors remain valuable."},
     "hr":{risk:57,color:"#f7c96e",label:"Moderate Risk",skills:["People Analytics","Python","SQL","Predictive Hiring"],months:6,reason:"Screening and scheduling are automating. HR analytics is growing."},
+    "human resources":{risk:57,color:"#f7c96e",label:"Moderate Risk",skills:["People Analytics","Python","SQL","Predictive Hiring"],months:6,reason:"Screening and scheduling are automating fast. Data-driven HR who predict retention and performance are safe."},
     "graphic designer":{risk:69,color:"#f7c96e",label:"High Risk",skills:["AI Tools","Data Visualization","UX Analytics","Python"],months:5,reason:"AI image generation is transforming design. Data visualization and UX analytics offer a safe pivot."},
+    "ui designer":{risk:65,color:"#f7c96e",label:"High Risk",skills:["UX Analytics","Python","A/B Testing","Data Visualization"],months:5,reason:"AI generates UI mockups fast. Designers who validate choices with user data and run experiments are protected."},
+    "ux designer":{risk:52,color:"#f7c96e",label:"Moderate Risk",skills:["UX Analytics","Python","A/B Testing","Behavioral Data"],months:6,reason:"UX research and user testing are hard to automate. Data-driven UX designers who quantify experience are thriving."},
     "customer service":{risk:85,color:"#f28b82",label:"Very High Risk",skills:["Python","NLP","Chatbot Analytics","SQL"],months:4,reason:"Chatbots are replacing tier-1 support rapidly. Building and managing those systems is the opportunity."},
+    "call center agent":{risk:90,color:"#f28b82",label:"Very High Risk",skills:["Python","NLP","Chatbot Analytics","SQL"],months:4,reason:"Voice AI and chatbots are replacing call centers at scale. The opportunity is building the systems that replace the role."},
     "researcher":{risk:20,color:"#6dd6a0",label:"Lower Risk",skills:["ML Research","Python","Statistics","Data Science"],months:7,reason:"Research that uses AI as a tool is accelerating. Your analytical skills translate directly to DS."},
     "banker":{risk:67,color:"#f7c96e",label:"High Risk",skills:["FinTech Analytics","Python","Risk Modeling","SQL"],months:6,reason:"Routine banking is automating fast. Quantitative finance and risk modeling are growing fields."},
+    "bank teller":{risk:94,color:"#f28b82",label:"Very High Risk",skills:["Python","SQL","Financial Analytics","Automation"],months:4,reason:"ATMs and banking apps have already automated most teller functions. Full automation is imminent."},
     "translator":{risk:82,color:"#f28b82",label:"Very High Risk",skills:["NLP","Python","Language Models","Text Analytics"],months:5,reason:"Machine translation is rapidly improving. NLP engineering and localization analytics offer a pivot."},
+    "interpreter":{risk:70,color:"#f7c96e",label:"High Risk",skills:["NLP","Python","Language Models","Speech Analytics"],months:6,reason:"Real-time AI translation is improving fast. Human interpreters for sensitive negotiations still hold value."},
     "civil engineer":{risk:25,color:"#6dd6a0",label:"Lower Risk",skills:["GIS Analytics","Python","Structural Data","Simulation"],months:8,reason:"Physical engineering judgment is hard to automate. Data-driven design and simulation are growing fast."},
+    "mechanical engineer":{risk:28,color:"#6dd6a0",label:"Lower Risk",skills:["Predictive Maintenance","Python","IoT Data","Simulation"],months:8,reason:"Physical design requires deep expertise. Engineers who use ML for simulation and predictive maintenance are in demand."},
+    "electrical engineer":{risk:22,color:"#6dd6a0",label:"Lower Risk",skills:["IoT Analytics","Python","Smart Grid Data","Signal Processing"],months:8,reason:"Hardware design is safe. Electrical engineers who analyze sensor and grid data with ML are commanding premium salaries."},
+    "industrial engineer":{risk:35,color:"#a78bfa",label:"Moderate Risk",skills:["Operations Analytics","Python","Process Mining","Simulation"],months:7,reason:"Process optimization is increasingly data-driven. Industrial engineers who use ML to model workflows are thriving."},
     "architect":{risk:30,color:"#6dd6a0",label:"Lower Risk",skills:["Computational Design","Python","GIS","Data Visualization"],months:8,reason:"Creative design is safe but AI is transforming how architects analyze sites and optimize buildings."},
     "pharmacist":{risk:45,color:"#a78bfa",label:"Moderate Risk",skills:["Health Analytics","Python","Drug Data","Clinical ML"],months:7,reason:"Dispensing is automating but clinical pharmacists who analyze patient data are in growing demand."},
     "social media manager":{risk:64,color:"#f7c96e",label:"High Risk",skills:["Social Analytics","Python","NLP","Marketing Data"],months:5,reason:"AI tools generate content fast. Data-driven social strategists who measure ROI stand out."},
     "financial analyst":{risk:70,color:"#f7c96e",label:"High Risk",skills:["Python","Financial Modeling","SQL","Quantitative Analysis"],months:5,reason:"Routine financial modeling is automating. Analysts who build ML-powered forecasts are thriving."},
+    "auditor":{risk:72,color:"#f7c96e",label:"High Risk",skills:["Python","SQL","Fraud Analytics","Financial Data"],months:5,reason:"Rule-based audit checks are automating fast. Auditors who use ML for anomaly detection add real value."},
+    "tax consultant":{risk:76,color:"#f7c96e",label:"High Risk",skills:["Python","SQL","Financial Analytics","Regulatory Data"],months:5,reason:"Tax filing automation is accelerating. Complex advisory and cross-border tax strategy still requires human expertise."},
     "sales representative":{risk:58,color:"#f7c96e",label:"Moderate Risk",skills:["CRM Analytics","Python","Sales Forecasting","SQL"],months:5,reason:"Cold outreach is automating but data-driven sales people who analyze pipelines are more valuable."},
+    "sales manager":{risk:45,color:"#a78bfa",label:"Moderate Risk",skills:["CRM Analytics","Python","Sales Forecasting","SQL"],months:6,reason:"Pipeline management is automating. Sales leaders who use predictive analytics to coach teams are essential."},
     "project manager":{risk:38,color:"#a78bfa",label:"Moderate Risk",skills:["Project Analytics","Python","Resource Optimization","Data"],months:6,reason:"Human coordination is hard to replace but PMs who use data to predict delays and risks are essential."},
+    "product manager":{risk:35,color:"#a78bfa",label:"Moderate Risk",skills:["Product Analytics","SQL","Python","A/B Testing"],months:6,reason:"AI generates feature ideas but PMs who use data to prioritize and measure impact are more valuable than ever."},
     "economist":{risk:32,color:"#6dd6a0",label:"Lower Risk",skills:["Econometrics","Python","R","Statistical Modeling"],months:6,reason:"Economic analysis requires deep domain knowledge. Data skills amplify rather than replace economists."},
     "logistics coordinator":{risk:72,color:"#f7c96e",label:"High Risk",skills:["Supply Chain Analytics","Python","SQL","Optimization"],months:5,reason:"Routing and scheduling are rapidly automating. Supply chain data analysts are in high demand."},
     "content writer":{risk:75,color:"#f7c96e",label:"High Risk",skills:["NLP","Python","Content Analytics","SEO Data"],months:5,reason:"AI writes generic content fast. Writers who use data to find angles and measure performance survive."},
     "administrative assistant":{risk:88,color:"#f28b82",label:"Very High Risk",skills:["Python","Automation","SQL","Data Entry Tools"],months:4,reason:"Scheduling, email management and document handling are being automated rapidly by AI agents."},
+    "secretary":{risk:88,color:"#f28b82",label:"Very High Risk",skills:["Python","Automation","SQL","Data Entry Tools"],months:4,reason:"Calendar management, email drafting and document handling are being fully automated by AI agents."},
     "real estate agent":{risk:42,color:"#a78bfa",label:"Moderate Risk",skills:["Real Estate Analytics","Python","Market Data","SQL"],months:6,reason:"Property search is automating but agents who use market data to advise clients add real value."},
     "nurse":{risk:15,color:"#6dd6a0",label:"Lower Risk",skills:["Health Analytics","Python","Clinical Data","Patient ML"],months:9,reason:"Human care is irreplaceable. Nurses who understand clinical data and patient analytics are future-proof."},
     "business analyst":{risk:40,color:"#a78bfa",label:"Moderate Risk",skills:["SQL","Python","BI Tools","Data Visualization"],months:6,reason:"Basic reporting is automating. BAs who translate data into strategy are more valuable than ever."},
     "supply chain manager":{risk:60,color:"#f7c96e",label:"Moderate Risk",skills:["Supply Chain Analytics","Python","Forecasting","SQL"],months:6,reason:"AI is transforming logistics. Managers who use predictive analytics for inventory are in demand."},
-    "accountant":{risk:78,color:"#f7c96e",label:"High Risk",skills:["Python","SQL","Financial Analytics","Data Visualization"],months:6,reason:"Rule-based financial processing is highly automatable. DS skills shift you to strategic analysis."},
     "dentist":{risk:12,color:"#6dd6a0",label:"Very Low Risk",skills:["Medical Imaging ML","Python","Clinical Analytics","Health Data"],months:10,reason:"Physical dental procedures require human precision. AI assists with imaging but cannot replace dentists."},
     "psychologist":{risk:16,color:"#6dd6a0",label:"Lower Risk",skills:["Mental Health Analytics","NLP","Python","Behavioral Data"],months:9,reason:"Human empathy and therapeutic relationships are hard to automate. Data skills open research roles."},
+    "therapist":{risk:16,color:"#6dd6a0",label:"Lower Risk",skills:["Mental Health Analytics","NLP","Python","Behavioral Data"],months:9,reason:"Therapeutic relationships are deeply human. Data skills help therapists track outcomes and identify at-risk patients."},
     "operations manager":{risk:48,color:"#a78bfa",label:"Moderate Risk",skills:["Operations Analytics","Python","Process Mining","SQL"],months:6,reason:"Routine operations are automating. Managers who optimize with data and ML are highly valued."},
     "recruiter":{risk:62,color:"#f7c96e",label:"Moderate Risk",skills:["People Analytics","Python","SQL","Predictive Hiring"],months:5,reason:"CV screening is almost fully automated. Data-driven recruiters who predict candidate success stand out."},
     "photographer":{risk:55,color:"#f7c96e",label:"Moderate Risk",skills:["Computer Vision","Python","Image Analytics","AI Tools"],months:6,reason:"AI generates images but photographers who combine creativity with data analytics thrive in advertising."},
@@ -49,19 +95,48 @@ function AIJobCalculator(){
     "mechanic":{risk:24,color:"#6dd6a0",label:"Lower Risk",skills:["Predictive Maintenance","Python","IoT Data","Diagnostics ML"],months:8,reason:"Physical repair needs human hands. Mechanics who use predictive analytics prevent failures before they happen."},
     "insurance agent":{risk:74,color:"#f7c96e",label:"High Risk",skills:["Actuarial ML","Python","Risk Analytics","SQL"],months:5,reason:"Policy comparison and quoting are automating fast. Risk analysts who model claims with ML are safe."},
     "copywriter":{risk:78,color:"#f7c96e",label:"High Risk",skills:["NLP","Python","Content Analytics","A/B Testing"],months:5,reason:"AI writes copy fast. Copywriters who test with data and optimize conversion rates are irreplaceable."},
+    "data scientist":{risk:15,color:"#6dd6a0",label:"Very Low Risk",skills:["Advanced ML","Deep Learning","Python","MLOps"],months:4,reason:"Data scientists who build AI are the ones replacing other jobs — not the ones being replaced."},
+    "machine learning engineer":{risk:12,color:"#6dd6a0",label:"Very Low Risk",skills:["MLOps","Python","Deep Learning","LLM APIs"],months:4,reason:"ML engineers are the architects of AI automation. Demand is growing faster than supply globally."},
+    "data engineer":{risk:20,color:"#6dd6a0",label:"Lower Risk",skills:["Python","SQL","Spark","Pipeline Engineering"],months:6,reason:"Data pipelines are the backbone of every AI product. Data engineers who build reliable infrastructure are essential."},
+    "business intelligence analyst":{risk:55,color:"#f7c96e",label:"Moderate Risk",skills:["SQL","Python","BI Tools","Predictive Analytics"],months:6,reason:"Static dashboards are being automated. BI analysts who add ML-powered forecasting and insights stand out."},
+    "statistician":{risk:25,color:"#6dd6a0",label:"Lower Risk",skills:["Python","R","Statistical Modeling","ML"],months:7,reason:"Statistical expertise underpins all of AI. Statisticians who code are among the most valuable people in data."},
+    "consultant":{risk:40,color:"#a78bfa",label:"Moderate Risk",skills:["Data Analytics","Python","SQL","Visualization"],months:6,reason:"Generic consulting is at risk. Consultants who back recommendations with data and ML models are differentiating fast."},
+    "management consultant":{risk:42,color:"#a78bfa",label:"Moderate Risk",skills:["Data Analytics","Python","SQL","Financial Modeling"],months:6,reason:"AI handles research and deck-building. Consultants who lead with data-driven insight and stakeholder trust are safe."},
+    "it manager":{risk:35,color:"#a78bfa",label:"Moderate Risk",skills:["Python","Cloud Analytics","Security Data","Automation"],months:7,reason:"Routine IT tasks are automating. IT leaders who manage AI infrastructure and data systems are in high demand."},
+    "network engineer":{risk:30,color:"#6dd6a0",label:"Lower Risk",skills:["Network Analytics","Python","Security ML","IoT Data"],months:8,reason:"Physical network management remains essential. Engineers who add ML-based anomaly detection are leading the field."},
+    "cybersecurity analyst":{risk:18,color:"#6dd6a0",label:"Lower Risk",skills:["Security ML","Python","Anomaly Detection","Threat Analytics"],months:8,reason:"Cyber threats are growing and AI is the weapon on both sides. Security analysts who use ML are indispensable."},
+    "marketing manager":{risk:50,color:"#a78bfa",label:"Moderate Risk",skills:["Marketing Analytics","Python","SQL","A/B Testing"],months:5,reason:"AI runs campaigns but marketing leaders who define strategy using data and measure ROI precisely are thriving."},
+    "brand manager":{risk:45,color:"#a78bfa",label:"Moderate Risk",skills:["Brand Analytics","Python","NLP","Social Data"],months:6,reason:"Brand intuition stays human. Managers who track sentiment, measure brand equity with data, and run experiments stand out."},
+    "supply chain analyst":{risk:65,color:"#f7c96e",label:"High Risk",skills:["Supply Chain Analytics","Python","SQL","Forecasting"],months:5,reason:"Demand forecasting and inventory optimization are rapidly being taken over by ML models."},
+    "procurement officer":{risk:68,color:"#f7c96e",label:"High Risk",skills:["Python","SQL","Supply Chain Analytics","Vendor Data"],months:5,reason:"Vendor comparison and purchase order management are automating. Data-driven procurement adds strategic value."},
+    "warehouse manager":{risk:70,color:"#f7c96e",label:"High Risk",skills:["Operations Analytics","Python","IoT Data","Optimization"],months:5,reason:"Robotics and AI are transforming warehouses. Managers who use data to optimize workflows stay ahead of automation."},
+    "event planner":{risk:40,color:"#a78bfa",label:"Moderate Risk",skills:["Python","Data Analytics","CRM Analytics","Marketing Data"],months:7,reason:"Logistics coordination is automating but creative event design and client relationships remain human."},
+    "financial advisor":{risk:60,color:"#f7c96e",label:"Moderate Risk",skills:["FinTech Analytics","Python","Risk Modeling","Financial ML"],months:6,reason:"Robo-advisors handle routine portfolios. Advisors who combine human trust with data-driven strategy are safe."},
+    "investment analyst":{risk:65,color:"#f7c96e",label:"High Risk",skills:["Python","Quantitative Analysis","Financial ML","SQL"],months:5,reason:"Quantitative analysis is increasingly automated. Analysts who build ML-powered models for alternative data stand out."},
+    "biomedical engineer":{risk:20,color:"#6dd6a0",label:"Lower Risk",skills:["Medical ML","Python","Signal Processing","Clinical Analytics"],months:9,reason:"Medical device engineering requires deep domain knowledge. Data skills in clinical signal processing are a major advantage."},
+    "environmental engineer":{risk:22,color:"#6dd6a0",label:"Lower Risk",skills:["GIS Analytics","Python","Environmental Data","Simulation"],months:8,reason:"Environmental monitoring and impact assessment are increasingly data-driven. ML skills amplify impact significantly."},
+    "petroleum engineer":{risk:30,color:"#6dd6a0",label:"Lower Risk",skills:["Geospatial Analytics","Python","Drilling Data","Simulation"],months:8,reason:"Oil and gas exploration is being transformed by ML and sensor data. Data-skilled engineers are commanding premiums."},
+    "chemical engineer":{risk:28,color:"#6dd6a0",label:"Lower Risk",skills:["Process Analytics","Python","Simulation","IoT Data"],months:8,reason:"Chemical process optimization is increasingly driven by ML. Engineers who model reactions with data add enormous value."},
     "economist":{risk:32,color:"#6dd6a0",label:"Lower Risk",skills:["Econometrics","Python","R","Statistical Modeling"],months:6,reason:"Economic analysis requires deep domain knowledge. Data skills amplify rather than replace economists."},
+    "student":{risk:5,color:"#6dd6a0",label:"Very Low Risk",skills:["Python","SQL","Machine Learning","Data Analysis"],months:6,reason:"You're at the perfect moment. Learning data science now puts you ahead of the entire workforce — start today."},
+    "fresh graduate":{risk:5,color:"#6dd6a0",label:"Very Low Risk",skills:["Python","SQL","Machine Learning","Data Visualization"],months:6,reason:"You have zero bad habits to unlearn. Adding data skills now makes you one of the most hireable graduates in MENA."},
+    "intern":{risk:8,color:"#6dd6a0",label:"Very Low Risk",skills:["Python","SQL","Data Analysis","Visualization"],months:5,reason:"Internship experience plus data skills is a rare combination. You're perfectly positioned to pivot into data roles."},
   };
 
-  const calculate=()=>{
+  const calculate=async()=>{
     if(!job.trim())return;
     setCalculating(true);
-    setTimeout(()=>{
-      const key=job.toLowerCase().trim();
-      let match=null;
-      for(const k of Object.keys(jobData)){if(key.includes(k)||k.includes(key)){match=jobData[k];break;}}
-      if(!match){const risk=Math.floor(Math.random()*30)+40;match={risk,color:risk>60?"#f7c96e":"#a78bfa",label:risk>60?"Moderate-High Risk":"Moderate Risk",skills:["Python","SQL","Data Analysis","Machine Learning"],months:6,reason:"Most knowledge work roles are being transformed by AI. Data skills future-proof any career."};}
-      setResult(match);setCalculating(false);
-    },1800);
+    setAiPowered(false);
+    const k=job.toLowerCase().trim();
+    let match=null;
+    for(const j of Object.keys(jobData)){if(k.includes(j)||j.includes(k)){match=jobData[j];break;}}
+    if(!match){
+      const aiResult=await callDeepSeek(job);
+      if(aiResult){match=aiResult;setAiPowered(true);}
+      else{const risk=Math.floor(Math.random()*30)+40;match={risk,color:risk>60?"#f7c96e":"#a78bfa",label:risk>60?"Moderate-High Risk":"Moderate Risk",skills:["Python","SQL","Data Analysis","Machine Learning"],months:6,reason:"Most knowledge work roles are being transformed by AI. Data skills future-proof any career."};}
+    }
+    setResult(match);
+    setCalculating(false);
   };
 
   return(
@@ -78,7 +153,7 @@ function AIJobCalculator(){
                 <button onClick={calculate} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"12px 24px",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,whiteSpace:"nowrap"}}>Scan My Job →</button>
               </div>
               <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {["Accountant","Marketer","Teacher","Lawyer","Designer","Researcher"].map(j=>(
+                {["Accountant","Engineer","Doctor","Lawyer","Teacher","Student","Developer","Marketer"].map(j=>(
                   <button key={j} onClick={()=>setJob(j)} style={{background:"#17162a",border:"1px solid #2a2845",color:"#7b78a0",padding:"5px 12px",borderRadius:100,cursor:"pointer",fontSize:12}}>{j}</button>
                 ))}
               </div>
@@ -141,6 +216,36 @@ const T = {
 };
 const phaseColors = ["#7eb8f7","#a78bfa","#6dd6a0","#f7c96e","#c792ea"];
 const ADMIN_EMAIL = "radwanrima0@gmail.com";
+
+// ── XP SYSTEM
+const XP_LEVELS = [
+  { label: "Rookie",         min: 0,    color: "#7b78a0", icon: "🌱" },
+  { label: "Junior Analyst", min: 500,  color: "#7eb8f7", icon: "📊" },
+  { label: "Data Analyst",   min: 1500, color: "#6dd6a0", icon: "🤖" },
+  { label: "Data Scientist", min: 3000, color: "#a78bfa", icon: "🧠" },
+  { label: "Expert",         min: 6000, color: "#f7c96e", icon: "🏆" },
+];
+function getLevel(xp){
+  let lvl=XP_LEVELS[0];
+  for(const l of XP_LEVELS){ if(xp>=l.min) lvl=l; }
+  return lvl;
+}
+function getNextLevel(xp){
+  return XP_LEVELS.find(l=>l.min>xp)||null;
+}
+function XPToast({amount,onDone}){
+  useEffect(()=>{ const t=setTimeout(onDone,2200); return ()=>clearTimeout(t); },[]);
+  return(
+    <div style={{position:"fixed",bottom:28,right:28,zIndex:999,background:"#1c1927",border:"1px solid #a78bfa55",borderRadius:12,padding:"12px 18px",display:"flex",alignItems:"center",gap:10,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",animation:"xpSlideIn 0.35s ease"}}>
+      <style>{`@keyframes xpSlideIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <span style={{fontSize:20}}>⚡</span>
+      <div>
+        <div style={{fontSize:14,fontWeight:700,color:"#a78bfa"}}>+{amount} XP</div>
+        <div style={{fontSize:10,color:"#7b78a0"}}>Keep going!</div>
+      </div>
+    </div>
+  );
+}
 
 import { LearnTab, LESSONS, LEARN_PHASES, SECTION_TO_FIRST_LESSON, LESSON_COMPLETES_TASK } from "./lessons";
 import { sectionProjects, typeColors, typeLabels, portfolioProjects, DEFAULT_ROADMAP, quotes, getTotalProgress } from "./constants";
@@ -205,6 +310,8 @@ function LoginPage(){
         lessonsDone:{},
         streak:0,
         progress:{},
+        xp:0,
+        completedProjects:{},
       };
       await setDoc(doc(db,"users",cred.user.uid),userData);
       // Notify admin of new signup
@@ -1276,6 +1383,8 @@ function StudentDashboard({currentUser,userDoc}){
   const [messages,setMessages]=useState([]);
   const [progress,setProgress]=useState(userDoc.progress||{});
   const [streak,setStreak]=useState(userDoc.streak||0);
+  const [xp,setXp]=useState(userDoc.xp||0);
+  const [xpToast,setXpToast]=useState(null);
   const [checkins,setCheckins]=useState(userDoc.checkins||[]);
   const [checkinForm,setCheckinForm]=useState({learned:"",difficult:"",goal:""});
   const [showCheckin,setShowCheckin]=useState(false);
@@ -1286,12 +1395,24 @@ function StudentDashboard({currentUser,userDoc}){
   const [projectPhaseIdx,setProjectPhaseIdx]=useState(null);
   const [projectSubmission,setProjectSubmission]=useState({link:"",notes:""});
   const [projectSubmitted,setProjectSubmitted]=useState(userDoc.projectSubmissions||{});
+  const [expandedProj,setExpandedProj]=useState(null);
+  const [completedProjects,setCompletedProjects]=useState(userDoc.completedProjects||{});
+
+  const awardXP=async(amount)=>{
+    const newXp=xp+amount;
+    setXp(newXp);
+    setXpToast(amount);
+    await updateDoc(doc(db,"users",currentUser.uid),{xp:newXp});
+  };
 
   const onLessonComplete = (lessonId) => {
     const mapping = LESSON_COMPLETES_TASK[lessonId];
     if(!mapping) return;
     const key = `${mapping.section}-${mapping.task}`;
-    if(!progress[key]) saveProgress({...progress,[key]:true});
+    if(!progress[key]){
+      saveProgress({...progress,[key]:true});
+      awardXP(25);
+    }
   };
 
   const navigateToLesson = (lessonId) => {
@@ -1322,6 +1443,7 @@ function StudentDashboard({currentUser,userDoc}){
     const newCheckins=[entry,...(userDoc.checkins||[])];
     setCheckins(newCheckins);setShowCheckin(false);setCheckinForm({learned:"",difficult:"",goal:""});
     await updateDoc(doc(db,"users",currentUser.uid),{checkins:newCheckins});
+    awardXP(50);
   };
   const thisWeekCheckin=checkins.find(c=>c.week===getWeekNumber());
 
@@ -1352,7 +1474,12 @@ function StudentDashboard({currentUser,userDoc}){
     setShowProjectModal(false);
     setProjectSubmission({link:"",notes:""});
   };
-  const toggle=(sid,i)=>{const key=`${sid}-${i}`;saveProgress({...progress,[key]:!progress[key]});};
+  const toggle=(sid,i)=>{
+    const key=`${sid}-${i}`;
+    const wasChecked=!!progress[key];
+    saveProgress({...progress,[key]:!wasChecked});
+    if(!wasChecked) awardXP(10);
+  };
 
   const total=getTotalProgress(progress,roadmap);
   const phase=roadmap[activePhase];
@@ -1375,6 +1502,9 @@ function StudentDashboard({currentUser,userDoc}){
 
   return(
     <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",flexDirection:"column"}}>
+
+      {/* XP TOAST */}
+      {xpToast&&<XPToast amount={xpToast} onDone={()=>setXpToast(null)}/>}
 
       {/* PAYWALL MODAL */}
       {showPaywall&&(
@@ -1408,6 +1538,26 @@ function StudentDashboard({currentUser,userDoc}){
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <ProgressRing pct={total.pct} color={T.p1} size={48} stroke={4}/>
             <div><div style={{fontSize:20,fontWeight:700,color:T.p1}}>{total.pct}%</div><div style={{fontSize:9,color:T.textFade}}>{total.done}/{total.total} tasks</div></div>
+            {/* XP BAR */}
+            <div style={{borderLeft:`1px solid ${T.border}`,paddingLeft:12,minWidth:120}}>
+              {(()=>{
+                const lvl=getLevel(xp);
+                const next=getNextLevel(xp);
+                const pct=next?Math.round(((xp-lvl.min)/(next.min-lvl.min))*100):100;
+                return(
+                  <>
+                    <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:4}}>
+                      <span style={{fontSize:12}}>{lvl.icon}</span>
+                      <span style={{fontSize:10,fontWeight:700,color:lvl.color}}>{lvl.label}</span>
+                    </div>
+                    <div style={{height:4,background:T.border,borderRadius:4,overflow:"hidden",marginBottom:3}}>
+                      <div style={{height:"100%",width:`${pct}%`,background:lvl.color,borderRadius:4,transition:"width 0.5s"}}/>
+                    </div>
+                    <div style={{fontSize:9,color:T.textFade}}>{xp.toLocaleString()} XP{next?` · ${next.min-xp} to next`:""}</div>
+                  </>
+                );
+              })()}
+            </div>
             <div style={{borderLeft:`1px solid ${T.border}`,paddingLeft:12}}>
               <div style={{fontSize:12,color:T.textDim,marginBottom:2}}>
                 👤 {userDoc.username}
@@ -1471,6 +1621,43 @@ function StudentDashboard({currentUser,userDoc}){
                   </div>
                 );})}
               </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+              {/* XP LEVEL CARD */}
+              {(()=>{
+                const lvl=getLevel(xp);
+                const next=getNextLevel(xp);
+                const pct=next?Math.round(((xp-lvl.min)/(next.min-lvl.min))*100):100;
+                return(
+                  <div style={{gridColumn:"1 / -1",background:T.bgCard,border:`1px solid ${lvl.color}44`,borderRadius:14,padding:"18px 20px"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <span style={{fontSize:28}}>{lvl.icon}</span>
+                        <div>
+                          <div style={{fontSize:9,color:lvl.color,letterSpacing:"0.15em",fontWeight:700}}>⚡ YOUR LEVEL</div>
+                          <div style={{fontSize:18,fontWeight:700,color:lvl.color}}>{lvl.label}</div>
+                        </div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:22,fontWeight:700,color:lvl.color}}>{xp.toLocaleString()}</div>
+                        <div style={{fontSize:9,color:T.textFade}}>total XP</div>
+                      </div>
+                    </div>
+                    <div style={{height:6,background:T.bgDeep,borderRadius:4,overflow:"hidden",marginBottom:6}}>
+                      <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${lvl.color}88,${lvl.color})`,borderRadius:4,transition:"width 0.6s"}}/>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:T.textFade,marginBottom:12}}>
+                      <span>{lvl.label} · {(xp-lvl.min).toLocaleString()} XP earned</span>
+                      {next?<span>{(next.min-xp).toLocaleString()} XP to {next.icon} {next.label}</span>:<span style={{color:lvl.color}}>Max Level! 🎉</span>}
+                    </div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>⚡ Task = 10 XP</span>
+                      <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>📚 Lesson = 25 XP</span>
+                      <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>📝 Check-in = 50 XP</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
               <div style={{background:T.bgCard,border:`1px solid ${streak>=7?T.gold+"88":T.border}`,borderRadius:14,padding:"18px 20px"}}>
@@ -1689,74 +1876,179 @@ function StudentDashboard({currentUser,userDoc}){
         )}
 
         {/* PROJECTS */}
-        {tab==="projects"&&(
-          <div style={{flex:1,overflowY:"auto",padding:"20px 24px"}}>
-            <div style={{fontSize:16,fontWeight:700,marginBottom:4}}>All Projects & Challenges</div>
-            <div style={{fontSize:11,color:T.textDim,marginBottom:20}}>Build these to prove your skills — not just complete courses.</div>
-            {[1,2,3,4].map(phaseNum=>{
-              const phProjects=portfolioProjects.filter(p=>p.phase===phaseNum);
-              if(phProjects.length===0)return null;
-              const phColor=phaseColors[phaseNum-1];
-              const phaseNames=["Foundations","Core ML","Modern Skills","Portfolio & Jobs"];
-              return(
-                <div key={phaseNum} style={{marginBottom:32}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><div style={{width:10,height:10,borderRadius:"50%",background:phColor}}/><span style={{fontSize:14,fontWeight:700,color:phColor}}>Phase {phaseNum} — {phaseNames[phaseNum-1]}</span></div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(340px, 1fr))",gap:14}}>
-                    {phProjects.map(proj=>{
-                      const pColor=phaseColors[proj.phase-1];
-                      return(
-                        <div key={proj.id} style={{background:T.bgCard,border:`1px solid ${proj.portfolioWorthy?pColor+"55":T.border}`,borderRadius:12,overflow:"hidden",display:"flex",flexDirection:"column"}}>
-                          <div style={{padding:"14px 16px 10px",borderBottom:`1px solid ${T.border}`}}>
-                            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-                              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                                <span style={{fontSize:9,color:typeColors[proj.type],background:typeColors[proj.type]+"15",padding:"2px 7px",borderRadius:3}}>{typeLabels[proj.type]}</span>
-                                <span style={{fontSize:9,color:proj.difficulty==="Advanced"?T.warn:proj.difficulty==="Intermediate"?T.gold:T.info,background:(proj.difficulty==="Advanced"?T.warn:proj.difficulty==="Intermediate"?T.gold:T.info)+"15",padding:"2px 7px",borderRadius:3}}>{proj.difficulty}</span>
-                                {proj.portfolioWorthy&&<span style={{fontSize:9,color:T.gold,background:T.gold+"15",padding:"2px 7px",borderRadius:3}}>★ Must-Build</span>}
-                              </div>
-                              <span style={{fontSize:9,color:pColor,background:pColor+"15",padding:"2px 7px",borderRadius:3,flexShrink:0}}>Phase {proj.phase}</span>
-                            </div>
-                            <div style={{fontSize:14,fontWeight:600,color:T.text,marginBottom:6}}>{proj.title}</div>
-                            <div style={{fontSize:11,color:T.textDim,lineHeight:1.65}}>{proj.description}</div>
-                            {proj.dataset?.url&&<a href={proj.dataset.url} target="_blank" rel="noreferrer" style={{display:"inline-block",marginTop:8,fontSize:10,color:T.info,textDecoration:"none"}}>📈 {proj.dataset.name} →</a>}
-                          </div>
-                          <div style={{padding:"12px 16px",flex:1}}>
-                            <div style={{fontSize:8,color:T.textFade,letterSpacing:"0.15em",marginBottom:10}}>STEPS</div>
-                            {proj.steps.map((step,i)=>(
-                              <div key={i} style={{display:"flex",gap:9,marginBottom:7}}>
-                                <span style={{fontSize:9,color:pColor,background:pColor+"18",borderRadius:"50%",width:17,height:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:700}}>{i+1}</span>
-                                <span style={{fontSize:11,color:T.textDim,lineHeight:1.6}}>{step}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div style={{padding:"10px 16px 14px",borderTop:`1px solid ${T.border}`}}>
-                            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                              {proj.skills.map((sk,i)=><span key={i} style={{fontSize:9,color:T.textFade,background:T.bgDeep,border:`1px solid ${T.border}`,padding:"2px 7px",borderRadius:3}}>{sk}</span>)}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+        {tab==="projects"&&(()=>{
+          const totalPortfolio=portfolioProjects.filter(p=>p.portfolioWorthy).length;
+          const donePortfolio=portfolioProjects.filter(p=>p.portfolioWorthy&&completedProjects[p.id]).length;
+
+          const markComplete=async(projId)=>{
+            const already=completedProjects[projId];
+            const updated={...completedProjects,[projId]:!already};
+            setCompletedProjects(updated);
+            await updateDoc(doc(db,"users",currentUser.uid),{completedProjects:updated});
+            if(!already) awardXP(100);
+          };
+
+          const phaseNames=["Foundations","Core ML","Modern Skills","Portfolio & Jobs"];
+
+          return(
+            <div style={{flex:1,overflowY:"auto",padding:"20px 24px"}}>
+              <style>{`
+                @keyframes projUnlock{0%{transform:scale(0.92);opacity:0}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+                .proj-card-done{animation:projUnlock 0.4s ease forwards;}
+              `}</style>
+
+              {/* PORTFOLIO PROGRESS BANNER */}
+              <div style={{background:T.bgCard,border:`1px solid ${T.gold}33`,borderRadius:14,padding:"18px 22px",marginBottom:24,display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
+                <div style={{fontSize:32}}>🗂️</div>
+                <div style={{flex:1,minWidth:200}}>
+                  <div style={{fontSize:9,color:T.gold,letterSpacing:"0.15em",fontWeight:700,marginBottom:6}}>YOUR PORTFOLIO</div>
+                  <div style={{height:8,background:T.bgDeep,borderRadius:4,overflow:"hidden",marginBottom:6}}>
+                    <div style={{height:"100%",width:`${totalPortfolio?Math.round(donePortfolio/totalPortfolio*100):0}%`,background:`linear-gradient(90deg,${T.gold}88,${T.gold})`,borderRadius:4,transition:"width 0.6s"}}/>
                   </div>
+                  <div style={{fontSize:11,color:T.textDim}}><span style={{color:T.gold,fontWeight:700}}>{donePortfolio}</span> of {totalPortfolio} must-build projects completed</div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:28,fontWeight:800,color:T.gold}}>{totalPortfolio?Math.round(donePortfolio/totalPortfolio*100):0}%</div>
+                  <div style={{fontSize:9,color:T.textFade}}>portfolio ready</div>
+                </div>
+              </div>
+
+              {[1,2,3,4].map(phaseNum=>{
+                const phProjects=portfolioProjects.filter(p=>p.phase===phaseNum);
+                if(phProjects.length===0)return null;
+                const phColor=phaseColors[phaseNum-1];
+                const phaseDone=phProjects.filter(p=>completedProjects[p.id]).length;
+                return(
+                  <div key={phaseNum} style={{marginBottom:32}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <div style={{width:10,height:10,borderRadius:"50%",background:phColor}}/>
+                        <span style={{fontSize:14,fontWeight:700,color:phColor}}>Phase {phaseNum} — {phaseNames[phaseNum-1]}</span>
+                      </div>
+                      <span style={{fontSize:10,color:phColor,background:phColor+"18",padding:"2px 10px",borderRadius:100,border:`1px solid ${phColor}33`}}>{phaseDone}/{phProjects.length} done</span>
+                    </div>
+
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))",gap:14}}>
+                      {phProjects.map(proj=>{
+                        const pColor=phaseColors[proj.phase-1];
+                        const isDone=!!completedProjects[proj.id];
+                        const isExpanded=expandedProj===proj.id;
+                        const diffColor=proj.difficulty==="Advanced"?T.warn:proj.difficulty==="Intermediate"?T.gold:T.info;
+
+                        return(
+                          <div key={proj.id}
+                            className={isDone?"proj-card-done":""}
+                            style={{
+                              background:isDone?`linear-gradient(135deg,${pColor}12,${pColor}06)`:T.bgCard,
+                              border:`1px solid ${isDone?pColor+"66":proj.portfolioWorthy?pColor+"33":T.border}`,
+                              borderRadius:14,
+                              overflow:"hidden",
+                              display:"flex",
+                              flexDirection:"column",
+                              position:"relative",
+                              transition:"box-shadow 0.2s,border-color 0.2s",
+                              boxShadow:isDone?`0 0 20px ${pColor}18`:"none",
+                            }}>
+
+                            {/* Done glow top bar */}
+                            {isDone&&<div style={{height:3,background:`linear-gradient(90deg,transparent,${pColor},transparent)`}}/>}
+
+                            {/* HEADER */}
+                            <div style={{padding:"14px 16px 12px"}}>
+                              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                                  <span style={{fontSize:9,color:typeColors[proj.type],background:typeColors[proj.type]+"18",padding:"2px 7px",borderRadius:3}}>{typeLabels[proj.type]}</span>
+                                  <span style={{fontSize:9,color:diffColor,background:diffColor+"18",padding:"2px 7px",borderRadius:3}}>{proj.difficulty}</span>
+                                  {proj.portfolioWorthy&&<span style={{fontSize:9,color:T.gold,background:T.gold+"18",padding:"2px 7px",borderRadius:3,border:`1px solid ${T.gold}33`}}>★ Must-Build</span>}
+                                </div>
+                                {isDone&&<span style={{fontSize:16}}>✅</span>}
+                              </div>
+
+                              <div style={{fontSize:14,fontWeight:700,color:isDone?pColor:T.text,marginBottom:6}}>{proj.title}</div>
+                              <div style={{fontSize:11,color:T.textDim,lineHeight:1.65,marginBottom:10}}>{proj.description}</div>
+
+                              {proj.dataset?.url&&(
+                                <a href={proj.dataset.url} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10,color:T.info,textDecoration:"none",background:T.info+"10",border:`1px solid ${T.info}22`,padding:"3px 9px",borderRadius:5}}>
+                                  📈 {proj.dataset.name} →
+                                </a>
+                              )}
+                            </div>
+
+                            {/* SKILLS */}
+                            <div style={{padding:"0 16px 10px",display:"flex",gap:5,flexWrap:"wrap"}}>
+                              {proj.skills.map((sk,i)=>(
+                                <span key={i} style={{fontSize:9,color:isDone?pColor:T.textFade,background:isDone?pColor+"12":T.bgDeep,border:`1px solid ${isDone?pColor+"33":T.border}`,padding:"2px 7px",borderRadius:3}}>{sk}</span>
+                              ))}
+                            </div>
+
+                            {/* EXPAND TOGGLE */}
+                            <button
+                              onClick={()=>setExpandedProj(isExpanded?null:proj.id)}
+                              style={{margin:"0 16px 12px",padding:"6px 0",background:"none",border:`1px solid ${T.borderHi}`,borderRadius:7,color:T.textFade,cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                              {isExpanded?"▲ Hide steps":"▼ Show steps"}
+                            </button>
+
+                            {/* STEPS (expandable) */}
+                            {isExpanded&&(
+                              <div style={{padding:"0 16px 14px",borderTop:`1px solid ${T.border}`}}>
+                                <div style={{fontSize:8,color:T.textFade,letterSpacing:"0.15em",margin:"12px 0 10px"}}>STEPS</div>
+                                {proj.steps.map((step,i)=>(
+                                  <div key={i} style={{display:"flex",gap:9,marginBottom:8}}>
+                                    <span style={{fontSize:9,color:pColor,background:pColor+"18",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:700}}>{i+1}</span>
+                                    <span style={{fontSize:11,color:T.textDim,lineHeight:1.6}}>{step}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* MARK COMPLETE BUTTON */}
+                            <div style={{padding:"12px 16px",borderTop:`1px solid ${T.border}`,marginTop:"auto"}}>
+                              <button
+                                onClick={()=>markComplete(proj.id)}
+                                style={{
+                                  width:"100%",padding:"9px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:600,
+                                  background:isDone?T.bgDeep:`linear-gradient(135deg,${pColor}22,${pColor}11)`,
+                                  border:`1px solid ${isDone?T.border:pColor+"55"}`,
+                                  color:isDone?T.textFade:pColor,
+                                  transition:"all 0.2s",
+                                }}>
+                                {isDone?"✓ Completed — Mark Incomplete":"Mark as Complete +100 XP"}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* LEADERBOARD */}
         {tab==="leaderboard"&&(
           <div style={{padding:"24px"}}>
             <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,overflow:"hidden"}}>
               <div style={{padding:"18px 22px",borderBottom:`1px solid ${T.border}`}}><div style={{fontSize:15,fontWeight:700}}>🏅 Student Leaderboard</div></div>
-              {[...students].sort((a,b)=>getTotalProgress(b.progress||{},roadmap).pct-getTotalProgress(a.progress||{},roadmap).pct).map((u,i)=>{
+              {[...students].sort((a,b)=>(b.xp||0)-(a.xp||0)).map((u,i)=>{
                 const prog=getTotalProgress(u.progress||{},roadmap);const isMe=u.id===currentUser.uid;
-                const medals=["🥇","🥈","🥉"];const color=phaseColors[Math.min(3,Math.floor(prog.pct/25))];
+                const medals=["🥇","🥈","🥉"];const uLvl=getLevel(u.xp||0);
                 return(
-                  <div key={u.id} style={{padding:"14px 22px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:14,background:isMe?color+"08":"transparent"}}>
+                  <div key={u.id} style={{padding:"14px 22px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:14,background:isMe?uLvl.color+"08":"transparent"}}>
                     <div style={{width:30,fontSize:i<3?20:13,textAlign:"center"}}>{i<3?medals[i]:`#${i+1}`}</div>
-                    <div style={{width:36,height:36,borderRadius:"50%",background:color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color}}>{u.username[0].toUpperCase()}</div>
-                    <div style={{flex:1}}><div style={{fontSize:13,fontWeight:isMe?700:500,color:isMe?color:T.text,marginBottom:4}}>{u.username}{isMe?" (you)":""}</div><ProgressBar pct={prog.pct} color={color}/></div>
-                    <div style={{textAlign:"right"}}><div style={{fontSize:18,fontWeight:700,color}}>{prog.pct}%</div><div style={{fontSize:10,color:T.textFade}}>{prog.done}/{prog.total}</div></div>
+                    <div style={{width:36,height:36,borderRadius:"50%",background:uLvl.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:uLvl.color}}>{u.username[0].toUpperCase()}</div>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                        <span style={{fontSize:13,fontWeight:isMe?700:500,color:isMe?uLvl.color:T.text}}>{u.username}{isMe?" (you)":""}</span>
+                        <span style={{fontSize:9,color:uLvl.color,background:uLvl.color+"18",padding:"1px 6px",borderRadius:3,border:`1px solid ${uLvl.color}33`}}>{uLvl.icon} {uLvl.label}</span>
+                      </div>
+                      <ProgressBar pct={prog.pct} color={uLvl.color}/>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:18,fontWeight:700,color:uLvl.color}}>{(u.xp||0).toLocaleString()}</div>
+                      <div style={{fontSize:10,color:T.textFade}}>XP · {prog.pct}%</div>
+                    </div>
                   </div>
                 );
               })}
