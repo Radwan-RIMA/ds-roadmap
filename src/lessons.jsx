@@ -2097,6 +2097,1348 @@ print("Launch: " + str(uplift > ___))` }
   )},
 ];
 
+// ══ FOUNDATION LESSONS ═══════════════════════════════════════════════════════
+
+const FOUNDATION_LESSONS = [
+
+  // ── PYTHON CORE 1: Variables, Loops, Functions
+  {id:"pycore-basics", phase:"Python Core", emoji:"🐍", color:"#4ade80", title:"Python Basics", subtitle:"Variables, loops, functions — the building blocks of everything",
+   body:()=>(
+    <div>
+      <LP>Python is the language of data science. Before NumPy, Pandas, or ML — you need to think like Python. This lesson covers the core building blocks you'll use every single day.</LP>
+      <Callout icon="🧠" color="#4ade80" title="The goal">You don't need to master every Python feature. You need to write clean, readable code that does what you intend. Focus on understanding, not memorizing.</Callout>
+
+      <LH>1. Variables and Data Types</LH>
+      <Block label="The 5 types you'll use constantly">{`# Numbers
+age = 25          # int
+price = 19.99     # float
+
+# Strings
+name = "Ahmed"
+city = 'Beirut'   # single or double quotes both work
+
+# Boolean
+is_active = True
+is_churned = False
+
+# None — represents "no value" (like NULL in SQL)
+result = None
+
+# Check type
+print(type(age))    # <class 'int'>
+print(type(name))   # <class 'str'>
+print(type(None))   # <class 'NoneType'>
+
+# Type conversion
+str(42)       # "42"
+int("7")      # 7
+float("3.14") # 3.14
+bool(0)       # False — 0, "", [], None are all falsy`}</Block>
+
+      <LH>2. Lists — ordered, mutable collections</LH>
+      <Block label="Lists">{`scores = [85, 92, 78, 95, 88]
+
+# Access
+scores[0]    # 85 — first element
+scores[-1]   # 88 — last element
+scores[1:3]  # [92, 78] — slice (end not included)
+
+# Modify
+scores.append(91)        # add to end
+scores.insert(0, 100)    # insert at index
+scores.remove(78)        # remove by value
+scores.pop()             # remove and return last item
+
+# Useful operations
+len(scores)      # length
+sorted(scores)   # returns new sorted list
+scores.sort()    # sorts in place
+sum(scores)      # 529
+max(scores)      # 95
+min(scores)      # 85
+
+# Check membership
+88 in scores     # True`}</Block>
+
+      <LH>3. Dictionaries — key-value pairs</LH>
+      <Block label="Dictionaries">{`customer = {
+    "name": "Sara",
+    "age": 28,
+    "plan": "premium",
+    "active": True
+}
+
+# Access
+customer["name"]           # "Sara"
+customer.get("email", "")  # "" — safe access with default
+
+# Modify
+customer["email"] = "sara@mail.com"  # add key
+customer["age"] = 29                 # update value
+del customer["active"]               # delete key
+
+# Iterate
+for key, value in customer.items():
+    print(f"{key}: {value}")
+
+# Check key exists
+"name" in customer    # True
+"phone" in customer   # False
+
+# Dictionary from two lists
+keys   = ["a", "b", "c"]
+values = [1, 2, 3]
+d = dict(zip(keys, values))  # {"a":1, "b":2, "c":3}`}</Block>
+
+      <LH>4. Loops</LH>
+      <Block label="For and while loops">{`# For loop — iterate over a sequence
+scores = [85, 92, 78, 95]
+for score in scores:
+    print(score)
+
+# Range — generate numbers
+for i in range(5):        # 0,1,2,3,4
+    print(i)
+
+for i in range(2, 10, 2): # 2,4,6,8
+    print(i)
+
+# Enumerate — index + value
+for i, score in enumerate(scores):
+    print(f"Student {i}: {score}")
+
+# While loop
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+
+# Loop control
+for score in scores:
+    if score < 80:
+        continue    # skip this iteration
+    if score == 95:
+        break       # exit loop entirely
+    print(score)`}</Block>
+      <Tip>In data science you rarely write explicit loops — NumPy and Pandas handle them faster internally. But understanding loops is essential for writing custom logic and debugging.</Tip>
+
+      <LH>5. Functions</LH>
+      <Block label="Defining and using functions">{`# Basic function
+def greet(name):
+    return f"Hello, {name}!"
+
+greet("Ahmed")   # "Hello, Ahmed!"
+
+# Default arguments
+def power(base, exponent=2):
+    return base ** exponent
+
+power(3)     # 9  (uses default exponent=2)
+power(3, 3)  # 27
+
+# Multiple return values
+def min_max(numbers):
+    return min(numbers), max(numbers)
+
+low, high = min_max([5, 2, 8, 1, 9])
+print(low, high)  # 1 9
+
+# *args — variable number of arguments
+def total(*args):
+    return sum(args)
+
+total(1, 2, 3)         # 6
+total(10, 20, 30, 40)  # 100
+
+# Real DS example
+def calculate_churn_rate(total_customers, churned_customers):
+    if total_customers == 0:
+        return 0
+    return round(churned_customers / total_customers * 100, 2)
+
+calculate_churn_rate(1000, 73)  # 7.3`}</Block>
+
+      <LH>6. Error Handling</LH>
+      <Block label="Try/except">{`# Without error handling — crashes everything
+# result = 10 / 0   # ZeroDivisionError!
+
+# With error handling
+def safe_divide(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return None
+
+safe_divide(10, 2)  # 5.0
+safe_divide(10, 0)  # None — no crash
+
+# Multiple exceptions
+def parse_number(text):
+    try:
+        return int(text)
+    except ValueError:
+        return None
+    except TypeError:
+        return None
+
+parse_number("42")    # 42
+parse_number("abc")   # None
+parse_number(None)    # None`}</Block>
+
+      <Quiz questions={[
+        {q:"What does customer.get('phone', 'N/A') return if 'phone' key doesn't exist?",options:["None","KeyError","'N/A'","False"],answer:"'N/A'",explanation:"dict.get(key, default) safely returns the default value if the key doesn't exist, instead of raising a KeyError. This is the safe way to access dictionary values."},
+        {q:"scores = [85,92,78]. What does scores[-1] return?",options:["85","92","78","IndexError"],answer:"78",explanation:"Negative indexing counts from the end. -1 is the last element, -2 is second to last, etc. scores[-1] returns 78."},
+        {q:"range(1, 10, 3) produces:",options:["[1,2,3,4,5,6,7,8,9]","[1,4,7]","[3,6,9]","[1,3,6,9]"],answer:"[1,4,7]",explanation:"range(start, stop, step) — starts at 1, adds 3 each time, stops before 10. So: 1, 4, 7."},
+        {q:"What's the difference between .sort() and sorted()?",options:["No difference","sorted() is faster","sort() modifies the list in-place; sorted() returns a new list","sorted() only works on numbers"],answer:"sort() modifies the list in-place; sorted() returns a new list",explanation:"list.sort() modifies the original list and returns None. sorted(list) leaves the original unchanged and returns a new sorted list. In data science, you usually want sorted() to avoid side effects."},
+        {q:"bool(0), bool(''), bool([]) all return:",options:["True","False","None","Error"],answer:"False",explanation:"In Python, 0, empty string '', empty list [], empty dict {}, and None are all 'falsy' — they evaluate to False in a boolean context. Everything else is truthy."},
+      ]}/>
+
+      <CodeExercise
+        title="Analyze student scores with functions"
+        description="Write a function that takes a list of scores and returns a dict with 'mean', 'highest', 'lowest', and 'passed' (count of scores >= 60). Then call it and print each value."
+        starterCode={`def analyze_scores(scores):
+    return {
+        "mean":    round(sum(scores) / ___, 1),
+        "highest": ___,
+        "lowest":  ___,
+        "passed":  len([s for s in scores if s >= ___])
+    }
+
+results = analyze_scores([72, 45, 88, 91, 55, 63, 79, 42, 95, 68])
+
+for key, value in results.___():
+    print(f"{key}: {value}")`}
+        hint="len(scores) for mean. max(scores), min(scores). s >= 60. results.items()."
+        validate={(out)=>out.includes("mean:")&&out.includes("passed:")&&out.includes("7")}
+      />
+    </div>
+  )},
+
+  // ── PYTHON CORE 2: List Comprehensions, File I/O, Classes
+  {id:"pycore-advanced", phase:"Python Core", emoji:"⚡", color:"#4ade80", title:"Python Intermediate", subtitle:"Comprehensions, file I/O, classes, and clean code patterns",
+   body:()=>(
+    <div>
+      <LP>Once you know the basics, these patterns will make your code 10x cleaner and faster to write. List comprehensions and file I/O show up constantly in real DS work.</LP>
+      <Callout icon="🧠" color="#4ade80" title="The mindset">Good Python code reads almost like English. If your code is hard to read, it's probably not Pythonic. Aim for clarity first, cleverness never.</Callout>
+
+      <LH>1. List Comprehensions — the Python superpower</LH>
+      <Block label="Transform lists in one line">{`# Standard loop version
+squares = []
+for x in range(1, 6):
+    squares.append(x ** 2)
+# [1, 4, 9, 16, 25]
+
+# Comprehension version — same result, one line
+squares = [x ** 2 for x in range(1, 6)]
+
+# With condition (filter)
+evens = [x for x in range(20) if x % 2 == 0]
+# [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+# Real DS example: clean a list of prices
+raw_prices = ["$12.50", "$8.99", "$24.00", "$5.75"]
+prices = [float(p.replace("$", "")) for p in raw_prices]
+# [12.5, 8.99, 24.0, 5.75]
+
+# Filter and transform together
+high_scores = [s * 1.1 for s in [72,45,88,91,55] if s >= 60]
+# [79.2, 96.8, 100.1]`}</Block>
+
+      <LH>2. Dictionary Comprehensions</LH>
+      <Block label="Build dicts in one line">{`# Map student names to their scores
+names  = ["Ahmed", "Sara", "Omar"]
+scores = [88, 92, 75]
+
+grade_book = {name: score for name, score in zip(names, scores)}
+# {"Ahmed": 88, "Sara": 92, "Omar": 75}
+
+# Filter: only passing students
+passing = {name: score for name, score in grade_book.items() if score >= 80}
+# {"Ahmed": 88, "Sara": 92}
+
+# Real DS: encode binary column
+churn_map = {"Yes": 1, "No": 0}
+raw = ["Yes","No","Yes","Yes","No"]
+encoded = {i: churn_map[v] for i, v in enumerate(raw)}
+# {0:1, 1:0, 2:1, 3:1, 4:0}`}</Block>
+
+      <LH>3. Lambda Functions — quick one-liners</LH>
+      <Block label="Lambda">{`# Regular function
+def double(x):
+    return x * 2
+
+# Lambda equivalent
+double = lambda x: x * 2
+
+# Where lambdas shine — as arguments to other functions
+prices = [12.5, 8.99, 24.0, 5.75]
+
+# Sort by price descending
+sorted(prices, key=lambda x: -x)
+
+# Sort list of dicts by a field
+customers = [
+    {"name": "Ahmed", "spend": 1200},
+    {"name": "Sara",  "spend": 850},
+    {"name": "Omar",  "spend": 2100},
+]
+sorted(customers, key=lambda c: c["spend"], reverse=True)
+# Omar, Ahmed, Sara`}</Block>
+
+      <LH>4. File I/O — reading and writing data</LH>
+      <Block label="Working with files">{`# Read a file
+with open("data.txt", "r") as f:
+    content = f.read()         # whole file as string
+    
+with open("data.txt", "r") as f:
+    lines = f.readlines()      # list of lines
+
+# Write a file
+with open("output.txt", "w") as f:
+    f.write("Hello, data science!\n")
+
+# Append to existing file
+with open("log.txt", "a") as f:
+    f.write("New log entry\n")
+
+# Read a CSV manually (before pandas)
+import csv
+with open("customers.csv", "r") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        print(row["name"], row["monthly_charges"])
+
+# Write CSV
+data = [{"name":"Ahmed","score":88}, {"name":"Sara","score":92}]
+with open("results.csv", "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["name","score"])
+    writer.writeheader()
+    writer.writerows(data)`}</Block>
+      <Callout icon="⚠️" color="#f28b82" title="Always use 'with'">The with statement automatically closes files even if an error occurs. Never use open() without with — you'll leak file handles.</Callout>
+
+      <LH>5. Classes — basics only</LH>
+      <Block label="Classes in data science context">{`# In DS you mainly USE classes (sklearn models, pandas DataFrames)
+# But understanding the basics helps you read documentation
+
+class DataCleaner:
+    def __init__(self, df):
+        self.df = df.copy()
+        self.steps_applied = []
+    
+    def drop_nulls(self):
+        self.df = self.df.dropna()
+        self.steps_applied.append("drop_nulls")
+        return self  # allows chaining
+    
+    def remove_duplicates(self):
+        self.df = self.df.drop_duplicates()
+        self.steps_applied.append("remove_duplicates")
+        return self
+    
+    def get_shape(self):
+        return self.df.shape
+
+# Usage
+import pandas as pd
+df = pd.DataFrame({"a":[1,2,None,2], "b":[4,5,6,5]})
+
+cleaner = DataCleaner(df)
+cleaner.drop_nulls().remove_duplicates()
+print(cleaner.get_shape())        # (2, 2)
+print(cleaner.steps_applied)     # ['drop_nulls', 'remove_duplicates']`}</Block>
+
+      <LH>6. Common Built-ins You'll Use Daily</LH>
+      <Block label="Essential built-in functions">{`# zip — pair up two lists
+names  = ["Ahmed", "Sara", "Omar"]
+scores = [88, 92, 75]
+for name, score in zip(names, scores):
+    print(f"{name}: {score}")
+
+# enumerate — index + value
+for i, name in enumerate(names, start=1):
+    print(f"{i}. {name}")
+
+# map — apply function to every element
+prices = [10, 20, 30]
+doubled = list(map(lambda x: x*2, prices))  # [20, 40, 60]
+
+# filter — keep elements matching condition
+passing = list(filter(lambda x: x >= 80, scores))  # [88, 92]
+
+# any / all — check conditions across a list
+any([False, True, False])   # True — at least one
+all([True, True, True])     # True — all must be true
+any(s > 90 for s in scores) # True — Sara has 92`}</Block>
+
+      <Quiz questions={[
+        {q:"[x**2 for x in range(5) if x % 2 == 0] produces:",options:["[0,4,16]","[1,4,9,16]","[0,1,4,9,16]","[4,16]"],answer:"[0,4,16]",explanation:"range(5) is 0,1,2,3,4. Filter x%2==0 keeps 0,2,4. Square each: 0,4,16."},
+        {q:"What does zip(['a','b'],[ 1,2]) produce?",options:["['a','b',1,2]","[('a',1),('b',2)]","{'a':1,'b':2}","Error"],answer:"[('a',1),('b',2)]",explanation:"zip pairs elements from multiple iterables into tuples. Commonly used with dict() to build dictionaries or with for loops to iterate two lists together."},
+        {q:"Why use 'with open(file) as f:' instead of f = open(file)?",options:["It's faster","It automatically closes the file even if an error occurs","It reads the whole file at once","It only works for CSV files"],answer:"It automatically closes the file even if an error occurs",explanation:"The 'with' statement is a context manager. It guarantees the file is closed when the block exits, even if an exception is raised. This prevents resource leaks."},
+        {q:"sorted(customers, key=lambda c: c['spend'], reverse=True) — what does this do?",options:["Modifies customers in place","Returns a new list sorted by spend descending","Filters customers with high spend","Sorts alphabetically"],answer:"Returns a new list sorted by spend descending",explanation:"sorted() returns a NEW list (original unchanged). key= specifies what to sort by. reverse=True sorts descending. lambda c: c['spend'] extracts the spend value from each dict."},
+        {q:"all([True, True, False]) returns:",options:["True","False","None","Error"],answer:"False",explanation:"all() returns True only if every element is truthy. One False makes the whole thing False. any() would return True here since at least one element is True."},
+      ]}/>
+
+      <CodeExercise
+        title="Clean a messy price list with comprehensions"
+        description="Given raw price strings like '$12.50', use a list comprehension to extract floats, then compute total, average, and count of items over $10."
+        starterCode={`raw = ["$12.50", "$8.99", "$24.00", "$5.75", "$18.40", "$3.20", "$15.00"]
+
+# Step 1: comprehension to strip $ and convert to float
+prices = [float(p.replace(___, "")) for p in raw]
+
+# Step 2: stats
+total   = round(sum(prices), 2)
+average = round(sum(prices) / len(prices), 2)
+over_10 = len([p for p in prices if p > ___])
+
+print(f"Total: ${total}")
+print(f"Average: ${average}")
+print(f"Over $10: {over_10}")`}
+        hint="p.replace('$', ''). p > 10. len(prices) for average."
+        validate={(out)=>out.includes("Total:")&&out.includes("Average:")&&out.includes("Over $10: 4")}
+      />
+    </div>
+  )},
+
+  // ── PYTHON CORE 3: Real DS Patterns
+  {id:"pycore-ds-patterns", phase:"Python Core", emoji:"🔧", color:"#4ade80", title:"Python Patterns for DS", subtitle:"The coding patterns every data scientist uses daily",
+   body:()=>(
+    <div>
+      <LP>These are the Python patterns you'll use in almost every data science project. Not syntax — patterns. The difference between someone who knows Python and someone who writes good Python.</LP>
+
+      <LH>1. Working with JSON — the format of APIs and configs</LH>
+      <Block label="JSON in Python">{`import json
+
+# Parse JSON string → Python dict
+raw = '{"name": "Ahmed", "score": 88, "passed": true}'
+data = json.loads(raw)
+print(data["name"])   # Ahmed
+print(data["passed"]) # True
+
+# Python dict → JSON string
+result = {"accuracy": 0.92, "f1": 0.87, "model": "RandomForest"}
+json_str = json.dumps(result, indent=2)
+print(json_str)
+
+# Read JSON file
+with open("config.json", "r") as f:
+    config = json.load(f)
+
+# Write JSON file
+with open("results.json", "w") as f:
+    json.dump(result, f, indent=2)
+
+# Real use: API response
+import urllib.request
+url = "https://api.example.com/data"
+# response = json.loads(urllib.request.urlopen(url).read())`}</Block>
+
+      <LH>2. String Formatting — clean output</LH>
+      <Block label="f-strings and formatting">{`name = "Ahmed"
+score = 88.5678
+n = 1234567
+
+# f-strings (Python 3.6+) — use these always
+print(f"Student: {name}")
+print(f"Score: {score:.2f}")      # 88.57 — 2 decimal places
+print(f"Score: {score:.0f}%")     # 89%  — rounded, no decimals
+print(f"Count: {n:,}")            # 1,234,567 — thousands separator
+print(f"Hex:   {255:#x}")         # 0xff
+
+# In data science reports
+accuracy = 0.9234
+print(f"Model accuracy: {accuracy:.1%}")  # 92.3%
+
+# Multi-line f-string
+report = f"""
+=== Model Report ===
+Student: {name}
+Score:   {score:.1f}
+Grade:   {'Pass' if score >= 60 else 'Fail'}
+"""
+print(report)`}</Block>
+
+      <LH>3. Generators — memory-efficient iteration</LH>
+      <Block label="Generators">{`# List — stores everything in memory
+squares_list = [x**2 for x in range(1_000_000)]  # 8MB in memory!
+
+# Generator — computes one at a time, tiny memory footprint
+squares_gen = (x**2 for x in range(1_000_000))   # almost 0MB
+
+# You iterate the same way
+for sq in squares_gen:
+    if sq > 100:
+        break
+    print(sq)
+
+# Generator function — use yield
+def chunk_data(data, chunk_size):
+    """Yield data in chunks — useful for large datasets"""
+    for i in range(0, len(data), chunk_size):
+        yield data[i:i+chunk_size]
+
+rows = list(range(1000))
+for chunk in chunk_data(rows, 100):
+    print(f"Processing {len(chunk)} rows...")`}</Block>
+
+      <LH>4. *args and **kwargs — flexible functions</LH>
+      <Block label="Variable arguments">{`# *args — any number of positional arguments
+def log(*messages):
+    for msg in messages:
+        print(f"[LOG] {msg}")
+
+log("Starting model training")
+log("Epoch 1 done", "Epoch 2 done", "Training complete")
+
+# **kwargs — any number of keyword arguments
+def create_model(**params):
+    print("Model params:")
+    for key, val in params.items():
+        print(f"  {key}: {val}")
+
+create_model(n_estimators=100, max_depth=5, random_state=42)
+
+# Real DS pattern: pass config to model
+def train(model_class, X, y, **kwargs):
+    model = model_class(**kwargs)
+    model.fit(X, y)
+    return model`}</Block>
+
+      <LH>5. Common Patterns in Real DS Code</LH>
+      <Block label="Patterns you'll see everywhere">{`import os
+import time
+
+# 1. Path handling
+data_path = os.path.join("data", "raw", "customers.csv")
+os.makedirs("outputs", exist_ok=True)  # create folder if not exists
+
+# 2. Timing code
+start = time.time()
+# ... your expensive operation ...
+elapsed = time.time() - start
+print(f"Completed in {elapsed:.2f}s")
+
+# 3. Unpacking
+a, b, c = [1, 2, 3]
+first, *rest = [10, 20, 30, 40]  # first=10, rest=[20,30,40]
+
+# 4. Ternary expression
+label = "churn" if prediction == 1 else "retain"
+
+# 5. Default dict pattern (avoid KeyError)
+from collections import defaultdict
+counts = defaultdict(int)
+for word in ["data", "science", "data", "python", "data"]:
+    counts[word] += 1
+# {"data":3, "science":1, "python":1}
+
+# 6. Flatten a nested list
+nested = [[1,2,3],[4,5],[6,7,8,9]]
+flat = [x for sublist in nested for x in sublist]
+# [1,2,3,4,5,6,7,8,9]`}</Block>
+
+      <Callout icon="★" color="#f7c96e" title="Interview tip">f-strings, list comprehensions, zip, enumerate, and defaultdict come up constantly in DS coding interviews. Practice until they feel natural.</Callout>
+
+      <Quiz questions={[
+        {q:"f'{0.856:.1%}' outputs:",options:["0.856","85.6%","86%","0.9%"],answer:"85.6%",explanation:":.1% formats as percentage with 1 decimal place. Python multiplies by 100 and adds % sign automatically. 0.856 → 85.6%."},
+        {q:"What's the key advantage of a generator over a list comprehension for large data?",options:["Generators are faster","Generators use much less memory — they compute one item at a time","Generators support more operations","Generators can be sorted"],answer:"Generators use much less memory — they compute one item at a time",explanation:"A list comprehension builds the entire list in memory. A generator yields one item at a time — perfect for large datasets where you can't load everything at once."},
+        {q:"first, *rest = [10,20,30,40]. What is rest?",options:["[10]","[20,30,40]","20","[30,40]"],answer:"[20,30,40]",explanation:"*rest captures everything that doesn't match a named variable. first gets 10, rest collects the remainder [20,30,40]."},
+        {q:"os.makedirs('outputs', exist_ok=True) — what does exist_ok=True do?",options:["Overwrites existing files","Prevents error if folder already exists","Creates parent folders too","Makes folder read-only"],answer:"Prevents error if folder already exists",explanation:"Without exist_ok=True, makedirs raises FileExistsError if the folder already exists. exist_ok=True silently ignores that — safe to call every time your script runs."},
+        {q:"json.loads() vs json.load() — difference?",options:["No difference","loads() parses a string; load() reads from a file","load() is faster","loads() only works for arrays"],answer:"loads() parses a string; load() reads from a file",explanation:"loads() = load string. load() = load file object. Remember: loads has an 's' for string. The same pattern applies to json.dumps() (to string) vs json.dump() (to file)."},
+      ]}/>
+
+      <CodeExercise
+        title="Parse and summarize a JSON dataset"
+        description="Given a JSON string of students, parse it and use list comprehensions to: print the count of passing students (score >= 60), compute average score, and print names of top scorers (score >= 90)."
+        starterCode={`import json
+
+raw = '[{"name":"Ahmed","score":88},{"name":"Sara","score":92},{"name":"Omar","score":45},{"name":"Lina","score":95},{"name":"Karim","score":58},{"name":"Nour","score":71}]'
+
+# Step 1: parse JSON
+students = json.___(raw)
+
+# Step 2: count passing (score >= 60)
+passing = len([s for s in students if s[___] >= 60])
+
+# Step 3: average score
+avg = round(sum(s['score'] for s in students) / len(students), 1)
+
+# Step 4: top scorers (>= 90)
+top = [s[___] for s in students if s['score'] >= 90]
+
+print(f"Passing: {passing}")
+print(f"Average: {avg}")
+print(f"Top scorers: {top}")`}
+        hint="json.loads(). s['score']. s['name']. len([...]) for passing count."
+        validate={(out)=>out.includes("Passing: 4")&&out.includes("Average:")&&out.includes("Top scorers:")}
+      />
+    </div>
+  )},
+
+  // ── LINEAR ALGEBRA 1: Vectors and Matrices
+  {id:"linalg-vectors", phase:"Linear Algebra", emoji:"📐", color:"#e879f9", title:"Vectors & Matrices", subtitle:"The math behind every ML model — visually explained",
+   body:()=>(
+    <div>
+      <LP>Linear algebra is the language ML is written in. Every time sklearn fits a model, it's doing matrix operations. You don't need to be a mathematician — you need the intuition and the NumPy code.</LP>
+      <Callout icon="🧠" color="#e879f9" title="Watch this first">Before reading this lesson, watch 3Blue1Brown's 'Essence of Linear Algebra' chapters 1-3 on YouTube. 30 minutes. It will make everything here click visually.</Callout>
+
+      <LH>1. Vectors — what they really are</LH>
+      <LP>A vector is a list of numbers. In data science, each row of your dataset is a vector — a point in N-dimensional space where N is the number of features.</LP>
+      <Block label="Vectors in NumPy">{`import numpy as np
+
+# A customer described by 3 features
+customer = np.array([35, 75.5, 24])  # [age, monthly_charge, tenure]
+
+# Vector properties
+print(customer.shape)   # (3,) — 3-dimensional vector
+print(len(customer))    # 3
+
+# Vector arithmetic
+a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+
+a + b      # [5, 7, 9]  — element-wise addition
+a - b      # [-3,-3,-3]
+a * 2      # [2, 4, 6]  — scalar multiplication
+a * b      # [4,10,18]  — element-wise multiply (NOT dot product)
+
+# Vector magnitude (length)
+magnitude = np.linalg.norm(a)  # sqrt(1+4+9) = 3.74
+
+# Normalize to unit vector (magnitude = 1)
+unit = a / np.linalg.norm(a)
+print(np.linalg.norm(unit))  # 1.0`}</Block>
+
+      <LH>2. Dot Product — the most important operation</LH>
+      <LP>The dot product measures similarity between two vectors. It's the core operation in neural networks, cosine similarity, and matrix multiplication.</LP>
+      <Block label="Dot product">{`import numpy as np
+
+a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+
+# Three equivalent ways
+dot1 = np.dot(a, b)       # 32
+dot2 = a @ b              # 32 (cleaner syntax)
+dot3 = sum(a * b)         # 32 (manual)
+
+# Geometric interpretation: a·b = |a||b|cos(θ)
+# If dot product > 0: vectors point in similar direction
+# If dot product = 0: vectors are perpendicular (orthogonal)
+# If dot product < 0: vectors point in opposite directions
+
+# Cosine similarity — normalized dot product (used in NLP)
+def cosine_similarity(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+doc1 = np.array([1, 1, 0, 1])  # word frequencies
+doc2 = np.array([1, 1, 1, 0])
+print(cosine_similarity(doc1, doc2))  # 0.667 — moderately similar`}</Block>
+      <Callout icon="★" color="#f7c96e" title="Why dot products matter in ML">In a neural network, every neuron computes: output = dot(weights, inputs) + bias. The entire forward pass is matrix multiplication. Understanding dot products = understanding neural networks.</Callout>
+
+      <LH>3. Matrices — grids of numbers</LH>
+      <Block label="Creating and indexing matrices">{`import numpy as np
+
+# Dataset as matrix — rows=samples, cols=features
+X = np.array([
+    [35, 75.5, 24],   # customer 1: age, charge, tenure
+    [28, 45.0, 12],   # customer 2
+    [52, 90.0, 36],   # customer 3
+    [41, 60.0, 18],   # customer 4
+])
+
+print(X.shape)    # (4, 3) — 4 samples, 3 features
+
+# Indexing
+X[0]        # first row (customer 1)
+X[:, 0]     # first column (all ages)
+X[1, 2]     # row 1, col 2 = 12
+
+# Matrix arithmetic
+A = np.array([[1,2],[3,4]])
+B = np.array([[5,6],[7,8]])
+
+A + B       # element-wise addition
+A * B       # element-wise multiplication (NOT matrix multiply)
+A @ B       # MATRIX multiplication (what you usually want)
+A.T         # transpose — flip rows and columns`}</Block>
+
+      <LH>4. Matrix Multiplication — explained clearly</LH>
+      <Block label="Matrix multiply step by step">{`import numpy as np
+
+# Matrix multiply: (m×n) @ (n×p) = (m×p)
+# Inner dimensions must match!
+
+A = np.array([[1,2,3],
+              [4,5,6]])      # shape (2,3)
+
+B = np.array([[7,8],
+              [9,10],
+              [11,12]])      # shape (3,2)
+
+C = A @ B                   # shape (2,2)
+print(C)
+# [[58, 64],
+#  [139, 154]]
+
+# How C[0,0] = 58:
+# Row 0 of A = [1,2,3]
+# Col 0 of B = [7,9,11]
+# Dot product = 1*7 + 2*9 + 3*11 = 7+18+33 = 58
+
+# Shape rule: CRITICAL for debugging ML errors
+print(A.shape)  # (2,3)
+print(B.shape)  # (3,2)
+print(C.shape)  # (2,2) ← (2,3)@(3,2) = (2,2) inner 3s cancel`}</Block>
+      <Warn>The most common ML error: "shapes (100,) and (100,1) not aligned". This is always a shape problem. Always print .shape when debugging matrix operations.</Warn>
+
+      <LH>5. Why This Matters in ML</LH>
+      <Compare items={[
+        {label:"Linear Regression", color:"#7eb8f7", text:"predictions = X @ weights + bias. One matrix multiply gives predictions for all samples at once."},
+        {label:"Neural Networks", color:"#e879f9", text:"Each layer: output = activation(W @ input + b). The whole network is chained matrix multiplications."},
+        {label:"PCA", color:"#6dd6a0", text:"Finds directions (eigenvectors) of maximum variance. Projection = X @ eigenvectors. Reduces dimensions."},
+      ]}/>
+      <Block label="Linear regression as matrix operation">{`import numpy as np
+
+# X: 4 samples, 2 features (+ bias column of 1s)
+X = np.array([
+    [1, 35, 75.5],  # [bias, age, charge]
+    [1, 28, 45.0],
+    [1, 52, 90.0],
+    [1, 41, 60.0],
+])
+weights = np.array([0.5, 0.02, 0.01])  # [w_bias, w_age, w_charge]
+
+# Predict for ALL customers in one matrix multiply
+predictions = X @ weights
+print(predictions)  # [1.775, 1.546, 2.44, 1.922]`}</Block>
+
+      <Quiz questions={[
+        {q:"np.dot([1,2,3],[4,5,6]) equals:",options:["[4,10,18]","32","21","None"],answer:"32",explanation:"Dot product = sum of element-wise products. 1×4 + 2×5 + 3×6 = 4+10+18 = 32. Not element-wise multiplication (which gives [4,10,18])."},
+        {q:"Matrix A has shape (3,4) and B has shape (4,2). What is (A@B).shape?",options:["(3,2)","(4,4)","(3,4)","Error — incompatible shapes"],answer:"(3,2)",explanation:"Matrix multiply rule: (m×n) @ (n×p) = (m×p). Inner dimensions (4 and 4) must match. Result is outer dimensions: (3×2)."},
+        {q:"Cosine similarity of 1.0 means two vectors are:",options:["Perpendicular","Opposite directions","Identical direction","Unrelated"],answer:"Identical direction",explanation:"Cosine similarity ranges from -1 to 1. 1.0 means vectors point in exactly the same direction. 0 means perpendicular. -1 means opposite. Used in NLP to measure document similarity."},
+        {q:"A.T transposes matrix A. If A.shape=(3,5), what is A.T.shape?",options:["(3,5)","(5,3)","(15,)","Error"],answer:"(5,3)",explanation:"Transpose flips rows and columns. A (3,5) matrix becomes (5,3). Useful in linear algebra and often needed to make matrix multiplications work."},
+        {q:"The dot product of two vectors is 0. This means they are:",options:["Identical","Parallel","Perpendicular (orthogonal)","Antiparallel"],answer:"Perpendicular (orthogonal)",explanation:"Dot product = |a||b|cos(θ). If dot product = 0, then cos(θ) = 0, which means θ = 90°. The vectors are perpendicular. In ML, orthogonal features carry independent information."},
+      ]}/>
+
+      <CodeExercise
+        title="Compute cosine similarity between customers"
+        description="Given two customer feature vectors (age, monthly_charge, tenure), compute their cosine similarity using NumPy. Print the result rounded to 3 decimal places."
+        starterCode={`import numpy as np
+
+customer_a = np.array([35, 75.5, 24])
+customer_b = np.array([33, 72.0, 22])
+customer_c = np.array([22, 20.0, 3])
+
+def cosine_similarity(a, b):
+    dot    = np.dot(___, ___)
+    norm_a = np.linalg.norm(___)
+    norm_b = np.linalg.norm(___)
+    return dot / (norm_a * norm_b)
+
+sim_ab = cosine_similarity(customer_a, customer_b)
+sim_ac = cosine_similarity(customer_a, customer_c)
+
+print(f"A vs B similarity: {round(sim_ab, 3)}")
+print(f"A vs C similarity: {round(sim_ac, 3)}")
+print(f"More similar to A: {'B' if sim_ab > sim_ac else 'C'}")`}
+        hint="np.dot(a, b). np.linalg.norm(a). np.linalg.norm(b)."
+        validate={(out)=>out.includes("A vs B similarity:")&&out.includes("A vs C similarity:")&&out.includes("More similar to A: B")}
+      />
+    </div>
+  )},
+
+  // ── LINEAR ALGEBRA 2: Eigenvalues, PCA intuition
+  {id:"linalg-eigen", phase:"Linear Algebra", emoji:"🌀", color:"#e879f9", title:"Eigenvalues & PCA Intuition", subtitle:"The math behind dimensionality reduction",
+   body:()=>(
+    <div>
+      <LP>Eigenvalues and eigenvectors sound intimidating. They're not. This lesson gives you the intuition and the practical NumPy code — enough to understand PCA, explain it in interviews, and implement it.</LP>
+      <Callout icon="🧠" color="#e879f9" title="The one-line summary">An eigenvector is a special direction that a matrix transformation doesn't rotate — only stretches or shrinks. The eigenvalue is how much it stretches.</Callout>
+
+      <LH>1. What is an Eigenvector?</LH>
+      <Block label="Eigenvectors in code">{`import numpy as np
+
+# A transformation matrix
+A = np.array([[3, 1],
+              [0, 2]])
+
+# For most vectors, A changes their direction:
+v1 = np.array([1, 1])
+print(A @ v1)  # [4, 2] — different direction!
+
+# Eigenvectors are special — A only scales them
+# A @ v = λ * v  (lambda = eigenvalue, v = eigenvector)
+
+# Compute eigenvalues and eigenvectors
+eigenvalues, eigenvectors = np.linalg.eig(A)
+print("Eigenvalues:", eigenvalues)       # [3., 2.]
+print("Eigenvectors:\n", eigenvectors)   # columns are eigenvectors
+
+# Verify: A @ v = λ * v for first eigenvector
+v = eigenvectors[:, 0]    # first eigenvector
+lam = eigenvalues[0]      # first eigenvalue
+print(np.allclose(A @ v, lam * v))  # True`}</Block>
+
+      <LH>2. Covariance Matrix — the bridge to PCA</LH>
+      <Block label="Computing covariance">{`import numpy as np
+
+# Dataset: 5 customers, 2 features (age, charge)
+X = np.array([
+    [25, 45],
+    [30, 60],
+    [35, 75],
+    [28, 50],
+    [42, 85],
+])
+
+# Center the data (subtract mean)
+X_centered = X - X.mean(axis=0)
+
+# Covariance matrix
+# cov[i,j] = how feature i and j vary together
+cov = np.cov(X_centered.T)
+print("Covariance matrix:")
+print(cov)
+# Large off-diagonal values = features correlated
+# Small off-diagonal = features independent
+
+# Alternatively
+cov2 = np.cov(X.T)  # numpy centers automatically
+print(np.allclose(cov, cov2))  # True`}</Block>
+
+      <LH>3. PCA from Scratch</LH>
+      <LP>PCA finds the directions of maximum variance in your data. Those directions are eigenvectors of the covariance matrix.</LP>
+      <Block label="PCA step by step">{`import numpy as np
+
+np.random.seed(42)
+# Simulate correlated data (like height and weight)
+X = np.random.multivariate_normal(
+    mean=[170, 70],
+    cov=[[100, 60], [60, 50]],
+    size=200
+)
+
+# Step 1: Center
+X_centered = X - X.mean(axis=0)
+
+# Step 2: Covariance matrix
+cov = np.cov(X_centered.T)
+
+# Step 3: Eigendecomposition
+eigenvalues, eigenvectors = np.linalg.eig(cov)
+
+# Step 4: Sort by eigenvalue (largest = most variance)
+idx = np.argsort(eigenvalues)[::-1]
+eigenvalues  = eigenvalues[idx]
+eigenvectors = eigenvectors[:, idx]
+
+# Step 5: Project onto top k components
+k = 1  # keep 1 component
+principal_components = eigenvectors[:, :k]
+X_reduced = X_centered @ principal_components  # (200,2) → (200,1)
+
+print(f"Original shape: {X.shape}")
+print(f"Reduced shape:  {X_reduced.shape}")
+
+# Explained variance
+total_var = eigenvalues.sum()
+explained = eigenvalues[:k].sum() / total_var
+print(f"Variance explained by PC1: {explained:.1%}")`}</Block>
+      <Callout icon="★" color="#f7c96e" title="Interview gold">If asked 'explain PCA': center data → compute covariance matrix → find eigenvectors → project onto top k eigenvectors. Each eigenvector is a principal component. Eigenvalue = variance explained by that component.</Callout>
+
+      <LH>4. PCA with sklearn — how you'll actually use it</LH>
+      <Block label="sklearn PCA">{`from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+np.random.seed(42)
+X = np.random.randn(100, 10)  # 100 samples, 10 features
+
+# ALWAYS scale before PCA
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Fit PCA
+pca = PCA(n_components=3)
+X_reduced = pca.fit_transform(X_scaled)
+
+print(f"Original: {X_scaled.shape}")   # (100, 10)
+print(f"Reduced:  {X_reduced.shape}")  # (100, 3)
+
+# Explained variance ratio
+for i, var in enumerate(pca.explained_variance_ratio_):
+    print(f"PC{i+1}: {var:.1%} variance explained")
+
+# Cumulative — how many components do you need?
+cumulative = np.cumsum(pca.explained_variance_ratio_)
+n_for_95 = np.argmax(cumulative >= 0.95) + 1
+print(f"Components needed for 95% variance: {n_for_95}")`}</Block>
+      <Warn>Always StandardScale before PCA. Without scaling, features with larger ranges (like salary in thousands) dominate the principal components, making PCA useless.</Warn>
+
+      <Compare items={[
+        {label:"When to use PCA", color:"#6dd6a0", text:"High-dimensional data (100+ features), multicollinear features, visualization (reduce to 2D), speed up training."},
+        {label:"When NOT to use PCA", color:"#f28b82", text:"When interpretability matters (PCA components are uninterpretable). When features aren't correlated. When n_features < 20."},
+        {label:"PCA vs Feature Selection", color:"#7eb8f7", text:"PCA creates NEW features (linear combinations). Feature selection KEEPS original features. Selection is more interpretable."},
+      ]}/>
+
+      <Quiz questions={[
+        {q:"The first principal component captures:",options:["The most important feature","The direction of maximum variance in the data","The feature with highest correlation to target","The mean of all features"],answer:"The direction of maximum variance in the data",explanation:"PCA finds directions (eigenvectors) of the covariance matrix ordered by variance explained (eigenvalues). PC1 captures the most variance, PC2 the second most, etc."},
+        {q:"Why must you StandardScale before PCA?",options:["PCA requires normal distribution","Features with large ranges would dominate the variance","StandardScale makes PCA faster","PCA only works on scaled data"],answer:"Features with large ranges would dominate the variance",explanation:"PCA is variance-based. A feature measured in thousands (like salary) will have much higher variance than one measured in 0-1 (like a rate). Scaling ensures all features contribute equally to the analysis."},
+        {q:"eigenvalues = [4.2, 2.1, 0.8, 0.3]. How much variance do the first 2 PCs explain?",options:["4.2/7.4 = 56.8%","(4.2+2.1)/7.4 = 85.1%","2.1/7.4 = 28.4%","100%"],answer:"(4.2+2.1)/7.4 = 85.1%",explanation:"Explained variance ratio = eigenvalue / sum of all eigenvalues. For 2 components: (4.2+2.1)/(4.2+2.1+0.8+0.3) = 6.3/7.4 = 85.1%."},
+        {q:"A @ v = 3 * v. What is 3 here?",options:["The eigenvector","The eigenvalue","The dot product","The determinant"],answer:"The eigenvalue",explanation:"The eigenvalue equation is A @ v = λ * v where v is the eigenvector and λ (lambda) is the eigenvalue. The eigenvalue tells you how much the transformation stretches or shrinks the eigenvector."},
+        {q:"You reduce 50 features to 5 with PCA explaining 90% variance. What happens to model accuracy?",options:["Always improves","Always decreases","Depends — may improve due to noise reduction or decrease due to information loss","Stays exactly the same"],answer:"Depends — may improve due to noise reduction or decrease due to information loss",explanation:"PCA trades information for simplicity. Removing noise often improves model performance. But if the discarded 10% of variance contains important signal, accuracy drops. Always compare with and without PCA on your specific task."},
+      ]}/>
+
+      <CodeExercise
+        title="PCA from scratch — find top component"
+        description="Given a 2D dataset, implement PCA manually: center the data, compute covariance matrix, find eigenvalues/eigenvectors, and print the explained variance ratio of the first component."
+        starterCode={`import numpy as np
+
+np.random.seed(42)
+X = np.random.multivariate_normal([0,0], [[3,2],[2,2]], size=100)
+
+# Step 1: center
+X_centered = X - X.___(axis=0)
+
+# Step 2: covariance matrix
+cov = np.cov(X_centered.___)
+
+# Step 3: eigendecomposition
+eigenvalues, eigenvectors = np.linalg.___(cov)
+
+# Step 4: sort descending
+idx = np.argsort(eigenvalues)___
+eigenvalues = eigenvalues[idx]
+
+# Step 5: explained variance of first component
+explained = eigenvalues[0] / eigenvalues.___()
+print(f"PC1 explains: {round(explained*100, 1)}% of variance")`}
+        hint="X.mean(axis=0). X_centered.T for cov. np.linalg.eig(cov). [::-1] to reverse. eigenvalues.sum()."
+        validate={(out)=>out.includes("PC1 explains:")&&out.includes("%")}
+      />
+    </div>
+  )},
+
+  // ── COMMAND LINE & GIT
+  {id:"cli-git-lesson", phase:"Tools", emoji:"💻", color:"#facc15", title:"Command Line & Git", subtitle:"Every DS job requires this — learn it once, use it forever",
+   body:()=>(
+    <div>
+      <LP>The command line and Git are the professional tools of data science. Every job posting lists them. Every team uses them. This lesson covers what you actually need — no fluff.</LP>
+      <Callout icon="🧠" color="#facc15" title="Your GitHub is your DS resume">Recruiters look at GitHub profiles. Every project you build should be pushed to GitHub with a proper README. Start today.</Callout>
+
+      <LH>1. Command Line Essentials</LH>
+      <Block label="Navigation and file operations">{`# Navigate folders
+pwd                    # print working directory — where am I?
+ls                     # list files (Mac/Linux)
+dir                    # list files (Windows)
+ls -la                 # list with details + hidden files
+
+cd Desktop             # go into Desktop folder
+cd ..                  # go up one level
+cd ~                   # go to home directory
+cd "My Projects"       # quotes for paths with spaces
+
+# Files and folders
+mkdir my_project       # create folder
+mkdir -p data/raw      # create nested folders
+touch analysis.py      # create empty file (Mac/Linux)
+cp file.py backup.py   # copy file
+mv old_name.py new.py  # rename / move
+rm file.py             # delete file (CAREFUL — no trash!)
+rm -rf folder/         # delete folder recursively (VERY careful!)
+
+# View file contents
+cat data.csv           # print file contents
+head -n 5 data.csv     # first 5 lines
+tail -n 10 data.csv    # last 10 lines`}</Block>
+
+      <LH>2. Running Python from Terminal</LH>
+      <Block label="Python in the terminal">{`# Run a script
+python script.py
+python3 script.py      # on some systems
+
+# Run with arguments
+python train.py --model rf --epochs 10
+
+# Interactive Python
+python                 # starts REPL
+>>> import pandas as pd
+>>> exit()
+
+# Virtual environments — ALWAYS use these
+python -m venv venv           # create environment
+source venv/bin/activate      # activate (Mac/Linux)
+venv\\Scripts\\activate          # activate (Windows)
+pip install pandas scikit-learn  # install in this env
+pip freeze > requirements.txt    # save all packages
+pip install -r requirements.txt  # install from file
+deactivate                       # leave the environment`}</Block>
+      <Callout icon="⚠️" color="#f28b82" title="Always use virtual environments">Never install packages globally. Every project gets its own venv. This prevents version conflicts between projects and makes your code reproducible for others.</Callout>
+
+      <LH>3. Git — the mental model first</LH>
+      <Compare items={[
+        {label:"Working Directory", color:"#7eb8f7", text:"Your actual files. Where you write code. Changes here aren't tracked yet."},
+        {label:"Staging Area", color:"#f7c96e", text:"Files you've marked to be saved in the next commit. git add puts files here."},
+        {label:"Repository (.git)", color:"#6dd6a0", text:"The full history of all commits. git commit saves the staging area here permanently."},
+      ]}/>
+      <Block label="Git workflow — daily use">{`# Setup (once)
+git config --global user.name "Your Name"
+git config --global user.email "you@email.com"
+
+# Start a project
+git init                        # initialize new repo
+git clone URL                   # clone existing repo
+
+# Daily workflow
+git status                      # what changed?
+git add analysis.py             # stage one file
+git add .                       # stage all changes
+git commit -m "Add EDA notebook"  # save to history
+git push origin main            # upload to GitHub
+
+# Check history
+git log --oneline               # compact history
+git diff                        # what changed since last commit
+git diff HEAD~1                 # compare to previous commit
+
+# Undo mistakes
+git restore file.py             # discard unstaged changes
+git restore --staged file.py    # unstage a file
+git revert HEAD                 # undo last commit (safe)`}</Block>
+
+      <LH>4. Branching — work without breaking things</LH>
+      <Block label="Branches">{`# Create and switch to new branch
+git checkout -b feature/add-model
+# or (modern syntax)
+git switch -c feature/add-model
+
+# See all branches
+git branch
+
+# Switch between branches
+git switch main
+git switch feature/add-model
+
+# Merge your work back
+git switch main
+git merge feature/add-model
+
+# Push branch to GitHub
+git push origin feature/add-model
+
+# Delete branch after merging
+git branch -d feature/add-model`}</Block>
+
+      <LH>5. Writing Good Commit Messages</LH>
+      <Compare items={[
+        {label:"❌ Bad commits", color:"#f28b82", text:'"fix" "stuff" "asdfgh" "updated" "final" "final_v2" "pls work"'},
+        {label:"✅ Good commits", color:"#6dd6a0", text:'"Add churn prediction model with 87% accuracy" "Fix null handling in customer_id column" "Refactor EDA notebook into reusable functions"'},
+      ]}/>
+      <Tip>Format: verb + what + why (if not obvious). "Add random forest baseline — outperforms logistic regression by 4%". Your future self and teammates will thank you.</Tip>
+
+      <LH>6. Essential .gitignore</LH>
+      <Block label=".gitignore for DS projects">{`# Create .gitignore in project root
+# This file tells Git what NOT to track
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Data files (often too large for GitHub)
+data/raw/
+*.csv
+*.xlsx
+*.parquet
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# API keys and secrets — NEVER commit these!
+.env
+secrets.py
+config.py
+
+# OS files
+.DS_Store        # Mac
+Thumbs.db        # Windows`}</Block>
+
+      <Quiz questions={[
+        {q:"You edited 3 files. You want to commit only 2 of them. What do you do?",options:["git add . then git commit","git add file1.py file2.py then git commit","git commit file1.py file2.py","git push file1.py file2.py"],answer:"git add file1.py file2.py then git commit",explanation:"git add selects specific files for staging. git add . stages everything. You can add files individually to include only the ones you want in this commit."},
+        {q:"What does 'git restore file.py' do?",options:["Deletes the file","Discards unstaged changes to file.py","Restores a deleted file from GitHub","Commits the file"],answer:"Discards unstaged changes to file.py",explanation:"git restore discards changes in your working directory, reverting the file to its state at the last commit. Warning: this cannot be undone — the changes are gone."},
+        {q:"Why should you NEVER commit API keys or passwords?",options:["Git can't store strings","GitHub is public — anyone can see and use your keys","Git compresses text files differently","Commit messages are limited in length"],answer:"GitHub is public — anyone can see and use your keys",explanation:"Once pushed to GitHub, secrets are permanently in history even if you delete them later. Bots scan GitHub for exposed credentials and use them within minutes. Always use .env files and add them to .gitignore."},
+        {q:"What is a virtual environment?",options:["A cloud server for running Python","An isolated Python installation per project with its own packages","A way to run Python in the browser","A Docker container"],answer:"An isolated Python installation per project with its own packages",explanation:"A virtual environment creates a separate Python installation for each project. This prevents 'it works on my machine' issues and version conflicts between projects. pip install inside a venv only affects that project."},
+        {q:"git log --oneline shows commits. You want to undo the last commit but keep the code changes. Which command?",options:["git revert HEAD","git reset HEAD~1 --soft","git restore HEAD","git push --force"],answer:"git reset HEAD~1 --soft",explanation:"--soft reset moves the commit pointer back but keeps your changes staged. Hard reset (--hard) discards code changes too. revert creates a new commit that undoes the last one — safer for shared branches."},
+      ]}/>
+
+      <CodeExercise
+        title="Simulate git workflow with file tracking"
+        description="Python can simulate the concept of a git staging area using sets. Implement a simple GitSimulator class with add(), commit(), and log() methods."
+        starterCode={`class GitSimulator:
+    def __init__(self):
+        self.staged   = []
+        self.commits  = []
+    
+    def add(self, filename):
+        if filename not in self.staged:
+            self.staged.append(filename)
+            print(f"Staged: {filename}")
+    
+    def commit(self, message):
+        if not self.staged:
+            print("Nothing to commit")
+            return
+        self.commits.append({
+            "message": message,
+            "files":   list(self.staged)
+        })
+        self.staged = ___  # clear staging area
+        print(f"Committed: {message}")
+    
+    def log(self):
+        for i, c in enumerate(reversed(self.commits)):
+            print(f"#{len(self.commits)-i} {c[___]} — {c['files']}")
+
+repo = GitSimulator()
+repo.add("analysis.py")
+repo.add("model.py")
+repo.commit("Add initial analysis and model")
+repo.add("README.md")
+repo.commit("Add README")
+repo.log()`}
+        hint="self.staged = [] to clear. c['message'] for the commit message."
+        validate={(out)=>out.includes("Committed: Add README")&&out.includes("README.md")&&out.includes("#1")}
+      />
+    </div>
+  )},
+
+  // ── JUPYTER & DEV ENVIRONMENT
+  {id:"jupyter-lesson", phase:"Tools", emoji:"📓", color:"#38bdf8", title:"Jupyter & Dev Environment", subtitle:"Set up your workspace like a professional data scientist",
+   body:()=>(
+    <div>
+      <LP>Your dev environment is where you spend every working hour. A well-configured environment makes you faster, catches bugs earlier, and makes your work reproducible. This lesson shows you what professionals actually use.</LP>
+      <Callout icon="🧠" color="#38bdf8" title="Key principle">A notebook that only runs in order, with a fresh kernel, on any machine = reproducible. Everything else is a liability.</Callout>
+
+      <LH>1. Jupyter Notebook vs JupyterLab vs VS Code</LH>
+      <Compare items={[
+        {label:"Jupyter Notebook", color:"#7eb8f7", text:"Classic. Simple. Good for sharing. Limited for large projects. Access at localhost:8888."},
+        {label:"JupyterLab", color:"#6dd6a0", text:"Modern Jupyter. Side-by-side views, file browser, terminal. Better for serious work."},
+        {label:"VS Code + Jupyter", color:"#f7c96e", text:"Best of both worlds. Full IDE features (autocomplete, linting, debugging) + notebooks. Recommended."},
+      ]}/>
+      <Block label="Starting Jupyter">{`# Install
+pip install jupyterlab notebook
+
+# Start JupyterLab
+jupyter lab
+
+# Start classic notebook
+jupyter notebook
+
+# Start on specific port
+jupyter lab --port 8889
+
+# Convert notebook to script
+jupyter nbconvert --to script analysis.ipynb
+
+# Run notebook non-interactively
+jupyter nbconvert --to notebook --execute analysis.ipynb`}</Block>
+
+      <LH>2. Essential Keyboard Shortcuts</LH>
+      <Block label="Shortcuts that save hours">{`# MODE: Blue border = Command mode, Green = Edit mode
+# Press Escape → Command mode
+# Press Enter  → Edit mode
+
+# In COMMAND mode (blue):
+A          # insert cell Above
+B          # insert cell Below
+DD         # Delete cell (press D twice)
+M          # change cell to Markdown
+Y          # change cell to Code
+Z          # undo cell deletion
+Shift+Up   # select multiple cells upward
+Shift+Down # select multiple cells downward
+C          # copy cell
+V          # paste cell below
+X          # cut cell
+
+# In EDIT mode (green):
+Shift+Enter    # Run cell + move to next
+Ctrl+Enter     # Run cell, stay on it
+Alt+Enter      # Run cell + insert new cell below
+Tab            # Autocomplete
+Shift+Tab      # Show function signature/docs
+Ctrl+/         # Toggle comment
+Ctrl+Z         # Undo
+
+# Any mode:
+Ctrl+Shift+P   # Command palette (JupyterLab)`}</Block>
+      <Tip>Learn Shift+Enter, A, B, DD, M, and Y first. These alone will save 30 minutes per day. Add the rest gradually.</Tip>
+
+      <LH>3. Magic Commands — Jupyter superpowers</LH>
+      <Block label="Magic commands">{`# Time a single expression
+%timeit sum(range(1000))
+
+# Time a whole cell
+%%timeit
+result = []
+for i in range(1000):
+    result.append(i**2)
+
+# Run a shell command from notebook
+!pip install seaborn
+!ls data/
+!git status
+
+# Display all variables in memory
+%whos
+
+# Load external script into cell
+%load my_functions.py
+
+# Autoreload — automatically reimport modules on change
+%load_ext autoreload
+%autoreload 2
+
+# Display matplotlib inline
+%matplotlib inline
+
+# Profile code performance
+%prun my_function()
+
+# Write cell content to file
+%%writefile my_script.py
+import pandas as pd
+df = pd.read_csv("data.csv")
+print(df.head())`}</Block>
+
+      <LH>4. Professional Notebook Structure</LH>
+      <Block label="Template for every DS notebook">{`# 1. TITLE + PURPOSE
+# Always start with a markdown cell:
+"""
+# Customer Churn Analysis
+**Goal:** Identify key drivers of churn in the Telco dataset
+**Data:** telco_churn.csv (7,043 rows × 21 columns)
+**Author:** Your Name | Date: 2024-01-15
+"""
+
+# 2. IMPORTS — all at the top, one cell
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+
+# Config
+pd.set_option('display.max_columns', None)
+plt.style.use('seaborn-v0_8')
+RANDOM_STATE = 42
+
+# 3. DATA LOADING
+df = pd.read_csv("../data/raw/telco_churn.csv")
+print(f"Shape: {df.shape}")
+df.head()
+
+# 4. EDA (separate cells per insight)
+
+# 5. PREPROCESSING
+
+# 6. MODELING
+
+# 7. EVALUATION
+
+# 8. CONCLUSIONS — always end with markdown summary`}</Block>
+      <Callout icon="⚠️" color="#f28b82" title="The golden rule">Before sharing any notebook: Kernel → Restart & Run All. If it fails, it's broken. If it succeeds, it's reproducible.</Callout>
+
+      <LH>5. VS Code Setup for Data Science</LH>
+      <Block label="Must-have VS Code extensions">{`# Install these extensions in VS Code:
+
+# 1. Python (Microsoft) — language support, linting, debugging
+# 2. Jupyter — run .ipynb notebooks in VS Code
+# 3. Pylance — fast type checking and autocomplete
+# 4. GitLens — powerful git history view
+# 5. indent-rainbow — visual indentation guides
+# 6. Rainbow CSV — colorize CSV files
+
+# Settings to add to settings.json:
+{
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
+    "editor.rulers": [88],          // Black's default line length
+    "jupyter.runStartupCommands": "%matplotlib inline"
+}`}</Block>
+
+      <LH>6. Project Folder Structure</LH>
+      <Block label="Standard DS project structure">{`my_project/
+├── data/
+│   ├── raw/          # original data — NEVER modify
+│   └── processed/    # cleaned, transformed data
+├── notebooks/
+│   ├── 01_eda.ipynb
+│   ├── 02_preprocessing.ipynb
+│   └── 03_modeling.ipynb
+├── src/
+│   ├── __init__.py
+│   ├── data.py       # data loading functions
+│   ├── features.py   # feature engineering
+│   └── models.py     # model training/evaluation
+├── outputs/
+│   ├── figures/      # saved plots
+│   └── models/       # saved model files
+├── requirements.txt
+├── .gitignore
+└── README.md         # ALWAYS write this`}</Block>
+      <Tip>Number your notebooks (01_, 02_, 03_). It forces you to think about the order and makes the project story clear to anyone who opens the repo.</Tip>
+
+      <Quiz questions={[
+        {q:"In Jupyter command mode, what does pressing 'DD' do?",options:["Duplicates the cell","Deletes the current cell","Moves to the next cell","Debug mode"],answer:"Deletes the current cell",explanation:"DD (press D twice quickly) deletes the current cell in command mode. Press Z immediately after to undo. Make sure you're in command mode (blue border) not edit mode."},
+        {q:"Why should you 'Restart & Run All' before sharing a notebook?",options:["It makes the notebook smaller","It ensures cells run in order with a fresh state — proving reproducibility","It clears all outputs","It converts to PDF"],answer:"It ensures cells run in order with a fresh state — proving reproducibility",explanation:"In Jupyter, you can run cells out of order. A notebook that only works when you run cells in a specific order is broken. Restart & Run All proves it executes correctly from top to bottom."},
+        {q:"%timeit sum(range(1000)) — what does this do?",options:["Runs the code once and shows memory usage","Runs the code many times and reports average execution time","Shows the code's complexity","Times the entire notebook"],answer:"Runs the code many times and reports average execution time",explanation:"%timeit runs the expression thousands of times and reports mean ± std. Use it to benchmark code and compare approaches. %%timeit (double %) times a whole cell."},
+        {q:"Where should you put all your import statements?",options:["Right before you use each library","Anywhere, it doesn't matter","All in the first code cell, at the top of the notebook","In a separate imports.py file"],answer:"All in the first code cell, at the top of the notebook",explanation:"All imports at the top is a Python convention (PEP 8). In notebooks, it means anyone can see all dependencies immediately, and you avoid 'ModuleNotFoundError' appearing 30 cells in."},
+        {q:"You have data/raw/customers.csv in your project. What should be in .gitignore?",options:["Nothing — always commit your data","data/raw/ — raw data is often too large for GitHub","customers.csv only","All csv files regardless of location"],answer:"data/raw/ — raw data is often too large for GitHub",explanation:"Raw data files are often large (MBs to GBs) and shouldn't go in Git. Store them in cloud storage (S3, Drive) or provide a download script. Add data/raw/ to .gitignore but document how to get the data in README.md."},
+      ]}/>
+
+      <CodeExercise
+        title="Build a notebook health checker"
+        description="Write a function that checks a list of 'notebook cells' (represented as dicts with 'type' and 'content') and returns a health report: whether it has a title cell, imports cell, and conclusion cell."
+        starterCode={`def check_notebook_health(cells):
+    has_title      = False
+    has_imports    = False
+    has_conclusion = False
+    
+    for cell in cells:
+        content = cell['content'].lower()
+        if cell['type'] == 'markdown' and content.startswith('# '):
+            has_title = ___
+        if cell['type'] == 'code' and 'import' in content:
+            has_imports = ___
+        if cell['type'] == 'markdown' and 'conclusion' in content:
+            has_conclusion = ___
+    
+    print(f"Title cell:      {'✅' if has_title else '❌'}")
+    print(f"Imports cell:    {'✅' if has_imports else '❌'}")
+    print(f"Conclusion cell: {'✅' if has_conclusion else '❌'}")
+    score = sum([has_title, has_imports, has_conclusion])
+    print(f"Health score: {score}/3")
+
+cells = [
+    {'type':'markdown', 'content':'# Customer Churn Analysis'},
+    {'type':'code',     'content':'import pandas as pd\\nimport numpy as np'},
+    {'type':'code',     'content':'df = pd.read_csv("data.csv")'},
+    {'type':'markdown', 'content':'## Conclusions\\nChurn rate is 26%'},
+]
+check_notebook_health(cells)`}
+        hint="Set has_title = True, has_imports = True, has_conclusion = True in the right if blocks."
+        validate={(out)=>out.includes("✅")&&out.includes("Health score: 3/3")}
+      />
+    </div>
+  )},
+];
+
 const ML_LESSONS = [
   {
     id:"ml-workflow", title:"The ML Workflow", subtitle:"The 6-step process every ML project follows",
@@ -3533,745 +4875,1497 @@ print('Best score:', round(grid.___, 2))`}
       />
     </div>
   )},
-
-  // ── PYTHON BASICS
-  {
-    id:"python-basics", phase:"Python Basics", emoji:"🐍", color:"#6ee7b7",
-    title:"Python Basics", subtitle:"Variables, loops, functions — the foundation before everything else",
-    body:()=>(
-    <div>
-      <LP>Before NumPy or Pandas, you need to understand Python itself. This lesson covers everything a beginner needs — variables, data types, loops, conditions, and functions. If you already know these, skim fast and move on.</LP>
-
-      <LH>1. Variables & Data Types</LH>
-      <LP>A variable is a box that holds a value. Python has 4 basic types you'll use constantly.</LP>
-      <Block label="python — variables">{`name = "Ahmed"          # str — text
-age  = 25               # int — whole number
-gpa  = 3.7              # float — decimal
-is_student = True       # bool — True or False
-
-print(name, age)        # Ahmed 25
-print(type(age))        # <class 'int'>`}</Block>
-      <Tip>You don't need to declare types in Python. It figures it out automatically.</Tip>
-
-      <LH>2. Lists & Dictionaries</LH>
-      <LP>These are the two most important data structures in Python.</LP>
-      <Block label="python — lists">{`scores = [85, 92, 78, 96, 88]
-
-print(scores[0])        # 85 — first item (index starts at 0)
-print(scores[-1])       # 88 — last item
-print(len(scores))      # 5 — how many items
-
-scores.append(100)      # add to end
-print(scores[:3])       # [85, 92, 78] — first 3 items`}</Block>
-      <Block label="python — dictionaries">{`student = {
-    "name": "Sara",
-    "age": 22,
-    "grade": "A"
-}
-
-print(student["name"])  # Sara
-student["city"] = "Beirut"  # add new key
-print(student.keys())   # dict_keys(['name', 'age', 'grade', 'city'])`}</Block>
-
-      <LH>3. Loops</LH>
-      <Block label="python — for loop">{`scores = [85, 92, 78, 96]
-
-for score in scores:
-    print(score)
-
-# Loop with index
-for i, score in enumerate(scores):
-    print(f"Student {i+1}: {score}")
-
-# Loop over range
-for i in range(5):
-    print(i)  # 0, 1, 2, 3, 4`}</Block>
-
-      <LH>4. Conditions</LH>
-      <Block label="python — if/elif/else">{`score = 85
-
-if score >= 90:
-    print("A")
-elif score >= 80:
-    print("B")
-elif score >= 70:
-    print("C")
-else:
-    print("F")
-
-# One-liner (ternary)
-grade = "pass" if score >= 60 else "fail"`}</Block>
-
-      <LH>5. Functions</LH>
-      <LP>Functions let you reuse code. In DS you'll write dozens of helper functions.</LP>
-      <Block label="python — functions">{`def calculate_average(scores):
-    """Calculate the average of a list of scores."""
-    return sum(scores) / len(scores)
-
-# Call the function
-scores = [85, 92, 78, 96]
-avg = calculate_average(scores)
-print(f"Average: {avg:.2f}")  # Average: 87.75
-
-# Function with default parameter
-def greet(name, greeting="Hello"):
-    return f"{greeting}, {name}!"
-
-print(greet("Radwan"))           # Hello, Radwan!
-print(greet("Sara", "Welcome")) # Welcome, Sara!`}</Block>
-
-      <LH>6. List Comprehensions</LH>
-      <LP>A Python superpower — create lists in one clean line.</LP>
-      <Block label="python — comprehensions">{`numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-# Old way
-squares = []
-for n in numbers:
-    squares.append(n**2)
-
-# Python way — list comprehension
-squares = [n**2 for n in numbers]
-evens   = [n for n in numbers if n % 2 == 0]
-
-print(squares)  # [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
-print(evens)    # [2, 4, 6, 8, 10]`}</Block>
-
-      <Callout icon="🎯" color="#6ee7b7" title="WHAT TO MEMORIZE" type="tip">
-        These 6 things cover 90% of what you need for data science Python: variables, lists, dicts, loops, conditions, functions. Everything else you'll learn as you need it.
-      </Callout>
-
-      <Quiz questions={[
-        {q:"What does scores[-1] return for the list [10, 20, 30, 40]?",options:["10","20","30","40"],answer:"40"},
-        {q:"What type is the value True in Python?",options:["str","int","bool","float"],answer:"bool"},
-        {q:"What does len([1, 2, 3, 4, 5]) return?",options:["4","5","6","0"],answer:"5"},
-      ]}/>
-    </div>
-    ),
-  },
-
-  // ── GIT BASICS
-  {
-    id:"git-basics", phase:"Python Basics", emoji:"🌿", color:"#f97316",
-    title:"Git & GitHub", subtitle:"Every DS job requires this — and most candidates are bad at it",
-    body:()=>(
-    <div>
-      <LP>Git is how you save and share your code. Every data science job will expect you to use Git. It takes one hour to learn the basics — and it's one of the highest ROI things you can do right now.</LP>
-
-      <Callout icon="⚠️" color="#f28b82" title="WHY THIS MATTERS" type="warn">
-        "Most DS candidates are bad at Git" — this is directly from hiring managers. Knowing Git properly sets you apart from 80% of candidates.
-      </Callout>
-
-      <LH>1. The Core Concept</LH>
-      <LP>Think of Git as a save system for your code — like checkpoints in a video game. Every time you make a meaningful change, you create a checkpoint (called a commit). You can always go back.</LP>
-      <Block label="terminal — the 3 commands you'll use 90% of the time">{`git add .              # stage all changes
-git commit -m "message" # save checkpoint
-git push               # send to GitHub`}</Block>
-
-      <LH>2. Setting Up a Project</LH>
-      <Block label="terminal — start a new project">{`# Create a new folder and initialize Git
-mkdir my-ds-project
-cd my-ds-project
-git init
-
-# Connect to GitHub (after creating repo on github.com)
-git remote add origin https://github.com/yourusername/my-ds-project.git
-
-# First push
-git add .
-git commit -m "Initial commit"
-git push -u origin main`}</Block>
-
-      <LH>3. The Daily Workflow</LH>
-      <Block label="terminal — daily git workflow">{`# 1. Check what changed
-git status
-
-# 2. See the exact changes
-git diff
-
-# 3. Stage and commit
-git add .
-git commit -m "Add customer churn model with 87% accuracy"
-
-# 4. Push to GitHub
-git push
-
-# 5. Pull latest changes (when working with others)
-git pull`}</Block>
-
-      <LH>4. Writing Good Commit Messages</LH>
-      <Compare items={[
-        {color:"#f28b82", label:"❌ Bad", text:"'fixed stuff' / 'update' / 'asdfgh' / 'changes'"},
-        {color:"#6dd6a0", label:"✅ Good", text:"'Add XGBoost model with SHAP explainability' / 'Fix data leakage in train/test split' / 'Add EDA notebook for Airbnb dataset'"},
-      ]}/>
-
-      <LH>5. .gitignore — What NOT to Push</LH>
-      <LP>Some files should never go on GitHub — API keys, large data files, cached files.</LP>
-      <Block label=".gitignore">{`# Data files (too large for GitHub)
-*.csv
-*.xlsx
-data/
-
-# Environment and secrets
-.env
-*.key
-
-# Python cache
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
-
-# Virtual environments
-venv/
-.venv/`}</Block>
-
-      <Tip>Never push your .env file or API keys to GitHub. This is a serious security mistake that happens to beginners all the time.</Tip>
-
-      <LH>6. Branching (Basic)</LH>
-      <Block label="terminal — branches">{`# Create a new branch for a new feature
-git checkout -b feature/add-neural-network
-
-# Work on your feature, commit as usual
-git add .
-git commit -m "Add neural network baseline"
-
-# Switch back to main
-git checkout main
-
-# Merge your feature
-git merge feature/add-neural-network`}</Block>
-
-      <Quiz questions={[
-        {q:"What command stages all changed files?",options:["git push","git commit","git add .","git pull"],answer:"git add ."},
-        {q:"What should you NEVER push to GitHub?",options:["README.md","Your .env file with API keys","Python scripts","Notebooks"],answer:"Your .env file with API keys"},
-        {q:"What does git pull do?",options:["Sends code to GitHub","Gets latest changes from GitHub","Creates a new branch","Deletes a commit"],answer:"Gets latest changes from GitHub"},
-      ]}/>
-    </div>
-    ),
-  },
-
-  // ── NEURAL NETWORKS
-  {
-    id:"dl-neural-nets", phase:"Deep Learning", emoji:"🧠", color:"#818cf8",
-    title:"Neural Networks", subtitle:"How machines actually learn — from scratch",
-    body:()=>(
-    <div>
-      <LP>Neural networks are the engine behind ChatGPT, image recognition, and most modern AI. Understanding how they work — even at a high level — makes you a much stronger data scientist.</LP>
-
-      <LH>1. The Big Idea</LH>
-      <LP>A neural network is loosely inspired by the brain. It takes inputs, passes them through layers of "neurons", and produces an output. Each connection has a weight — and training adjusts those weights until the network makes good predictions.</LP>
-      <Callout icon="🧠" color="#818cf8" title="INTUITION FIRST" type="brain">
-        Think of a neural network as a chain of functions. Input goes in, gets transformed layer by layer, and an output comes out. Training is just finding the right transformations.
-      </Callout>
-
-      <LH>2. Your First Neural Network with PyTorch</LH>
-      <Block label="python — simple neural network">{`import torch
-import torch.nn as nn
-
-# Define the network
-class SimpleNet(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(10, 64),   # input: 10 features → 64 neurons
-            nn.ReLU(),           # activation function
-            nn.Linear(64, 32),  # 64 → 32 neurons
-            nn.ReLU(),
-            nn.Linear(32, 1),   # 32 → 1 output
-            nn.Sigmoid()        # output between 0 and 1 (for classification)
-        )
-
-    def forward(self, x):
-        return self.layers(x)
-
-model = SimpleNet()
-print(model)`}</Block>
-
-      <LH>3. Training Loop</LH>
-      <Block label="python — training a neural network">{`import torch.optim as optim
-
-# Loss function and optimizer
-criterion = nn.BCELoss()                    # Binary Cross Entropy
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-# Training loop
-for epoch in range(100):
-    optimizer.zero_grad()      # clear gradients
-    outputs = model(X_train)   # forward pass
-    loss = criterion(outputs, y_train)  # calculate loss
-    loss.backward()            # backpropagation
-    optimizer.step()           # update weights
-
-    if epoch % 10 == 0:
-        print(f"Epoch {epoch}, Loss: {loss.item():.4f}")`}</Block>
-
-      <LH>4. Key Concepts</LH>
-      <Compare items={[
-        {color:"#818cf8",label:"Activation Functions",text:"ReLU, Sigmoid, Tanh. They add non-linearity so the network can learn complex patterns."},
-        {color:"#6dd6a0",label:"Loss Function",text:"Measures how wrong the network is. Training tries to minimize this."},
-        {color:"#f7c96e",label:"Backpropagation",text:"The algorithm that calculates gradients — how much each weight contributed to the error."},
-        {color:"#f472b6",label:"Optimizer",text:"Adam, SGD. Uses gradients to update weights. Adam is almost always the best choice."},
-      ]}/>
-
-      <LH>5. Neural Networks vs Traditional ML</LH>
-      <Compare items={[
-        {color:"#7eb8f7",label:"Traditional ML (XGBoost)",text:"Works great on tabular data. Faster to train. Easier to interpret. Use this first."},
-        {color:"#818cf8",label:"Neural Networks",text:"Wins on images, text, audio. Needs more data and compute. Harder to interpret."},
-      ]}/>
-
-      <Tip>For tabular data (rows and columns), XGBoost almost always beats neural networks. Use deep learning for images, text, and sequences.</Tip>
-
-      <Quiz questions={[
-        {q:"What does backpropagation do?",options:["Makes predictions","Loads data","Calculates gradients to update weights","Creates the network architecture"],answer:"Calculates gradients to update weights"},
-        {q:"Which activation function is most commonly used in hidden layers?",options:["Sigmoid","Tanh","ReLU","Softmax"],answer:"ReLU"},
-        {q:"For tabular data, what usually wins?",options:["Neural Networks","XGBoost/Gradient Boosting","Linear Regression","SVM"],answer:"XGBoost/Gradient Boosting"},
-      ]}/>
-    </div>
-    ),
-  },
-
-  // ── NLP & TRANSFORMERS
-  {
-    id:"dl-nlp", phase:"Deep Learning", emoji:"💬", color:"#c084fc",
-    title:"NLP & Transformers", subtitle:"Text data, BERT, and the technology behind ChatGPT",
-    body:()=>(
-    <div>
-      <LP>NLP (Natural Language Processing) is the hottest area in DS right now. Understanding transformers and how to use Hugging Face models is a massive career differentiator.</LP>
-
-      <LH>1. The NLP Pipeline</LH>
-      <Block label="python — basic NLP pipeline">{`# Step 1: Text cleaning
-import re
-
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(r'[^a-zA-Z0-9 ]', '', text)  # remove punctuation
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-
-# Step 2: Tokenization
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-texts = ["I love data science", "Machine learning is great", "Python is powerful"]
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(texts)
-print(X.shape)  # (3, unique_words)`}</Block>
-
-      <LH>2. Hugging Face — Use Pretrained Models</LH>
-      <LP>Don't build transformers from scratch. Use Hugging Face — a library of thousands of pretrained models.</LP>
-      <Block label="python — sentiment analysis with Hugging Face">{`from transformers import pipeline
-
-# Load a pretrained sentiment analysis model
-classifier = pipeline("sentiment-analysis")
-
-results = classifier([
-    "I love this product!",
-    "This is terrible and I hate it.",
-    "It's okay, nothing special."
-])
-
-for result in results:
-    print(f"{result['label']}: {result['score']:.2%}")`}</Block>
-
-      <LH>3. Fine-tuning BERT</LH>
-      <Block label="python — fine-tune DistilBERT for classification">{`from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import TrainingArguments, Trainer
-
-# Load pretrained model and tokenizer
-model_name = "distilbert-base-uncased"
-tokenizer  = AutoTokenizer.from_pretrained(model_name)
-model      = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
-
-# Tokenize your dataset
-def tokenize(batch):
-    return tokenizer(batch["text"], truncation=True, padding=True)
-
-# Training arguments
-training_args = TrainingArguments(
-    output_dir="./results",
-    num_train_epochs=3,
-    per_device_train_batch_size=16,
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-)
-
-# Train
-trainer = Trainer(model=model, args=training_args, train_dataset=train_data)
-trainer.train()`}</Block>
-
-      <LH>4. Key NLP Concepts</LH>
-      <Compare items={[
-        {color:"#c084fc",label:"Tokenization",text:"Breaking text into tokens (words or subwords). BERT uses subword tokenization."},
-        {color:"#7eb8f7",label:"Embeddings",text:"Turning words into vectors. Similar words have similar vectors."},
-        {color:"#6dd6a0",label:"Attention",text:"The mechanism that lets transformers understand context. 'Bank' means different things in 'river bank' vs 'bank account'."},
-        {color:"#f7c96e",label:"Fine-tuning",text:"Taking a pretrained model and training it a bit more on your specific task. Almost always beats training from scratch."},
-      ]}/>
-
-      <Tip>For any NLP task, start with a Hugging Face pipeline. If it's not good enough, fine-tune. Only train from scratch if you have millions of examples.</Tip>
-
-      <Quiz questions={[
-        {q:"What is fine-tuning?",options:["Training a model from scratch","Taking a pretrained model and adapting it to your task","Cleaning text data","Removing punctuation"],answer:"Taking a pretrained model and adapting it to your task"},
-        {q:"What library has thousands of pretrained NLP models?",options:["sklearn","PyTorch","Hugging Face","NLTK"],answer:"Hugging Face"},
-        {q:"What does the attention mechanism do?",options:["Speeds up training","Helps the model understand context","Removes stopwords","Tokenizes text"],answer:"Helps the model understand context"},
-      ]}/>
-    </div>
-    ),
-  },
-
-  // ── INTERVIEW PREP
-  {
-    id:"interview-prep", phase:"Portfolio & Jobs", emoji:"🎯", color:"#f472b6",
-    title:"Interview Prep", subtitle:"What interviewers actually ask — and how to answer",
-    body:()=>(
-    <div>
-      <LP>DS interviews have 4 parts: SQL, statistics, ML theory, and case studies. Most candidates fail SQL and statistics — not ML. This lesson covers what you'll actually be asked.</LP>
-
-      <LH>1. SQL Interview Questions</LH>
-      <LP>SQL is the first filter. Practice these until they're automatic.</LP>
-      <Block label="sql — common interview questions">{`-- Q: Find the top 3 highest paid employees per department
-SELECT department, name, salary,
-       RANK() OVER (PARTITION BY department ORDER BY salary DESC) as rnk
-FROM employees
-WHERE rnk <= 3;
-
--- Q: Find users who made purchases in both Jan and Feb
-SELECT user_id
-FROM orders
-WHERE MONTH(order_date) IN (1, 2)
-GROUP BY user_id
-HAVING COUNT(DISTINCT MONTH(order_date)) = 2;
-
--- Q: Calculate 7-day rolling average of revenue
-SELECT date,
-       revenue,
-       AVG(revenue) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) as rolling_7d
-FROM daily_revenue;`}</Block>
-
-      <LH>2. Statistics Interview Questions</LH>
-      <Compare items={[
-        {color:"#f472b6",label:"p-value",text:"Probability of seeing results at least this extreme if the null hypothesis is true. NOT the probability that the null is true."},
-        {color:"#7eb8f7",label:"Confidence Interval",text:"If we repeated the experiment 100 times, 95% of our CIs would contain the true parameter. Does NOT mean 95% chance the true value is in this specific interval."},
-        {color:"#6dd6a0",label:"Type I vs Type II Error",text:"Type I: false positive (reject null when it's true). Type II: false negative (fail to reject null when it's false)."},
-        {color:"#f7c96e",label:"Central Limit Theorem",text:"Sample means follow a normal distribution as sample size grows — regardless of the population distribution."},
-      ]}/>
-
-      <LH>3. ML Theory Questions</LH>
-      <Block label="common ml interview questions + model answers">{`Q: What is overfitting and how do you fix it?
-A: Overfitting is when a model performs well on training data but poorly on new data.
-   It memorizes instead of generalizing.
-   Fix: more data, regularization (L1/L2), cross-validation, simpler model, dropout.
-
-Q: Explain the bias-variance tradeoff.
-A: High bias = underfitting (model too simple). High variance = overfitting (model too complex).
-   The goal is to find the sweet spot.
-   Simple models have high bias. Complex models have high variance.
-
-Q: When would you use Random Forest vs XGBoost?
-A: Both are good on tabular data. XGBoost usually wins on accuracy but takes more tuning.
-   Random Forest is faster and easier to get started. Use XGBoost for competitions and production.
-
-Q: How do you handle class imbalance?
-A: Resample (SMOTE, undersampling), adjust class_weight='balanced',
-   use appropriate metric (F1, AUC instead of accuracy), or use threshold tuning.`}</Block>
-
-      <LH>4. Case Study Framework</LH>
-      <LP>When given an open-ended DS case, always use this structure:</LP>
-      <Block label="case study framework">{`1. CLARIFY → Ask questions before solving
-   "What is the business goal?"
-   "What data do we have?"
-   "What counts as success?"
-
-2. DATA → What data would you need?
-   "I'd need user behavior logs, transaction data, demographics..."
-
-3. METRIC → Define success
-   "I'd optimize for 30-day retention, not click-through rate because..."
-
-4. MODEL → Approach
-   "I'd start with a logistic regression baseline, then try XGBoost..."
-
-5. LIMITATIONS → Show you think critically
-   "One risk is data leakage if we include post-treatment variables..."
-
-6. DEPLOY → How would you put it in production?
-   "I'd wrap it in a FastAPI endpoint, monitor with MLflow..."`}</Block>
-
-      <Callout icon="🎯" color="#f472b6" title="THE #1 INTERVIEW MISTAKE" type="brain">
-        Candidates jump straight to the model. Interviewers want to see you clarify the problem first, define a metric, then think about data. The model is the last step.
-      </Callout>
-
-      <Quiz questions={[
-        {q:"What does a p-value of 0.03 mean?",options:["There is a 3% chance the null hypothesis is true","Results this extreme would occur 3% of the time if the null is true","The effect size is 3%","We are 97% confident in our result"],answer:"Results this extreme would occur 3% of the time if the null is true"},
-        {q:"What is the first step in a case study interview?",options:["Build the model","Choose an algorithm","Clarify the business goal and available data","Calculate metrics"],answer:"Clarify the business goal and available data"},
-        {q:"Which metric is better for imbalanced classification?",options:["Accuracy","F1-score or AUC","MSE","R-squared"],answer:"F1-score or AUC"},
-      ]}/>
-    </div>
-    ),
-  },
-
-  // ── STREAMLIT
-  {
-    id:"streamlit", phase:"Portfolio & Jobs", emoji:"🚀", color:"#34d399",
-    title:"Streamlit — Deploy Your Models", subtitle:"Turn any Python script into a live web app in under 1 hour",
-    body:()=>(
-    <div>
-      <LP>Streamlit is the fastest way to showcase your data science work. Instead of showing a Jupyter notebook, you can say: "Here's a live demo you can use right now." That changes everything in an interview.</LP>
-
-      <Callout icon="💡" color="#34d399" title="WHY THIS MATTERS" type="tip">
-        "I built this, you can use it right now at this URL" is the most powerful thing you can say in a data science interview.
-      </Callout>
-
-      <LH>1. Install & Run</LH>
-      <Block label="terminal">{`pip install streamlit
-
-# Create your app
-streamlit run app.py
-
-# Opens automatically at http://localhost:8501`}</Block>
-
-      <LH>2. Your First App</LH>
-      <Block label="app.py — hello world">{`import streamlit as st
-import pandas as pd
-
-st.title("My First DS App")
-st.write("This is a Streamlit app!")
-
-# Upload a file
-uploaded = st.file_uploader("Upload a CSV", type="csv")
-if uploaded:
-    df = pd.read_csv(uploaded)
-    st.write(df.head())
-    st.write(f"Shape: {df.shape}")`}</Block>
-
-      <LH>3. Churn Predictor App</LH>
-      <Block label="app.py — ML model deployment">{`import streamlit as st
-import pickle
-import pandas as pd
-
-# Load your trained model
-model = pickle.load(open("churn_model.pkl", "rb"))
-
-st.title("Customer Churn Predictor")
-st.write("Enter customer details to predict churn probability")
-
-# Input widgets
-tenure  = st.slider("Tenure (months)", 0, 72, 12)
-charges = st.number_input("Monthly charges ($)", 20.0, 120.0, 50.0)
-contract = st.selectbox("Contract type", ["Month-to-month", "One year", "Two year"])
-
-# Predict button
-if st.button("Predict Churn Risk"):
-    contract_map = {"Month-to-month": 0, "One year": 1, "Two year": 2}
-    X = pd.DataFrame([[tenure, charges, contract_map[contract]]],
-                     columns=["tenure", "MonthlyCharges", "Contract"])
-
-    prob = model.predict_proba(X)[0][1]
-
-    if prob > 0.7:
-        st.error(f"⚠️ High churn risk: {prob:.0%}")
-    elif prob > 0.4:
-        st.warning(f"⚡ Medium risk: {prob:.0%}")
-    else:
-        st.success(f"✅ Low risk: {prob:.0%}")`}</Block>
-
-      <LH>4. Deploy to Streamlit Cloud (Free)</LH>
-      <Block label="terminal — deploy in 3 steps">{`# Step 1: Push your project to GitHub
-git add .
-git commit -m "Add Streamlit churn app"
-git push
-
-# Step 2: Go to share.streamlit.io
-# Click "New app"
-# Connect your GitHub repo
-# Select your app.py file
-# Click Deploy
-
-# Step 3: Share the URL
-# https://yourname-churn-predictor.streamlit.app`}</Block>
-
-      <Tip>Add a requirements.txt file with your dependencies so Streamlit Cloud knows what to install: pandas, scikit-learn, xgboost, etc.</Tip>
-
-      <Quiz questions={[
-        {q:"What command runs a Streamlit app locally?",options:["python app.py","streamlit run app.py","streamlit start","flask run"],answer:"streamlit run app.py"},
-        {q:"Where can you deploy Streamlit apps for free?",options:["AWS","Heroku","share.streamlit.io","Azure"],answer:"share.streamlit.io"},
-        {q:"What widget lets users upload a file?",options:["st.input()","st.upload()","st.file_uploader()","st.load()"],answer:"st.file_uploader()"},
-      ]}/>
-    </div>
-    ),
-  },
-
-  // ── LLM & RAG
-  {
-    id:"llm-rag", phase:"Deep Learning", emoji:"🤖", color:"#a78bfa",
-    title:"LLMs & RAG Systems", subtitle:"Build AI-powered apps with LLM APIs and retrieval",
-    body:()=>(
-    <div>
-      <LP>LLMs (Large Language Models) are the technology behind ChatGPT, Claude, and Gemini. As a data scientist, you don't need to build them — you need to know how to use them effectively and build products on top of them.</LP>
-
-      <LH>1. Using LLM APIs</LH>
-      <Block label="python — calling the OpenAI API">{`from openai import OpenAI
-
-client = OpenAI(api_key="your-api-key")
-
-response = client.chat.completions.create(
-    model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a data science tutor."},
-        {"role": "user",   "content": "Explain overfitting in simple terms."}
-    ],
-    temperature=0.7,
-    max_tokens=500
-)
-
-print(response.choices[0].message.content)`}</Block>
-
-      <LH>2. RAG — Retrieval Augmented Generation</LH>
-      <LP>RAG is the most important LLM pattern. Instead of relying on the model's training data, you retrieve relevant documents and include them in the prompt. This lets you build Q&A systems over your own data.</LP>
-      <Block label="python — simple RAG pipeline">{`from openai import OpenAI
-import faiss
-import numpy as np
-
-# Step 1: Embed your documents
-client = OpenAI()
-
-def embed(text):
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=text
-    )
-    return np.array(response.data[0].embedding)
-
-# Your documents
-docs = [
-    "DS Academy covers Python, SQL, ML, and Deep Learning.",
-    "Students can message Radwan directly on WhatsApp.",
-    "The $29/month plan includes all 18+ lessons.",
-]
-
-# Build FAISS index
-embeddings = np.array([embed(doc) for doc in docs]).astype("float32")
-index = faiss.IndexFlatL2(embeddings.shape[1])
-index.add(embeddings)
-
-# Step 2: Query — find relevant docs
-def search(query, k=2):
-    q_emb = embed(query).astype("float32").reshape(1, -1)
-    _, indices = index.search(q_emb, k)
-    return [docs[i] for i in indices[0]]
-
-# Step 3: Generate answer with context
-def rag_answer(question):
-    relevant = search(question)
-    context = "\n".join(relevant)
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": f"Answer based on this context:\n{context}"},
-            {"role": "user", "content": question}
-        ]
-    )
-    return response.choices[0].message.content
-
-print(rag_answer("How much does DS Academy cost?"))`}</Block>
-
-      <LH>3. Prompt Engineering</LH>
-      <Compare items={[
-        {color:"#f28b82",label:"❌ Bad Prompt",text:"'Tell me about machine learning'"},
-        {color:"#6dd6a0",label:"✅ Good Prompt",text:"'You are an expert ML engineer. Explain gradient boosting in 3 bullet points for a junior DS with Python experience. Use a real-world analogy.'"},
-      ]}/>
-      <Block label="python — prompt engineering techniques">{`# Few-shot prompting
-prompt = """
-Classify the sentiment of these reviews:
-
-Review: "This product is amazing!" → Positive
-Review: "Terrible experience, never again" → Negative
-Review: "It's okay, nothing special" → Neutral
-
-Review: "Best purchase I've made this year!" →
-"""
-
-# Chain of thought
-prompt = """
-Solve this step by step:
-A model has 90% accuracy on 100 samples where 95 are negative and 5 are positive.
-Is this a good model? Think through this carefully.
-"""  `}</Block>
-
-      <Tip>RAG is the pattern that gets you hired in 2025. Every company with internal documents wants to build a Q&A system. Being able to build one sets you apart.</Tip>
-
-      <Quiz questions={[
-        {q:"What does RAG stand for?",options:["Random Augmented Generation","Retrieval Augmented Generation","Recursive Algorithm Generation","Real AI Generation"],answer:"Retrieval Augmented Generation"},
-        {q:"What is the purpose of FAISS in a RAG system?",options:["To call the LLM API","To clean text data","To store and search embeddings efficiently","To tokenize text"],answer:"To store and search embeddings efficiently"},
-        {q:"What is few-shot prompting?",options:["Using a small model","Providing examples in the prompt","Training with limited data","Using only 3 neurons"],answer:"Providing examples in the prompt"},
-      ]}/>
-    </div>
-    ),
-  },
-
 ];
 
 LESSONS.push(...ML_LESSONS);
 LESSONS.push(...ADVANCED_ML_LESSONS);
-const LEARN_PHASES = [
-  {label:"🌱 Python Basics",   ids:["python-basics","git-basics"]},
-  {label:"🐍 Python for DS",   ids:["numpy","pandas-basics","pandas-advanced","eda","visualization"]},
-  {label:"🗄️ SQL",             ids:["sql-basics","sql-joins","sql-window"]},
-  {label:"📐 Statistics",      ids:["probability","distributions","correlation","inference"]},
-  {label:"🤖 Machine Learning",ids:["ml-workflow","ml-regression","ml-trees","ml-evaluation","ml-overfitting","ml-sklearn"]},
-  {label:"⚡ Advanced ML",     ids:["adv-xgboost","adv-lightgbm","adv-shap","adv-feature-eng","adv-pipelines","adv-hypertuning"]},
-  {label:"🧠 Deep Learning",   ids:["dl-neural-nets","dl-nlp","llm-rag"]},
-  {label:"🚀 Portfolio & Jobs",ids:["streamlit","interview-prep"]},
-];
+LESSONS.push(...FOUNDATION_LESSONS);
 
+// ══ PHASE 2 EXTRA LESSONS ════════════════════════════════════════════════════
+const PHASE2_LESSONS = [
+
+  // ── FEATURE ENGINEERING
+  {id:"feature-engineering", phase:"🤖 Machine Learning", emoji:"⚙️", color:"#f97316", title:"Feature Engineering", subtitle:"The skill that separates good models from great ones",
+   body:()=>(
+    <div>
+      <LP>Feature engineering is the process of transforming raw data into features that ML models can learn from effectively. It's where domain knowledge meets math — and it's responsible for more model improvements than algorithm selection.</LP>
+      <Callout icon="🧠" color="#f97316" title="The key insight">A mediocre model with great features beats a great model with mediocre features. Every time. Feature engineering is where the real leverage is.</Callout>
+
+      <LH>1. Encoding Categorical Variables</LH>
+      <LP>ML models need numbers. Categorical columns must be converted — but HOW you convert them matters.</LP>
+      <Compare items={[
+        {label:"Label Encoding", color:"#7eb8f7", text:"Assign integers: ['Low','Mid','High'] → [0,1,2]. Use ONLY for ordinal categories with natural order."},
+        {label:"One-Hot Encoding", color:"#6dd6a0", text:"Create a binary column per category. Use for nominal categories (no order). Watch out for high cardinality."},
+        {label:"Target Encoding", color:"#f7c96e", text:"Replace category with its mean target value. Powerful but risks leakage — use with cross-validation."},
+      ]}/>
+      <Block label="Encoding in practice">{`import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+
+df = pd.DataFrame({
+    'contract':  ['Month-to-month','One year','Two year','Month-to-month'],
+    'size':      ['Small','Large','Medium','Small'],   # ordinal
+    'city':      ['Beirut','Dubai','Cairo','Beirut'],
+    'churn':     [1, 0, 0, 1]
+})
+
+# 1. Label encoding — ordinal only
+size_map = {'Small': 0, 'Medium': 1, 'Large': 2}
+df['size_encoded'] = df['size'].map(size_map)
+
+# 2. One-hot encoding
+df_ohe = pd.get_dummies(df, columns=['contract','city'], drop_first=True)
+print(df_ohe.columns.tolist())
+
+# 3. Target encoding (do this in cross-validation loop in practice)
+target_means = df.groupby('contract')['churn'].mean()
+df['contract_target_enc'] = df['contract'].map(target_means)
+
+print(df[['contract','contract_target_enc']])`}</Block>
+      <Warn>Never target-encode using the full dataset before splitting — it leaks the target into features. Use cross-validation or fit on train only.</Warn>
+
+      <LH>2. Numerical Transformations</LH>
+      <Block label="Scaling and transforming numbers">{`import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+
+data = pd.DataFrame({'salary': [30000,45000,52000,68000,250000],
+                     'age':    [22, 28, 35, 41, 29]})
+
+# StandardScaler — mean=0, std=1. Use for: linear models, neural nets, SVM
+ss = StandardScaler()
+data['salary_standard'] = ss.fit_transform(data[['salary']])
+
+# MinMaxScaler — range [0,1]. Use for: neural nets, distance-based models
+mm = MinMaxScaler()
+data['salary_minmax'] = mm.fit_transform(data[['salary']])
+
+# RobustScaler — uses median + IQR. Best when outliers exist
+rs = RobustScaler()
+data['salary_robust'] = rs.fit_transform(data[['salary']])
+
+# Log transform — fix right skew BEFORE scaling
+data['salary_log'] = np.log1p(data['salary'])  # log(x+1) handles zeros
+
+print(data.round(3))`}</Block>
+      <Tip>Tree-based models (Random Forest, XGBoost) don't need scaling — they split on thresholds. Scale for: linear models, SVMs, KNN, neural nets, PCA.</Tip>
+
+      <LH>3. Creating New Features</LH>
+      <LP>The best features come from thinking about the problem, not from automated tools. Ask: what combinations would a domain expert care about?</LP>
+      <Block label="Feature creation examples">{`import pandas as pd
+import numpy as np
+
+df = pd.DataFrame({
+    'tenure':          [1, 24, 6, 36, 12],
+    'monthly_charges': [75, 45, 85, 42, 60],
+    'total_charges':   [75, 1080, 510, 1512, 720],
+    'num_services':    [1, 4, 2, 5, 3],
+})
+
+# Ratios — often more predictive than raw numbers
+df['charge_per_month_tenure'] = df['monthly_charges'] / (df['tenure'] + 1)
+df['avg_monthly_spend']       = df['total_charges'] / (df['tenure'] + 1)
+
+# Bins — convert continuous to meaningful buckets
+df['tenure_group'] = pd.cut(df['tenure'],
+    bins=[0, 6, 24, 72],
+    labels=['new','mid','loyal']
+)
+
+# Interaction features — multiply two features
+df['value_score'] = df['monthly_charges'] * df['num_services']
+
+# Binary flags — domain-specific thresholds
+df['is_high_spender']  = (df['monthly_charges'] > 70).astype(int)
+df['is_long_term']     = (df['tenure'] > 24).astype(int)
+df['is_bundled']       = (df['num_services'] >= 4).astype(int)
+
+print(df.head())`}</Block>
+
+      <LH>4. Handling Missing Values Properly</LH>
+      <Block label="Imputation strategies">{`import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer, KNNImputer
+
+df = pd.DataFrame({
+    'age':    [25, np.nan, 35, 42, np.nan, 28],
+    'income': [50000, 75000, np.nan, 90000, 60000, np.nan],
+    'plan':   ['basic', np.nan, 'premium', 'basic', np.nan, 'premium']
+})
+
+# Strategy 1: SimpleImputer
+num_imputer = SimpleImputer(strategy='median')   # or 'mean','most_frequent'
+df[['age','income']] = num_imputer.fit_transform(df[['age','income']])
+
+cat_imputer = SimpleImputer(strategy='most_frequent')
+df[['plan']] = cat_imputer.fit_transform(df[['plan']])
+
+# Strategy 2: KNN Imputation — uses similar rows
+knn = KNNImputer(n_neighbors=2)
+df_knn = knn.fit_transform(df[['age','income']])
+
+# Strategy 3: Add missingness indicator (often informative!)
+df['income_was_null'] = df['income'].isna().astype(int)
+# Sometimes WHY a value is missing is more predictive than the value`}</Block>
+      <Callout icon="★" color="#f7c96e" title="Interview gold">Adding a binary 'was_null' column before imputation is a powerful technique. In real datasets, missing values are often not random — they carry signal. A customer with no total_charges may be brand new.</Callout>
+
+      <LH>5. Datetime Features</LH>
+      <Block label="Extracting features from dates">{`import pandas as pd
+
+df = pd.DataFrame({
+    'signup_date':    pd.to_datetime(['2023-01-15','2023-06-03','2022-11-28']),
+    'last_purchase':  pd.to_datetime(['2024-01-10','2023-12-15','2024-01-20']),
+})
+
+# Extract components
+df['signup_month']   = df['signup_date'].dt.month
+df['signup_dayofweek']= df['signup_date'].dt.dayofweek  # 0=Monday
+df['signup_quarter'] = df['signup_date'].dt.quarter
+df['signup_is_weekend'] = (df['signup_date'].dt.dayofweek >= 5).astype(int)
+
+# Time differences — recency features
+df['days_since_last_purchase'] = (
+    pd.Timestamp.now() - df['last_purchase']
+).dt.days
+
+df['customer_age_days'] = (
+    pd.Timestamp.now() - df['signup_date']
+).dt.days
+
+# Cyclical encoding for month (January and December are close!)
+import numpy as np
+df['month_sin'] = np.sin(2 * np.pi * df['signup_month'] / 12)
+df['month_cos'] = np.cos(2 * np.pi * df['signup_month'] / 12)
+
+print(df)`}</Block>
+
+      <LH>6. Feature Selection — removing what hurts</LH>
+      <Block label="Select the best features">{`import pandas as pd
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest, f_classif
+
+# Method 1: Correlation — remove highly correlated features
+corr_matrix = df.corr().abs()
+upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+to_drop = [col for col in upper.columns if any(upper[col] > 0.95)]
+print("Drop due to high correlation:", to_drop)
+
+# Method 2: Feature importance from Random Forest
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X_train, y_train)
+
+importances = pd.Series(rf.feature_importances_, index=X_train.columns)
+importances.sort_values(ascending=False).head(10)`}</Block>
+
+      <Quiz questions={[
+        {q:"You have 'city' column with 500 unique cities. One-hot encoding would create 500 columns. Best alternative?",options:["Label encoding","Target encoding","Drop the column","Use as-is"],answer:"Target encoding",explanation:"High cardinality columns (many unique values) explode dimensionality with OHE. Target encoding replaces each category with its mean target value — one column. Use with care to avoid leakage."},
+        {q:"Which scaler is most robust to outliers?",options:["StandardScaler","MinMaxScaler","RobustScaler","No scaling needed"],answer:"RobustScaler",explanation:"RobustScaler uses median and IQR instead of mean and std. Outliers don't affect median/IQR much, so extreme values don't distort the scaling. Use when your data has significant outliers."},
+        {q:"Why add a 'was_null' binary column before imputing?",options:["It improves imputation accuracy","Missingness itself can be predictive — why a value is missing is informative","Required by sklearn","It reduces dimensionality"],answer:"Missingness itself can be predictive — why a value is missing is informative",explanation:"Missing values are often non-random. A customer with no phone service recorded might be a different type of customer. The fact that it's missing carries signal beyond what any imputed value can capture."},
+        {q:"df['charge_per_tenure'] = df['charges'] / df['tenure']. What type of feature engineering?",options:["Binning","Interaction feature","Ratio feature","Target encoding"],answer:"Ratio feature",explanation:"Dividing two features creates a ratio — normalizing one by the other. Charge per month of tenure is often more predictive than raw charges, because it controls for how long the customer has been active."},
+        {q:"You're using Random Forest. Do you need to StandardScale your features?",options:["Yes — always scale","No — tree models split on thresholds, not distances or magnitudes","Only for the target variable","Only for categorical features"],answer:"No — tree models split on thresholds, not distances or magnitudes",explanation:"Decision trees and ensembles (RF, XGBoost) find split points. Whether salary is 50000 or 0.65 (scaled) doesn't change which split is optimal. Scale for: linear models, SVMs, KNN, neural nets, PCA."},
+      ]}/>
+
+      <CodeExercise
+        title="Engineer features from customer data"
+        description="Given raw customer data, create 4 new features: charge_per_service (monthly_charges / num_services), is_long_term (tenure > 24, binary), tenure_group (cut into new/mid/loyal), and log_charges (log1p of monthly_charges). Print the resulting DataFrame."
+        starterCode={`import pandas as pd
+import numpy as np
+
+df = pd.DataFrame({
+    'customer_id':     [1, 2, 3, 4, 5],
+    'tenure':          [2, 36, 12, 48, 6],
+    'monthly_charges': [75.5, 42.0, 88.0, 39.5, 65.0],
+    'num_services':    [2, 4, 3, 5, 2],
+})
+
+# 1. Ratio feature
+df['charge_per_service'] = df[___] / df[___]
+
+# 2. Binary flag
+df['is_long_term'] = (df['tenure'] > ___).astype(int)
+
+# 3. Tenure buckets
+df['tenure_group'] = pd.cut(df['tenure'],
+    bins=[0, 6, 24, 100],
+    labels=[___, ___, ___]
+)
+
+# 4. Log transform
+df['log_charges'] = np.log1p(df[___])
+
+print(df[['customer_id','charge_per_service','is_long_term',
+          'tenure_group','log_charges']].round(3).to_string(index=False))`}
+        hint="df['monthly_charges'] / df['num_services']. tenure > 24. labels=['new','mid','loyal']. np.log1p(df['monthly_charges'])."
+        validate={(out)=>out.includes("charge_per_service")&&out.includes("is_long_term")&&out.includes("loyal")&&out.includes("log_charges")}
+      />
+    </div>
+  )},
+
+  // ── ML PIPELINES
+  {id:"ml-pipelines", phase:"🤖 Machine Learning", emoji:"🔩", color:"#22d3ee", title:"ML Pipelines", subtitle:"Package preprocessing + model into one reproducible object",
+   body:()=>(
+    <div>
+      <LP>An ML Pipeline bundles your preprocessing steps and model into a single object. No more "I forgot to scale the test data." No more data leakage. No more 10 lines of code to make one prediction. Pipelines are how professionals ship ML.</LP>
+      <Callout icon="🧠" color="#22d3ee" title="Why Pipelines exist">The most common ML bug: fitting the scaler on all data, or forgetting to apply the same transformations to new data. Pipelines make this impossible — everything is applied consistently, automatically.</Callout>
+
+      <LH>1. The Problem Pipelines Solve</LH>
+      <Compare items={[
+        {label:"Without Pipeline ❌", color:"#f28b82", text:"Fit scaler, transform train, transform test, fit model, transform new data, predict. 6 steps. Easy to forget one. Easy to leak."},
+        {label:"With Pipeline ✅", color:"#6dd6a0", text:"pipeline.fit(X_train, y_train). pipeline.predict(X_new). 2 steps. Impossible to forget transformations. No leakage."},
+      ]}/>
+      <Block label="Basic Pipeline">{`from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+import pandas as pd
+
+# Load data
+df = pd.read_csv('telco_churn.csv')
+df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+df = df.dropna()
+df['Churn'] = (df['Churn'] == 'Yes').astype(int)
+
+X = df[['tenure','MonthlyCharges','TotalCharges']]
+y = df['Churn']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Build pipeline — list of (name, transformer) tuples
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model',  LogisticRegression(random_state=42))
+])
+
+# Fit on train — scaler fits and transforms, model trains
+pipeline.fit(X_train, y_train)
+
+# Predict on test — scaler transforms, model predicts
+preds = pipeline.predict(X_test)
+print(classification_report(y_test, preds))
+
+# Predict on brand new data — same pipeline, guaranteed correct
+new_customer = pd.DataFrame({'tenure':[3],'MonthlyCharges':[85],'TotalCharges':[255]})
+print("Churn prediction:", pipeline.predict(new_customer))`}</Block>
+
+      <LH>2. ColumnTransformer — different transforms per column</LH>
+      <LP>Real datasets have numeric AND categorical columns that need different preprocessing. ColumnTransformer handles each column type correctly.</LP>
+      <Block label="ColumnTransformer + Pipeline">{`from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+
+# Define column groups
+numeric_cols = ['tenure', 'MonthlyCharges', 'TotalCharges']
+categorical_cols = ['Contract', 'InternetService', 'PaymentMethod']
+
+# Numeric pipeline: impute then scale
+numeric_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler',  StandardScaler())
+])
+
+# Categorical pipeline: impute then one-hot encode
+categorical_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('ohe',     OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
+
+# Combine with ColumnTransformer
+preprocessor = ColumnTransformer(transformers=[
+    ('num', numeric_transformer, numeric_cols),
+    ('cat', categorical_transformer, categorical_cols)
+])
+
+# Full pipeline: preprocessor + model
+full_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', RandomForestClassifier(n_estimators=100, random_state=42))
+])
+
+# One fit call handles everything
+full_pipeline.fit(X_train, y_train)
+score = full_pipeline.score(X_test, y_test)
+print(f"Accuracy: {score:.3f}")`}</Block>
+
+      <LH>3. Pipelines + Cross-Validation</LH>
+      <LP>Pipelines make cross-validation correct. Each fold's preprocessing is fitted only on that fold's training data — no leakage across folds.</LP>
+      <Block label="Cross-validate a pipeline">{`from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+import numpy as np
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model',  LogisticRegression(random_state=42))
+])
+
+# StratifiedKFold preserves class proportions in each fold
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+scores = cross_val_score(
+    pipeline, X, y,
+    cv=cv,
+    scoring='roc_auc'   # or 'f1', 'accuracy', 'recall'
+)
+
+print(f"AUC scores: {scores.round(3)}")
+print(f"Mean AUC:   {scores.mean():.3f} ± {scores.std():.3f}")`}</Block>
+      <Callout icon="★" color="#f7c96e" title="Always report mean ± std">A single train/test split is a lucky or unlucky sample. Cross-validation gives a honest estimate. Report both mean and std — high std means your model is unstable.</Callout>
+
+      <LH>4. Pipelines + GridSearchCV</LH>
+      <Block label="Hyperparameter tuning through a Pipeline">{`from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model',  RandomForestClassifier(random_state=42))
+])
+
+# Access pipeline steps with __ notation: stepname__param
+param_grid = {
+    'model__n_estimators': [50, 100, 200],
+    'model__max_depth':    [3, 5, None],
+    'model__min_samples_split': [2, 5],
+}
+
+grid_search = GridSearchCV(
+    pipeline,
+    param_grid,
+    cv=5,
+    scoring='roc_auc',
+    n_jobs=-1,       # use all CPU cores
+    verbose=1
+)
+
+grid_search.fit(X_train, y_train)
+
+print(f"Best AUC: {grid_search.best_score_:.3f}")
+print(f"Best params: {grid_search.best_params_}")
+
+# The best estimator is a fitted pipeline — ready to predict
+best_pipeline = grid_search.best_estimator_
+preds = best_pipeline.predict(X_test)`}</Block>
+
+      <LH>5. Save and Load Pipelines</LH>
+      <Block label="Persist your pipeline">{`import joblib
+from sklearn.pipeline import Pipeline
+
+# Save the trained pipeline
+joblib.dump(full_pipeline, 'churn_model_v1.pkl')
+print("Pipeline saved.")
+
+# Load it back — in production, API, or Streamlit
+loaded_pipeline = joblib.load('churn_model_v1.pkl')
+
+# Predict on new data — all preprocessing is included
+new_data = pd.DataFrame({
+    'tenure': [3],
+    'MonthlyCharges': [85.5],
+    'TotalCharges': [256.5],
+    'Contract': ['Month-to-month'],
+    'InternetService': ['Fiber optic'],
+    'PaymentMethod': ['Electronic check']
+})
+
+prediction = loaded_pipeline.predict(new_data)
+probability = loaded_pipeline.predict_proba(new_data)[:, 1]
+print(f"Churn: {prediction[0]} | Probability: {probability[0]:.1%}")`}</Block>
+
+      <Quiz questions={[
+        {q:"What does pipeline.fit(X_train, y_train) do internally?",options:["Only trains the final model","Fits each transformer and model sequentially on training data","Fits transformers on all data, model on train only","Performs cross-validation automatically"],answer:"Fits each transformer and model sequentially on training data",explanation:"Pipeline calls fit_transform() on each transformer in sequence (passing output to the next), then fit() on the final estimator. Everything is fitted only on X_train — no leakage possible."},
+        {q:"In GridSearchCV with a Pipeline, how do you tune 'n_estimators' of the model step named 'clf'?",options:["{'n_estimators':[100,200]}","{'clf__n_estimators':[100,200]}","{'clf.n_estimators':[100,200]}","{'model.clf.n_estimators':[100,200]}"],answer:"{'clf__n_estimators':[100,200]}",explanation:"Pipeline parameters use double underscore __ notation: stepname__paramname. So for step 'clf' and param 'n_estimators': 'clf__n_estimators'. This is a very common interview question."},
+        {q:"Why is cross_val_score correct with a Pipeline but risky without one?",options:["Pipelines are faster","Without a pipeline, transformers might be fitted on all data including validation folds","Pipelines automatically tune hyperparameters","cross_val_score only works with Pipelines"],answer:"Without a pipeline, transformers might be fitted on all data including validation folds",explanation:"If you scale X before cross_val_score, the scaler has seen all folds including validation data. With a Pipeline, cross_val_score re-fits the scaler on each fold's training data only — the correct approach."},
+        {q:"ColumnTransformer with remainder='drop' (default) does what to unspecified columns?",options:["Passes them through unchanged","Raises an error","Drops them from the output","Applies StandardScaler to them"],answer:"Drops them from the output",explanation:"By default, ColumnTransformer drops columns not listed in transformers. Use remainder='passthrough' to keep unspecified columns as-is, or remainder=StandardScaler() to apply a transformer to them."},
+        {q:"joblib.dump(pipeline, 'model.pkl') saves what exactly?",options:["Only the model weights","Only the preprocessing steps","The entire pipeline: fitted transformers + fitted model","Just the pipeline structure without fitted parameters"],answer:"The entire pipeline: fitted transformers + fitted model",explanation:"joblib serializes the entire fitted pipeline object — including the scaler's learned mean/std, the encoder's learned categories, and the model's learned parameters. Loading it gives a fully ready-to-predict object."},
+      ]}/>
+
+      <CodeExercise
+        title="Build a complete Pipeline from scratch"
+        description="Build a Pipeline with StandardScaler and LogisticRegression. Fit on training data, evaluate on test data, and print accuracy and the prediction for one new sample."
+        starterCode={`from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_breast_cancer
+import pandas as pd
+
+# Load dataset
+data = load_breast_cancer()
+X = pd.DataFrame(data.data, columns=data.feature_names)
+y = data.target
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Build pipeline
+pipeline = Pipeline([
+    (___, StandardScaler()),
+    (___, LogisticRegression(random_state=42, max_iter=1000))
+])
+
+# Fit on train
+pipeline.___(X_train, y_train)
+
+# Evaluate on test
+preds = pipeline.___(X_test)
+print(f"Accuracy: {round(accuracy_score(y_test, preds), 3)}")
+
+# Predict one new sample
+new_sample = X_test.iloc[[0]]
+print(f"Prediction: {pipeline.predict(new_sample)[0]}")
+print(f"Probability: {round(pipeline.predict_proba(new_sample)[0][1], 3)}")`}
+        hint="Pipeline steps need names: ('scaler', StandardScaler()). pipeline.fit(). pipeline.predict()."
+        validate={(out)=>out.includes("Accuracy:")&&out.includes("Prediction:")&&out.includes("Probability:")}
+      />
+    </div>
+  )},
+
+  // ── STREAMLIT
+  {id:"streamlit-lesson", phase:"🤖 Machine Learning", emoji:"🚀", color:"#ff4b4b", title:"Streamlit — Deploy ML Apps", subtitle:"'Here's my live demo' wins interviews",
+   body:()=>(
+    <div>
+      <LP>Streamlit turns Python scripts into live web apps in minutes — no HTML, no CSS, no JavaScript. Every DS project you build should have a Streamlit demo. "Here's a live link" is the most powerful thing you can say in an interview.</LP>
+      <Callout icon="🧠" color="#ff4b4b" title="The one rule">Build the simplest version that works and deploy it. A live ugly app beats a beautiful app that only runs on your laptop.</Callout>
+
+      <LH>1. Getting Started — your first app in 5 lines</LH>
+      <Block label="app.py">{`import streamlit as st
+
+st.title("My First DS App")
+st.write("Hello, world!")
+
+name = st.text_input("What's your name?")
+if name:
+    st.write(f"Hello, {name}! Welcome to data science.")`}</Block>
+      <Block label="Run it">{`# In terminal
+pip install streamlit
+streamlit run app.py
+# Opens at localhost:8501 automatically`}</Block>
+
+      <LH>2. Core UI Elements</LH>
+      <Block label="Text and layout">{`import streamlit as st
+
+# Text
+st.title("Dashboard Title")           # large title
+st.header("Section Header")          # h2
+st.subheader("Subsection")           # h3
+st.write("Any text or Python object") # versatile
+st.markdown("**Bold** and *italic*")  # markdown support
+st.code("import pandas as pd", language="python")
+st.metric(label="Accuracy", value="87.3%", delta="+2.1%")  # KPI card
+
+# Layout
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("Precision", "84.2%")
+with col2:
+    st.metric("Recall", "91.5%")
+with col3:
+    st.metric("F1 Score", "87.7%")
+
+# Sidebar
+st.sidebar.title("Settings")
+threshold = st.sidebar.slider("Decision Threshold", 0.0, 1.0, 0.5)
+
+# Expander — hide details
+with st.expander("Show raw data"):
+    st.dataframe(df)`}</Block>
+
+      <LH>3. Input Widgets</LH>
+      <Block label="All the inputs you need">{`import streamlit as st
+
+# Text
+name   = st.text_input("Customer name")
+notes  = st.text_area("Notes", height=100)
+
+# Numbers
+age    = st.number_input("Age", min_value=18, max_value=100, value=30)
+budget = st.slider("Monthly Budget ($)", 20, 200, 75)
+
+# Selections
+plan   = st.selectbox("Contract", ["Month-to-month","One year","Two year"])
+services = st.multiselect("Services", ["Phone","Internet","TV","Security"])
+
+# Toggles
+vip    = st.checkbox("VIP customer")
+mode   = st.radio("Mode", ["Predict", "Analyze", "Compare"])
+
+# File upload
+uploaded = st.file_uploader("Upload CSV", type="csv")
+if uploaded:
+    import pandas as pd
+    df = pd.read_csv(uploaded)
+    st.dataframe(df.head())
+
+# Buttons
+if st.button("Run Prediction"):
+    st.success("Prediction complete!")`}</Block>
+
+      <LH>4. Displaying Data and Charts</LH>
+      <Block label="Data display and visualization">{`import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+import plotly.express as px
+
+df = pd.read_csv("customers.csv")
+
+# Tables
+st.dataframe(df)                     # interactive, sortable
+st.table(df.head(5))                 # static
+st.json({"key": "value"})            # formatted JSON
+
+# Charts — built-in (fast)
+st.line_chart(df['monthly_charges'])
+st.bar_chart(df.groupby('contract')['churn'].mean())
+st.area_chart(df[['tenure','monthly_charges']].head(50))
+
+# Matplotlib
+fig, ax = plt.subplots()
+ax.hist(df['monthly_charges'], bins=30, color='#8b7cf6')
+ax.set_title("Monthly Charges Distribution")
+st.pyplot(fig)
+
+# Plotly — interactive
+fig2 = px.scatter(df, x='tenure', y='monthly_charges',
+                  color='churn', title="Tenure vs Charges")
+st.plotly_chart(fig2, use_container_width=True)`}</Block>
+
+      <LH>5. Full Churn Prediction App</LH>
+      <Block label="Complete ML app — save as app.py">{`import streamlit as st
+import pandas as pd
+import numpy as np
+import joblib
+
+# Load pre-trained pipeline
+@st.cache_resource   # cache so it loads once
+def load_model():
+    return joblib.load("churn_pipeline.pkl")
+
+model = load_model()
+
+# App header
+st.title("🔄 Customer Churn Predictor")
+st.markdown("Enter customer details to predict churn probability.")
+
+# Sidebar inputs
+st.sidebar.header("Customer Details")
+tenure         = st.sidebar.slider("Tenure (months)", 0, 72, 12)
+monthly_charge = st.sidebar.slider("Monthly Charges ($)", 20, 120, 65)
+contract       = st.sidebar.selectbox("Contract", 
+                    ["Month-to-month","One year","Two year"])
+internet       = st.sidebar.selectbox("Internet Service",
+                    ["Fiber optic","DSL","No"])
+
+# Predict button
+if st.sidebar.button("Predict Churn"):
+    input_df = pd.DataFrame({
+        'tenure':           [tenure],
+        'MonthlyCharges':   [monthly_charge],
+        'Contract':         [contract],
+        'InternetService':  [internet],
+    })
+    
+    prob = model.predict_proba(input_df)[0][1]
+    pred = "Will Churn" if prob > 0.5 else "Will Stay"
+    color = "error" if prob > 0.5 else "success"
+    
+    # Display results
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Prediction", pred)
+    with col2:
+        st.metric("Churn Probability", f"{prob:.1%}")
+    
+    # Probability gauge
+    st.progress(float(prob))
+    
+    if prob > 0.7:
+        st.error("⚠️ High churn risk — consider retention offer")
+    elif prob > 0.4:
+        st.warning("⚡ Medium risk — monitor this customer")
+    else:
+        st.success("✅ Low churn risk")`}</Block>
+
+      <LH>6. Deploy to Streamlit Cloud — free in 2 minutes</LH>
+      <Block label="Deployment steps">{`# 1. Push your app to GitHub
+git add app.py requirements.txt
+git commit -m "Add Streamlit churn app"
+git push origin main
+
+# 2. requirements.txt — list your dependencies
+streamlit
+pandas
+scikit-learn
+joblib
+plotly
+
+# 3. Go to share.streamlit.io
+#    → New app → connect GitHub repo → select app.py → Deploy
+
+# 4. You get a live URL: yourapp.streamlit.app
+#    Share this in your portfolio, LinkedIn, interviews
+
+# Useful Streamlit features for deployment
+st.cache_data      # cache data loading (speeds up app)
+st.cache_resource  # cache model loading (loads model once)
+st.secrets         # store API keys safely (like .env)`}</Block>
+      <Tip>Add @st.cache_resource to your model loading function. Without it, the model reloads every time a user interacts with the app — very slow.</Tip>
+
+      <LH>7. Session State — remember user actions</LH>
+      <Block label="Session state">{`import streamlit as st
+
+# Without session state, variables reset on every interaction
+# With session state, they persist
+
+if 'prediction_count' not in st.session_state:
+    st.session_state.prediction_count = 0
+
+if 'history' not in st.session_state:
+    st.session_state.history = []
+
+if st.button("Predict"):
+    st.session_state.prediction_count += 1
+    st.session_state.history.append({"run": st.session_state.prediction_count})
+    st.write(f"Total predictions: {st.session_state.prediction_count}")
+
+st.write("History:", st.session_state.history)`}</Block>
+
+      <Quiz questions={[
+        {q:"@st.cache_resource on your model loading function does what?",options:["Loads the model faster","Loads the model once and reuses it across all users/interactions","Saves the model to disk","Validates model inputs"],answer:"Loads the model once and reuses it across all users/interactions",explanation:"Without caching, Streamlit reruns the entire script on every interaction — reloading the model each time. @st.cache_resource caches the loaded model in memory so it's only loaded once, making the app much faster."},
+        {q:"st.columns(3) returns:",options:["A list of 3 column containers","3 empty DataFrames","A 3-column table widget","Error — columns takes no arguments"],answer:"A list of 3 column containers","explanation":"st.columns(n) returns n column objects. Use 'with col1:' to place content in each column. This is how you create side-by-side layouts in Streamlit."},
+        {q:"A user uploads a CSV. You want to read it with pandas. What do you pass to pd.read_csv()?",options:["The filename string","The uploaded file object directly","st.file_uploader result after .read()","You can't use uploaded files with pandas"],answer:"The uploaded file object directly",explanation:"Streamlit's file_uploader returns a file-like object that pandas can read directly. pd.read_csv(uploaded_file) works without saving to disk first."},
+        {q:"Why does Streamlit rerun the entire script on every user interaction?",options:["It's a bug","This is Streamlit's core design — reactive execution model","To clear the cache","Because Python is slow"],answer:"This is Streamlit's core design — reactive execution model",explanation:"Streamlit reruns top-to-bottom on every interaction. This simplicity is by design — you write regular Python, Streamlit handles the reactivity. Use st.session_state and st.cache_* to manage state and performance."},
+        {q:"You want different sidebar settings to change what's shown in the main area. What do you use?",options:["st.sidebar.connect()","st.session_state","Normal Python — sidebar widgets return values you can use anywhere","st.callback()"],answer:"Normal Python — sidebar widgets return values you can use anywhere",explanation:"Streamlit widgets return values. contract = st.sidebar.selectbox(...) gives you the selected value. Use it anywhere in your script. Streamlit's rerun model means the main area automatically updates when sidebar changes."},
+      ]}/>
+
+      <CodeExercise
+        title="Build a mini data explorer app"
+        description="Write a Streamlit app that: shows a title, takes a number input for 'n rows' (default 5), generates a simple DataFrame with 'id', 'score', and 'grade' columns, and displays the first n rows."
+        starterCode={`import streamlit as st
+import pandas as pd
+import numpy as np
+
+st.title(___)
+
+# Number input for rows to show
+n = st.number_input("Rows to show", min_value=1, max_value=20, value=___)
+
+# Generate sample data
+np.random.seed(42)
+df = pd.DataFrame({
+    'id':    range(1, 21),
+    'score': np.random.randint(50, 100, 20),
+})
+df['grade'] = df['score'].apply(lambda s: 'A' if s>=90 else 'B' if s>=75 else 'C')
+
+# Show first n rows
+st.write(f"Showing first {n} rows:")
+st.___(df.head(___))
+
+# Show a metric
+st.metric("Average Score", round(df['score'].mean(), 1))`}
+        hint="st.title('any string'). value=5 for default. st.dataframe(df.head(n))."
+        validate={(out)=>out.includes("Showing first")&&out.includes("Average Score")}
+      />
+    </div>
+  )},
+];
+LESSONS.push(...PHASE2_LESSONS);
+
+// ══ PHASE 3 LESSONS ══════════════════════════════════════════════════════════
+const PHASE3_LESSONS = [
+
+  // ── DEEP LEARNING & NEURAL NETWORKS
+  {id:"dl-nn-lesson", phase:"🧠 Deep Learning", emoji:"🧠", color:"#818cf8", title:"Neural Networks & Deep Learning", subtitle:"How machines actually learn — from neurons to backprop",
+   body:()=>(
+    <div>
+      <LP>Neural networks are the engine behind image recognition, language models, and most modern AI. This lesson builds your intuition from scratch — how a neuron works, how networks learn, and how to train your first model with sklearn.</LP>
+      <Callout icon="🧠" color="#818cf8" title="The big picture">A neural network is a function approximator. You feed it inputs, it produces outputs, and through millions of tiny adjustments it learns to map inputs to the right outputs. That's it.</Callout>
+
+      <LH>1. The Neuron — building block of everything</LH>
+      <Block label="One neuron in Python">{`import numpy as np
+
+def neuron(inputs, weights, bias):
+    z = np.dot(inputs, weights) + bias  # linear combination
+    output = max(0, z)                  # ReLU activation
+    return output
+
+inputs  = [12, 75.5, 3]    # tenure, monthly_charge, num_services
+weights = [0.02, -0.05, 0.1]
+bias    = 0.3
+
+print(f"Neuron output: {neuron(inputs, weights, bias):.3f}")`}</Block>
+
+      <LH>2. Activation Functions</LH>
+      <Compare items={[
+        {label:"ReLU", color:"#6dd6a0", text:"max(0, x). Default for hidden layers. Fast, avoids vanishing gradient."},
+        {label:"Sigmoid", color:"#7eb8f7", text:"1/(1+e^-x). Output 0-1. Binary classification output layer only."},
+        {label:"Softmax", color:"#f7c96e", text:"Converts scores to probabilities summing to 1. Multi-class output layer."},
+        {label:"Tanh", color:"#c792ea", text:"Output -1 to 1. Centered at 0. Alternative to sigmoid in hidden layers."},
+      ]}/>
+      <Block label="Activations in NumPy">{`import numpy as np
+
+z = np.array([-2, -1, 0, 1, 2])
+
+relu    = np.maximum(0, z)              # [0, 0, 0, 1, 2]
+sigmoid = 1 / (1 + np.exp(-z))         # [0.12, 0.27, 0.5, 0.73, 0.88]
+tanh_v  = np.tanh(z)                   # [-0.96, -0.76, 0, 0.76, 0.96]
+
+def softmax(x):
+    e = np.exp(x - np.max(x))  # subtract max for numerical stability
+    return e / e.sum()
+
+scores = np.array([2.0, 1.0, 0.5])
+probs  = softmax(scores)
+print(probs)        # [0.627, 0.231, 0.142]
+print(probs.sum())  # 1.0`}</Block>
+
+      <LH>3. Forward Pass — how a network makes predictions</LH>
+      <Block label="2-layer network from scratch">{`import numpy as np
+np.random.seed(42)
+
+W1 = np.random.randn(3, 4) * 0.1   # (3 inputs → 4 neurons)
+b1 = np.zeros(4)
+W2 = np.random.randn(4, 1) * 0.1   # (4 neurons → 1 output)
+b2 = np.zeros(1)
+
+def forward(X):
+    z1 = X @ W1 + b1            # linear
+    a1 = np.maximum(0, z1)      # ReLU
+    z2 = a1 @ W2 + b2           # linear
+    a2 = 1 / (1 + np.exp(-z2)) # sigmoid → probability
+    return a2
+
+X = np.array([[12, 75.5, 3],
+              [36, 42.0, 5],
+              [3,  88.0, 1]])
+
+preds = forward(X)
+print("Churn probabilities:", preds.flatten().round(3))`}</Block>
+
+      <LH>4. Backpropagation — how networks learn</LH>
+      <LP>Backprop computes gradients using the chain rule. The network predicts → measures loss → works backwards to update every weight slightly toward lower loss. You don't implement this — PyTorch/TensorFlow do it automatically.</LP>
+      <Block label="The training loop concept">{`# Conceptual — what frameworks do automatically
+for epoch in range(100):
+    predictions = forward(X)   # 1. Predict
+
+    # 2. Loss — binary cross-entropy
+    loss = -np.mean(
+        y * np.log(predictions + 1e-8) +
+        (1-y) * np.log(1 - predictions + 1e-8)
+    )
+
+    # 3. Backprop — compute gradients (framework handles this)
+    # 4. Update: W = W - learning_rate * gradient
+
+    if epoch % 20 == 0:
+        print(f"Epoch {epoch}: loss = {loss:.4f}")`}</Block>
+      <Callout icon="★" color="#f7c96e" title="What you need to understand">Forward pass makes predictions → loss measures error → backprop computes gradients → optimizer updates weights. PyTorch handles the math. You set the architecture and hyperparameters.</Callout>
+
+      <LH>5. Neural Networks with sklearn</LH>
+      <Block label="MLPClassifier in practice">{`from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.datasets import make_classification
+
+X, y = make_classification(n_samples=1000, n_features=10,
+                            n_informative=6, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),  # ALWAYS scale for neural nets
+    ('nn', MLPClassifier(
+        hidden_layer_sizes=(64, 32), # 2 hidden layers
+        activation='relu',
+        max_iter=300,
+        early_stopping=True,         # stop when val loss plateaus
+        random_state=42
+    ))
+])
+
+pipeline.fit(X_train, y_train)
+print(classification_report(y_test, pipeline.predict(X_test)))`}</Block>
+
+      <LH>6. Key Hyperparameters</LH>
+      <Compare items={[
+        {label:"Learning Rate", color:"#7eb8f7", text:"Step size for weight updates. Start at 0.001. Too high = unstable. Too low = slow."},
+        {label:"Batch Size", color:"#6dd6a0", text:"Samples per gradient update. 32-256 typical. Smaller = noisier but often generalizes better."},
+        {label:"Epochs", color:"#f7c96e", text:"Passes through training data. Use early stopping — stop when validation loss plateaus."},
+        {label:"Architecture", color:"#c792ea", text:"Start simple: 1-2 layers, 64-128 neurons. Add complexity only if underfitting."},
+      ]}/>
+
+      <Quiz questions={[
+        {q:"ReLU activation: what does it output for input = -3?",options:["-3","0","3","0.05"],answer:"0",explanation:"ReLU = max(0, x). Any negative input → output is 0. Positive inputs pass through unchanged. This sparsity helps networks learn efficient representations."},
+        {q:"Why must you StandardScale inputs before a neural network?",options:["Neural nets only work on 0-1 data","Gradient descent converges much faster when features are on similar scales","Scaling is required by PyTorch","It prevents overfitting"],answer:"Gradient descent converges much faster when features are on similar scales",explanation:"Without scaling, large-range features dominate gradients. The optimizer spends time correcting for scale differences rather than learning patterns. Always scale for neural nets, SVMs, and any gradient-based model."},
+        {q:"Training loss = 0.05, validation loss = 0.45. This means:",options:["The model is underfitting","The model is generalizing well","The model is overfitting","The learning rate is too low"],answer:"The model is overfitting",explanation:"Large gap between train and validation loss = overfitting. The model memorized training data including noise. Fix: dropout, regularization, reduce complexity, get more data."},
+        {q:"Softmax is used in the output layer when:",options:["There are exactly 2 classes","Predicting a continuous number","Predicting one of 3+ classes","Using ReLU in hidden layers"],answer:"Predicting one of 3+ classes",explanation:"Softmax converts raw scores to probabilities summing to 1. Use for multi-class output. For binary: sigmoid. For regression: linear (no activation)."},
+        {q:"What does early_stopping=True do in MLPClassifier?",options:["Stops after 100 epochs","Stops when validation loss stops improving","Stops if training loss reaches 0","Stops after each epoch"],answer:"Stops when validation loss stops improving",explanation:"Early stopping monitors a held-out validation set. When validation loss doesn't improve for n_iter_no_change epochs, training stops — preventing overfitting and wasted computation."},
+      ]}/>
+
+      <CodeExercise
+        title="Train a neural network on real data"
+        description="Build an MLPClassifier pipeline with StandardScaler. Train on the breast cancer dataset, print accuracy and iteration count."
+        starterCode={`from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_breast_cancer
+
+data = load_breast_cancer()
+X, y = data.data, data.target
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+pipeline = Pipeline([
+    ('scaler', ___()),
+    ('nn', MLPClassifier(
+        hidden_layer_sizes=(___,),
+        activation='relu',
+        max_iter=500,
+        random_state=42
+    ))
+])
+
+pipeline.___(X_train, y_train)
+preds = pipeline.___(X_test)
+
+print(f"Accuracy: {round(accuracy_score(y_test, preds), 3)}")
+print(f"Iterations: {pipeline.named_steps['nn'].n_iter_}")`}
+        hint="StandardScaler(). (64,) for hidden_layer_sizes. pipeline.fit(). pipeline.predict()."
+        validate={(out)=>out.includes("Accuracy:")&&out.includes("Iterations:")}
+      />
+    </div>
+  )},
+
+  // ── NLP & TRANSFORMERS
+  {id:"dl-nlp-lesson", phase:"🧠 Deep Learning", emoji:"📝", color:"#f472b6", title:"NLP & Transformers", subtitle:"From text to predictions — the Hugging Face way",
+   body:()=>(
+    <div>
+      <LP>NLP is the fastest-growing area of data science. Every company with text data — reviews, tickets, documents — needs NLP. This lesson takes you from raw text to a sentiment classifier.</LP>
+      <Callout icon="🧠" color="#f472b6" title="The modern approach">In 2025, you don't build NLP from scratch. You use pretrained transformers from Hugging Face and fine-tune on your data. Hours of fine-tuning beats months of custom model building.</Callout>
+
+      <LH>1. Text Preprocessing</LH>
+      <Block label="Cleaning text data">{`import re, string
+
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'http\S+|www\S+', '', text)   # remove URLs
+    text = re.sub(r'<.*?>', '', text)             # remove HTML
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    return ' '.join(text.split())                 # normalize whitespace
+
+raw = "Check out https://example.com! AMAZING product!! 🔥"
+print(clean_text(raw))
+# "check out amazing product"`}</Block>
+
+      <LH>2. Text Vectorization</LH>
+      <Compare items={[
+        {label:"TF-IDF", color:"#7eb8f7", text:"Term Frequency × Inverse Doc Frequency. Fast, interpretable, great baseline. Rare important words get high scores."},
+        {label:"Word2Vec/GloVe", color:"#6dd6a0", text:"Dense word embeddings. Similar words have similar vectors. Captures semantic meaning."},
+        {label:"BERT Embeddings", color:"#f472b6", text:"Contextual. 'bank' in 'river bank' ≠ 'bank account'. Most powerful, slowest."},
+      ]}/>
+      <Block label="TF-IDF + Logistic Regression baseline">{`from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report
+
+texts = [
+    "This product is amazing love it",
+    "Terrible quality waste of money",
+    "Great value highly recommend",
+    "Broken on arrival very disappointed",
+    "Exceeded expectations fantastic",
+    "Would not buy again awful",
+    "Best purchase ever made",
+    "Complete garbage do not buy",
+]
+labels = [1, 0, 1, 0, 1, 0, 1, 0]
+
+pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer(max_features=5000, ngram_range=(1,2))),
+    ('clf',   LogisticRegression(random_state=42))
+])
+
+pipeline.fit(texts[:6], labels[:6])
+preds = pipeline.predict(texts[6:])
+print("Predictions:", preds)  # [1, 0]
+
+# Predict new
+print(pipeline.predict(["absolutely love this amazing product"]))`}</Block>
+
+      <LH>3. The Transformer — intuition</LH>
+      <div style={{display:"grid",gap:8,margin:"12px 0"}}>
+        {[
+          {n:"01",color:"#7eb8f7",title:"Attention",desc:"Each token 'attends' to all others. 'bank' looks at surrounding words to decide river vs finance."},
+          {n:"02",color:"#f472b6",title:"Self-Attention",desc:"Every word computes a weighted sum of all others based on relevance. Related words get high attention."},
+          {n:"03",color:"#6dd6a0",title:"Positional Encoding",desc:"Transformers process all tokens in parallel — positional encoding adds order information."},
+          {n:"04",color:"#f7c96e",title:"Pretrain + Fine-tune",desc:"BERT pretrained on billions of words. Fine-tune on your small labeled dataset for your specific task."},
+        ].map((s,i)=>(
+          <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",background:"#0d1520",borderRadius:8,border:`1px solid ${s.color}22`}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:s.color+"22",border:`1px solid ${s.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"monospace",fontSize:10,color:s.color,fontWeight:700}}>{s.n}</div>
+            <div><div style={{color:s.color,fontWeight:700,fontSize:13,marginBottom:3}}>{s.title}</div><div style={{color:"#64748b",fontSize:12,lineHeight:1.6}}>{s.desc}</div></div>
+          </div>
+        ))}
+      </div>
+
+      <LH>4. Hugging Face — pretrained models in 3 lines</LH>
+      <Block label="Zero-shot and fine-tuning">{`from transformers import pipeline as hf_pipeline
+
+# Zero-shot — no training needed at all
+classifier = hf_pipeline("sentiment-analysis")
+result = classifier("This product changed my life!")
+print(result)  # [{'label': 'POSITIVE', 'score': 0.9998}]
+
+# Named entity recognition
+ner = hf_pipeline("ner", grouped_entities=True)
+entities = ner("Apple Inc. was founded by Steve Jobs in California.")
+print(entities)
+
+# Text generation
+generator = hf_pipeline("text-generation", model="gpt2")
+out = generator("Data science is", max_new_tokens=30)
+print(out[0]['generated_text'])`}</Block>
+      <Block label="Fine-tuning workflow (conceptual)">{`# Fine-tuning DistilBERT on your data:
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+model_name = "distilbert-base-uncased"
+tokenizer  = AutoTokenizer.from_pretrained(model_name)
+model      = AutoModelForSequenceClassification.from_pretrained(
+                 model_name, num_labels=2)
+
+# Tokenize
+tokens = tokenizer(
+    ["Amazing product!", "Terrible quality"],
+    padding=True, truncation=True, max_length=128,
+    return_tensors="pt"   # PyTorch tensors
+)
+print(tokens.keys())  # input_ids, attention_mask
+print(tokens['input_ids'].shape)  # (2, 128)`}</Block>
+
+      <LH>5. NLP Metrics</LH>
+      <Block label="Evaluating NLP models">{`from sklearn.metrics import f1_score, classification_report
+
+y_true = [1, 0, 1, 1, 0, 1, 0, 0]
+y_pred = [1, 0, 1, 0, 0, 1, 1, 0]
+
+# F1 macro — equal weight per class (balanced datasets)
+# F1 weighted — weight by class size (imbalanced datasets)
+print(f"F1 macro:    {f1_score(y_true, y_pred, average='macro'):.3f}")
+print(f"F1 weighted: {f1_score(y_true, y_pred, average='weighted'):.3f}")
+print(classification_report(y_true, y_pred,
+      target_names=['Negative','Positive']))`}</Block>
+
+      <Quiz questions={[
+        {q:"TF-IDF gives high scores to words that are:",options:["Common in all documents","Frequent in one doc but rare across all docs","Only in training set","Short words"],answer:"Frequent in one doc but rare across all docs",explanation:"TF = frequency in this document. IDF = inverse of how many docs contain it. 'The' is everywhere (low IDF). 'transformer' in a tech review is rare globally but meaningful — high TF-IDF."},
+        {q:"What makes BERT different from Word2Vec?",options:["BERT is faster","BERT produces contextual embeddings — same word gets different vectors in different contexts","Word2Vec uses transformers","BERT only works for English"],answer:"BERT produces contextual embeddings — same word gets different vectors in different contexts",explanation:"Word2Vec gives 'bank' one fixed vector. BERT gives different vectors in 'river bank' vs 'bank account' because it reads full context. This makes BERT dramatically more powerful."},
+        {q:"You have 1000 labeled reviews. Best starting approach?",options:["Train BERT from scratch","Fine-tune DistilBERT","TF-IDF + Logistic Regression baseline first","Use GPT-4 API"],answer:"TF-IDF + Logistic Regression baseline first",explanation:"Always establish a simple baseline. TF-IDF + LR is fast, interpretable, and surprisingly strong. If it achieves 85%+ F1, you may not need BERT. Only upgrade when the baseline falls short."},
+        {q:"F1 weighted vs F1 macro — use weighted when:",options:["Always","Classes are balanced","Classes are imbalanced","You have more than 2 classes"],answer:"Classes are imbalanced",explanation:"F1 macro treats all classes equally regardless of size. Weighted accounts for class size — reflecting real distribution. Use weighted for imbalanced datasets like spam detection (90% not spam)."},
+        {q:"What is transfer learning in NLP?",options:["Transferring data between systems","Using a model pretrained on large text corpora and adapting it to your specific task","Moving models between cloud providers","Converting between programming languages"],answer:"Using a model pretrained on large text corpora and adapting it to your specific task",explanation:"BERT learned language structure from billions of words. Fine-tuning adapts this knowledge to your task with far less labeled data than training from scratch. This is the standard NLP approach in industry."},
+      ]}/>
+
+      <CodeExercise
+        title="Build a TF-IDF sentiment classifier"
+        description="Build a TF-IDF + LogisticRegression pipeline, fit on training data, and predict sentiment for two new reviews."
+        starterCode={`from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score
+
+train_texts = [
+    "absolutely love this product amazing quality",
+    "terrible waste of money broken on arrival",
+    "great customer service highly recommend",
+    "very disappointed would not buy again",
+    "exceeded all expectations fantastic",
+    "poor quality fell apart after one day",
+]
+train_labels = [1, 0, 1, 0, 1, 0]
+
+test_texts  = ["really great product love it", "awful terrible experience"]
+test_labels = [1, 0]
+
+pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer(___=5000)),
+    ('clf',   LogisticRegression(random_state=42))
+])
+
+pipeline.___(train_texts, train_labels)
+preds = pipeline.___(test_texts)
+print(f"Accuracy: {accuracy_score(test_labels, preds)}")
+
+new = ["outstanding product", "completely broken and useless"]
+print("New predictions:", pipeline.predict(___))`}
+        hint="max_features=5000. pipeline.fit(). pipeline.predict(). predict(new)."
+        validate={(out)=>out.includes("Accuracy:")&&out.includes("New predictions:")}
+      />
+    </div>
+  )},
+
+  // ── LLMs & RAG
+  {id:"llm-lesson", phase:"🧠 Deep Learning", emoji:"🤖", color:"#34d399", title:"LLMs & RAG", subtitle:"Build AI-powered apps with language model APIs",
+   body:()=>(
+    <div>
+      <LP>Large Language Models have changed what's possible in data science. This lesson teaches you to build real LLM-powered applications — not just prompt ChatGPT, but build systems that work with YOUR data.</LP>
+      <Callout icon="🧠" color="#34d399" title="The key skill">The valuable skill is not using ChatGPT. It's connecting LLMs to real data sources, APIs, and workflows — building systems that companies can deploy.</Callout>
+
+      <LH>1. How LLMs Work — intuition</LH>
+      <div style={{display:"grid",gap:8,margin:"12px 0"}}>
+        {[
+          {n:"01",color:"#7eb8f7",title:"Tokenization",desc:"Text → tokens (roughly word-pieces). 'unhappy' → ['un','happy']. LLMs operate on token sequences, not characters."},
+          {n:"02",color:"#34d399",title:"Self-Attention",desc:"Every token attends to all others. This context-awareness is why LLMs understand nuance across long passages."},
+          {n:"03",color:"#f7c96e",title:"Next token prediction",desc:"LLMs predict the next token. Trained on trillions of tokens, they learn language, facts, and reasoning."},
+          {n:"04",color:"#c792ea",title:"Instruction tuning",desc:"Base models predict text. ChatGPT/Claude are further trained to follow instructions and be helpful."},
+        ].map((s,i)=>(
+          <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",background:"#0d1520",borderRadius:8,border:`1px solid ${s.color}22`}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:s.color+"22",border:`1px solid ${s.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"monospace",fontSize:10,color:s.color,fontWeight:700}}>{s.n}</div>
+            <div><div style={{color:s.color,fontWeight:700,fontSize:13,marginBottom:3}}>{s.title}</div><div style={{color:"#64748b",fontSize:12,lineHeight:1.6}}>{s.desc}</div></div>
+          </div>
+        ))}
+      </div>
+
+      <LH>2. Prompt Engineering</LH>
+      <Block label="Prompt patterns that work">{`# Pattern 1: System prompt + user message
+messages = [
+    {"role": "system", "content": "You are a senior data scientist. "
+     "Give concise, technically accurate answers."},
+    {"role": "user",   "content": "Explain overfitting in one sentence."}
+]
+
+# Pattern 2: Few-shot — show examples in the prompt
+few_shot = """Classify sentiment.
+Review: "Amazing product!" → Positive
+Review: "Terrible quality" → Negative
+Review: "It's okay" → Neutral
+
+Now classify:
+Review: "Best purchase of my life!"
+Answer:"""
+
+# Pattern 3: Chain of thought
+cot = """Analyze this data and identify the top issue.
+Think step by step:
+1. What are the key metrics?
+2. What changed vs last month?
+3. Most likely root cause?
+
+Data: Revenue -23%, signups flat, churn +15%"""
+
+# Pattern 4: Structured output
+structured = """Extract from this complaint.
+Return ONLY valid JSON: {"issue": ..., "severity": 1-5, "department": ...}
+
+Complaint: "Order arrived broken, support ignored me for 3 days."
+"""`}</Block>
+
+      <LH>3. RAG — Retrieval-Augmented Generation</LH>
+      <LP>RAG solves the biggest LLM limitation: they only know training data. RAG gives the LLM access to YOUR documents at query time.</LP>
+      <Block label="RAG pipeline step by step">{`# RAG = Retrieve relevant chunks → Augment prompt → Generate answer
+
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
+# Your knowledge base
+documents = [
+    "ZeroToDS offers a structured data science curriculum.",
+    "The platform includes Python, SQL, Statistics, and ML lessons.",
+    "Interactive coding exercises run Python in the browser.",
+    "The Guided Cohort is $99 and includes weekly live sessions.",
+    "Free accounts access the full Python for DS phase.",
+]
+
+# Embed all documents once
+model = SentenceTransformer('all-MiniLM-L6-v2')
+doc_embeddings = model.encode(documents)
+
+def retrieve(query, top_k=2):
+    """Find most relevant documents for a query."""
+    q_emb = model.encode([query])
+    # Cosine similarity
+    sims = np.dot(doc_embeddings, q_emb.T).flatten()
+    top_idx = sims.argsort()[-top_k:][::-1]
+    return [documents[i] for i in top_idx]
+
+# Ask a question
+question = "How much does the cohort cost?"
+context  = retrieve(question)
+print("Retrieved:", context)
+
+# Build prompt for LLM
+prompt = f"""Answer using only this context:
+{chr(10).join(context)}
+
+Question: {question}"""
+# Send prompt to OpenAI/Anthropic API → get answer`}</Block>
+      <Callout icon="★" color="#f7c96e" title="RAG vs Fine-tuning">Fine-tuning bakes knowledge into weights — expensive, slow, knowledge gets stale. RAG retrieves fresh information at query time. For document Q&A, knowledge bases, support bots — RAG is faster, cheaper, and more accurate.</Callout>
+
+      <LH>4. Vector Search with FAISS</LH>
+      <Block label="Production-grade vector search">{`import numpy as np
+import faiss  # pip install faiss-cpu
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+docs = [
+    "The average data scientist salary is $120,000.",
+    "Python is the most popular language for data science.",
+    "SQL is required in 85% of data science job postings.",
+    "Remote data science jobs increased 300% since 2020.",
+]
+
+# Build FAISS index
+embeddings = model.encode(docs).astype('float32')
+dim   = embeddings.shape[1]
+index = faiss.IndexFlatL2(dim)
+index.add(embeddings)
+
+# Search
+query = "What language should I learn?"
+q_emb = model.encode([query]).astype('float32')
+distances, indices = index.search(q_emb, k=2)
+
+for i, idx in enumerate(indices[0]):
+    print(f"Result {i+1}: {docs[idx]}")
+    print(f"Distance: {distances[0][i]:.3f}")`}</Block>
+
+      <LH>5. Fine-tuning vs RAG</LH>
+      <Compare items={[
+        {label:"Use RAG", color:"#6dd6a0", text:"Documents to search. Knowledge changes. Need citations. Limited compute. Most business use cases."},
+        {label:"Use Fine-tuning", color:"#f7c96e", text:"Need specific style/tone. Specialized reasoning. 1000s of labeled examples. Latency-critical."},
+        {label:"Use both", color:"#c792ea", text:"Complex enterprise. Domain reasoning (fine-tune) + fresh data (RAG). Production at scale."},
+      ]}/>
+
+      <Quiz questions={[
+        {q:"What is tokenization in LLMs?",options:["Splitting data into train/test","Converting text into numerical token IDs for model input","Encrypting API keys","Splitting a model into smaller parts"],answer:"Converting text into numerical token IDs for model input",explanation:"LLMs can't process raw text. Tokenization splits text into sub-word pieces and maps them to integer IDs. Token count affects API cost and context length limits."},
+        {q:"RAG stands for:",options:["Retrieval-Augmented Generation","Random Attention Graph","Recursive Autoregressive Generation","Real-time AI Generation"],answer:"Retrieval-Augmented Generation",explanation:"RAG retrieves relevant documents from a knowledge base, then augments the LLM prompt with that context. This gives LLMs access to external, up-to-date knowledge without retraining."},
+        {q:"Few-shot prompting means:",options:["Using a small model","Providing input-output examples in the prompt","Training on few examples","Making few API calls"],answer:"Providing input-output examples in the prompt",explanation:"Few-shot includes 2-5 task examples directly in the prompt. 'Review: Amazing → Positive. Review: Terrible → Negative. Now: Review: Great →'. This dramatically improves output quality without any training."},
+        {q:"For a company FAQ chatbot, which approach is best?",options:["Train custom LLM from scratch","Fine-tune GPT","RAG — embed FAQ docs, retrieve per query","Keyword matching"],answer:"RAG — embed FAQ docs, retrieve per query",explanation:"FAQ content changes frequently. RAG retrieves fresh content at query time. Fine-tuning needs retraining with every FAQ update. RAG is the standard pattern for document Q&A."},
+        {q:"Vector similarity search finds documents by:",options:["Exact keyword matching","Comparing embedding vectors — similar text has similar vectors","Alphabetical ordering","Document length"],answer:"Comparing embedding vectors — similar text has similar vectors",explanation:"Embedding models map text to vectors where semantic similarity = vector proximity. 'Car' and 'automobile' get similar vectors. This finds semantically related content even with different wording."},
+      ]}/>
+
+      <CodeExercise
+        title="Build a semantic search system"
+        description="Given document and query embeddings, compute cosine similarity for each document and return the index and text of the most relevant one."
+        starterCode={`import numpy as np
+
+documents = [
+    "Python is great for data science",
+    "SQL is used for database queries",
+    "Neural networks need lots of data",
+    "Feature engineering improves models",
+    "Docker makes deployment reproducible",
+]
+
+np.random.seed(42)
+doc_embeddings   = np.random.randn(5, 64)
+# Query similar to doc 0
+query_embedding  = doc_embeddings[0] + np.random.randn(64) * 0.3
+
+def cosine_sim(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+# Compute similarity to all docs
+similarities = [cosine_sim(___, ___) for doc_emb in doc_embeddings]
+
+best_idx = np.argmax(___)
+print(f"Best match: '{documents[best_idx]}'")
+print(f"Score: {round(similarities[best_idx], 3)}")`}
+        hint="cosine_sim(query_embedding, doc_emb). np.argmax(similarities)."
+        validate={(out)=>out.includes("Best match:")&&out.includes("Score:")}
+      />
+    </div>
+  )},
+
+  // ── MLOPS
+  {id:"mlops-lesson", phase:"🚀 MLOps", emoji:"⚙️", color:"#fb923c", title:"MLOps — Notebook to Production", subtitle:"FastAPI, Docker, and deployment — make your model live",
+   body:()=>(
+    <div>
+      <LP>Training a model is 20% of the job. Getting it into production is the other 80%. MLOps is what separates data scientists who ship from those who only explore. This lesson teaches the full deployment stack.</LP>
+      <Callout icon="🧠" color="#fb923c" title="The career differentiator">'I built this, you can use it right now at this URL' is the most powerful thing you can say in a data science interview. Most candidates can't say it.</Callout>
+
+      <LH>1. FastAPI — serve your model as an API</LH>
+      <Block label="main.py — complete model API">{`from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import joblib
+import pandas as pd
+
+app = FastAPI(title="Churn Prediction API")
+model = joblib.load("churn_pipeline.pkl")
+
+class CustomerInput(BaseModel):
+    tenure: int
+    monthly_charges: float
+    contract: str
+
+class PredictionOutput(BaseModel):
+    churn_prediction: int
+    churn_probability: float
+    risk_level: str
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
+@app.post("/predict", response_model=PredictionOutput)
+def predict(customer: CustomerInput):
+    try:
+        df   = pd.DataFrame([customer.dict()])
+        prob = float(model.predict_proba(df)[0][1])
+        pred = int(prob > 0.5)
+        risk = "High" if prob > 0.7 else "Medium" if prob > 0.4 else "Low"
+        return PredictionOutput(
+            churn_prediction=pred,
+            churn_probability=round(prob, 3),
+            risk_level=risk
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Run: uvicorn main:app --reload
+# Docs: http://localhost:8000/docs`}</Block>
+
+      <LH>2. Testing your API</LH>
+      <Block label="Test with Python requests">{`import requests
+
+# Health check
+print(requests.get("http://localhost:8000/health").json())
+
+# Prediction
+data = {
+    "tenure": 3,
+    "monthly_charges": 85.5,
+    "contract": "Month-to-month"
+}
+response = requests.post("http://localhost:8000/predict", json=data)
+print(response.json())
+# {"churn_prediction": 1, "churn_probability": 0.742, "risk_level": "High"}`}</Block>
+
+      <LH>3. Docker — containerize everything</LH>
+      <Block label="Dockerfile">{`FROM python:3.11-slim
+WORKDIR /app
+
+# Dependencies first — Docker caches this layer
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy code after dependencies
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]`}</Block>
+      <Block label="Build and run">{`# requirements.txt
+fastapi==0.109.0
+uvicorn==0.27.0
+scikit-learn==1.4.0
+pandas==2.1.4
+joblib==1.3.2
+
+# Build
+docker build -t churn-api .
+
+# Run locally
+docker run -p 8000:8000 churn-api
+
+# Test
+curl http://localhost:8000/health`}</Block>
+      <Callout icon="★" color="#f7c96e" title="Docker layer caching">Always copy requirements.txt and pip install BEFORE copying your code. If requirements don't change, Docker reuses the cached pip layer — rebuilds become 10x faster.</Callout>
+
+      <LH>4. Deploy to Railway — free in 2 minutes</LH>
+      <Block label="Deployment steps">{`# 1. Push to GitHub
+git add . && git commit -m "Add FastAPI app" && git push
+
+# 2. railway.app → New Project → Deploy from GitHub
+# 3. Select repo → Railway detects Dockerfile automatically
+# 4. Get live URL: yourapp.railway.app
+
+# Other free options:
+# - Render.com — similar to Railway
+# - Hugging Face Spaces — best for ML demos (Streamlit/Gradio)
+
+# Project structure:
+# churn_api/
+# ├── main.py
+# ├── churn_pipeline.pkl
+# ├── requirements.txt
+# ├── Dockerfile
+# └── README.md`}</Block>
+
+      <LH>5. MLflow — experiment tracking</LH>
+      <Block label="Track every experiment">{`import mlflow
+import mlflow.sklearn
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_auc_score
+
+mlflow.set_experiment("churn_prediction")
+
+with mlflow.start_run(run_name="rf_v1"):
+    params = {"n_estimators": 100, "max_depth": 5}
+    mlflow.log_params(params)
+
+    model = RandomForestClassifier(**params, random_state=42)
+    model.fit(X_train, y_train)
+
+    train_auc = roc_auc_score(y_train, model.predict_proba(X_train)[:,1])
+    test_auc  = roc_auc_score(y_test,  model.predict_proba(X_test)[:,1])
+    mlflow.log_metric("train_auc", train_auc)
+    mlflow.log_metric("test_auc",  test_auc)
+    mlflow.sklearn.log_model(model, "model")
+
+    print(f"Train AUC: {train_auc:.3f} | Test AUC: {test_auc:.3f}")
+
+# mlflow ui → compare all runs at localhost:5000`}</Block>
+
+      <LH>6. The Full MLOps Workflow</LH>
+      <div style={{display:"grid",gap:8,margin:"12px 0"}}>
+        {[
+          {n:"01",color:"#7eb8f7",title:"Train & Track",desc:"Train models. Log everything with MLflow. Pick best by AUC or business metric."},
+          {n:"02",color:"#6dd6a0",title:"Package",desc:"Save with joblib. Write FastAPI app. Test /health and /predict locally."},
+          {n:"03",color:"#f7c96e",title:"Containerize",desc:"Write Dockerfile. Build and test locally. Push to Docker Hub."},
+          {n:"04",color:"#fb923c",title:"Deploy",desc:"Push to GitHub. Connect Railway/Render. Get live URL. Share it everywhere."},
+          {n:"05",color:"#c792ea",title:"Monitor",desc:"Log predictions. Track data drift. Set alerts. Retrain when performance drops."},
+        ].map((s,i)=>(
+          <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",background:"#0d1520",borderRadius:8,border:`1px solid ${s.color}22`}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:s.color+"22",border:`1px solid ${s.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"monospace",fontSize:10,color:s.color,fontWeight:700}}>{s.n}</div>
+            <div><div style={{color:s.color,fontWeight:700,fontSize:13,marginBottom:3}}>{s.title}</div><div style={{color:"#64748b",fontSize:12,lineHeight:1.6}}>{s.desc}</div></div>
+          </div>
+        ))}
+      </div>
+
+      <Quiz questions={[
+        {q:"What does Pydantic BaseModel do in FastAPI?",options:["Trains the ML model","Validates and parses request/response data automatically","Handles database connections","Manages Docker containers"],answer:"Validates and parses request/response data automatically",explanation:"Pydantic BaseModel defines expected data structure with types. FastAPI uses it to validate incoming JSON, parse it into Python objects, and return helpful error messages for invalid input — no manual validation needed."},
+        {q:"Why use Docker instead of just requirements.txt?",options:["Docker is faster than pip","Docker packages OS, Python version, and all deps — runs identically anywhere","Docker is required by cloud providers","requirements.txt doesn't work on Linux"],answer:"Docker packages OS, Python version, and all deps — runs identically anywhere",explanation:"requirements.txt only captures Python packages. Different machines have different Python versions, system libraries, OS configs. Docker containerizes the entire runtime — guaranteeing identical behavior everywhere."},
+        {q:"In your Dockerfile, why copy requirements.txt and pip install BEFORE copying code?",options:["Required by Docker","Docker caches each layer — pip install is reused if requirements don't change","requirements.txt must exist before code","Docker processes files alphabetically"],answer:"Docker caches each layer — pip install is reused if requirements don't change",explanation:"Docker caches layers. If only your code changes (not requirements), Docker reuses the cached pip install layer and rebuilds only from COPY . . onward — 10x faster builds."},
+        {q:"MLflow experiment tracking helps you:",options:["Deploy models faster","Compare runs — parameters, metrics, artifacts in one dashboard","Train in parallel","Replace Docker"],answer:"Compare runs — parameters, metrics, artifacts in one dashboard",explanation:"Without tracking, you lose context. MLflow logs every run's parameters (n_estimators=100), metrics (AUC=0.87), and saved models. The UI lets you compare all experiments and find the best configuration reproducibly."},
+        {q:"What is the @app.get('/health') endpoint for?",options:["Serves predictions","Load balancers ping it to verify the API is alive","Returns model metrics","Authenticates users"],answer:"Load balancers ping it to verify the API is alive",explanation:"Health check endpoints are production standard. Load balancers and monitoring tools check /health to know if an instance is alive. It's the first endpoint you add to any API — simple 200 OK is enough."},
+      ]}/>
+
+      <CodeExercise
+        title="Complete a FastAPI prediction endpoint"
+        description="Fill in the blanks to complete a FastAPI app that accepts customer input, runs a mock prediction, and returns a probability and risk label."
+        starterCode={`from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class MockModel:
+    def predict_proba(self, tenure, charges):
+        import numpy as np
+        np.random.seed(int(tenure))
+        p = np.random.uniform(0.1, 0.9)
+        return p
+
+model = MockModel()
+
+class CustomerInput(BaseModel):
+    tenure: int
+    monthly_charges: float
+
+class PredictionOutput(BaseModel):
+    probability: float
+    risk: str
+
+@app.post("/predict", response_model=___)
+def predict(customer: ___):
+    prob = round(model.predict_proba(customer.___, customer.___), 3)
+    risk = "High" if prob > 0.7 else "Medium" if prob > 0.4 else ___
+    return ___(probability=prob, risk=risk)
+
+@app.get("/health")
+def health():
+    return {"status": ___}`}
+        hint="PredictionOutput. CustomerInput. customer.tenure. customer.monthly_charges. 'Low'. PredictionOutput(...). 'healthy'."
+        validate={(out)=>out.includes("PredictionOutput")&&out.includes("CustomerInput")&&out.includes("healthy")}
+      />
+    </div>
+  )},
+];
+LESSONS.push(...PHASE3_LESSONS);
+
+const LEARN_PHASES = [
+  {label:"🐍 Python Core",    ids:["pycore-basics","pycore-advanced","pycore-ds-patterns"]},
+  {label:"🐍 Python for DS",  ids:["numpy","pandas-basics","pandas-advanced","eda","visualization"]},
+  {label:"🗄️ SQL",            ids:["sql-basics","sql-joins","sql-window"]},
+  {label:"📐 Statistics",     ids:["probability","distributions","correlation","inference"]},
+  {label:"📐 Linear Algebra", ids:["linalg-vectors","linalg-eigen"]},
+  {label:"🤖 Machine Learning", ids:["ml-workflow","ml-regression","ml-trees","ml-evaluation","ml-overfitting","ml-sklearn","feature-engineering","ml-pipelines"]},
+  {label:"⚡ Advanced ML",    ids:["adv-xgboost","adv-lightgbm","adv-shap","adv-feature-eng","adv-pipelines","adv-hypertuning"]},
+  {label:"🧠 Deep Learning",  ids:["dl-nn-lesson","dl-nlp-lesson","llm-lesson"]},
+  {label:"🚀 Deploy",         ids:["streamlit-lesson","mlops-lesson"]},
+  {label:"🛠️ Tools",          ids:["cli-git-lesson","jupyter-lesson"]},
+];
 
 // Maps roadmap section id → first lesson to open when "Study this" is clicked
 const SECTION_TO_FIRST_LESSON = {
-  "python-core":"python-basics",
-  "python-ds":  "numpy",
-  "sql":        "sql-basics",
-  "stats-prob": "probability",
-  "stats-dist": "distributions",
-  "stats-inf":  "inference",
-  "ml-core":    "ml-workflow",
-  "ml-advanced":"adv-xgboost",
-  "dl-nn":      "dl-neural-nets",
-  "dl-nlp":     "dl-nlp",
-  "llm":        "llm-rag",
-  "mlops":      "streamlit",
-  "portfolio":  "interview-prep",
+  "python-core":  "pycore-basics",
+  "python-ds":    "numpy",
+  "sql":          "sql-basics",
+  "stats-prob":   "probability",
+  "stats-dist":   "distributions",
+  "stats-inf":    "inference",
+  "linalg":       "linalg-vectors",
+  "ml-core":      "ml-workflow",
+  "ml-advanced":  "adv-xgboost",
+  "feature-eng":  "feature-engineering",
+  "ml-pipeline":  "ml-pipelines",
+  "dl-nn":        "dl-nn-lesson",
+  "dl-nlp":       "dl-nlp-lesson",
+  "llm":          "llm-lesson",
+  "streamlit":    "streamlit-lesson",
+  "mlops":        "mlops-lesson",
+  "cli-git":      "cli-git-lesson",
+  "jupyter":      "jupyter-lesson",
 };
 
 // Maps lesson id → which roadmap section task it completes
 const LESSON_COMPLETES_TASK = {
-  "numpy":          {section:"python-ds",  task:0},
-  "pandas-basics":  {section:"python-ds",  task:2},
-  "pandas-advanced":{section:"python-ds",  task:3},
-  "eda":            {section:"python-ds",  task:4},
-  "visualization":  {section:"python-ds",  task:4},
-  "sql-basics":     {section:"sql",        task:0},
-  "sql-joins":      {section:"sql",        task:3},
-  "sql-window":     {section:"sql",        task:4},
-  "probability":    {section:"stats-prob", task:0},
-  "distributions":  {section:"stats-dist", task:0},
-  "correlation":    {section:"stats-inf",  task:4},
-  "inference":      {section:"stats-inf",  task:5},
-  "ml-workflow":    {section:"ml-core",    task:0},
-  "ml-regression":  {section:"ml-core",    task:1},
-  "ml-trees":       {section:"ml-core",    task:2},
-  "ml-evaluation":  {section:"ml-core",    task:3},
-  "ml-overfitting": {section:"ml-core",    task:4},
-  "ml-sklearn":     {section:"ml-core",    task:5},
-  "adv-xgboost":    {section:"ml-advanced", task:0},
-  "adv-lightgbm":   {section:"ml-advanced", task:1},
-  "adv-shap":       {section:"ml-advanced", task:2},
-  "adv-feature-eng":{section:"ml-advanced", task:3},
-  "adv-pipelines":  {section:"ml-advanced", task:4},
-  "adv-hypertuning":{section:"ml-advanced", task:5},
-  "python-basics":  {section:"python-core", task:0},
-  "git-basics":     {section:"python-core", task:1},
-  "dl-neural-nets": {section:"dl-nn",       task:0},
-  "dl-nlp":         {section:"dl-nlp",      task:0},
-  "llm-rag":        {section:"llm",         task:0},
-  "streamlit":      {section:"mlops",       task:0},
-  "interview-prep": {section:"int-ml",      task:0},
+  "pycore-basics":        {section:"python-core",  task:0},
+  "pycore-advanced":      {section:"python-core",  task:1},
+  "pycore-ds-patterns":   {section:"python-core",  task:2},
+  "numpy":                {section:"python-ds",    task:0},
+  "pandas-basics":        {section:"python-ds",    task:2},
+  "pandas-advanced":      {section:"python-ds",    task:3},
+  "eda":                  {section:"python-ds",    task:4},
+  "visualization":        {section:"python-ds",    task:4},
+  "sql-basics":           {section:"sql",          task:0},
+  "sql-joins":            {section:"sql",          task:3},
+  "sql-window":           {section:"sql",          task:4},
+  "probability":          {section:"stats-prob",   task:0},
+  "distributions":        {section:"stats-dist",   task:0},
+  "correlation":          {section:"stats-inf",    task:4},
+  "inference":            {section:"stats-inf",    task:5},
+  "linalg-vectors":       {section:"linalg",       task:0},
+  "linalg-eigen":         {section:"linalg",       task:2},
+  "ml-workflow":          {section:"ml-core",      task:0},
+  "ml-regression":        {section:"ml-core",      task:1},
+  "ml-trees":             {section:"ml-core",      task:2},
+  "ml-evaluation":        {section:"ml-core",      task:3},
+  "ml-overfitting":       {section:"ml-core",      task:4},
+  "ml-sklearn":           {section:"ml-core",      task:5},
+  "feature-engineering":  {section:"feature-eng",  task:0},
+  "ml-pipelines":         {section:"ml-pipeline",  task:0},
+  "dl-nn-lesson":         {section:"dl-nn",        task:0},
+  "dl-nlp-lesson":        {section:"dl-nlp",       task:0},
+  "llm-lesson":           {section:"llm",          task:0},
+  "streamlit-lesson":     {section:"streamlit",    task:0},
+  "mlops-lesson":         {section:"mlops",        task:0},
+  "adv-xgboost":          {section:"ml-advanced",  task:0},
+  "adv-lightgbm":         {section:"ml-advanced",  task:1},
+  "adv-shap":             {section:"ml-advanced",  task:2},
+  "adv-feature-eng":      {section:"ml-advanced",  task:3},
+  "adv-pipelines":        {section:"ml-advanced",  task:4},
+  "adv-hypertuning":      {section:"ml-advanced",  task:5},
+  "cli-git-lesson":       {section:"cli-git",      task:0},
+  "jupyter-lesson":       {section:"jupyter",      task:0},
 };
 
 // ── LEARN TAB ─────────────────────────────────────────────────────────────────
