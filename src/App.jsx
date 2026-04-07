@@ -117,7 +117,6 @@ function AIJobCalculator(){
     "environmental engineer":{risk:22,color:"#6dd6a0",label:"Lower Risk",skills:["GIS Analytics","Python","Environmental Data","Simulation"],months:8,reason:"Environmental monitoring and impact assessment are increasingly data-driven. ML skills amplify impact significantly."},
     "petroleum engineer":{risk:30,color:"#6dd6a0",label:"Lower Risk",skills:["Geospatial Analytics","Python","Drilling Data","Simulation"],months:8,reason:"Oil and gas exploration is being transformed by ML and sensor data. Data-skilled engineers are commanding premiums."},
     "chemical engineer":{risk:28,color:"#6dd6a0",label:"Lower Risk",skills:["Process Analytics","Python","Simulation","IoT Data"],months:8,reason:"Chemical process optimization is increasingly driven by ML. Engineers who model reactions with data add enormous value."},
-    "economist":{risk:32,color:"#6dd6a0",label:"Lower Risk",skills:["Econometrics","Python","R","Statistical Modeling"],months:6,reason:"Economic analysis requires deep domain knowledge. Data skills amplify rather than replace economists."},
     "student":{risk:5,color:"#6dd6a0",label:"Very Low Risk",skills:["Python","SQL","Machine Learning","Data Analysis"],months:6,reason:"You're at the perfect moment. Learning data science now puts you ahead of the entire workforce — start today."},
     "fresh graduate":{risk:5,color:"#6dd6a0",label:"Very Low Risk",skills:["Python","SQL","Machine Learning","Data Visualization"],months:6,reason:"You have zero bad habits to unlearn. Adding data skills now makes you one of the most hireable graduates in MENA."},
     "intern":{risk:8,color:"#6dd6a0",label:"Very Low Risk",skills:["Python","SQL","Data Analysis","Visualization"],months:5,reason:"Internship experience plus data skills is a rare combination. You're perfectly positioned to pivot into data roles."},
@@ -249,7 +248,7 @@ function XPToast({amount,onDone}){
 
 import { LearnTab, LESSONS, LEARN_PHASES, SECTION_TO_FIRST_LESSON, LESSON_COMPLETES_TASK } from "./lessons";
 import { sectionProjects, typeColors, typeLabels, portfolioProjects, DEFAULT_ROADMAP, quotes, getTotalProgress } from "./constants";
-import { QUIZ_DATA, CAREER_PATHS } from "./quiz_data";
+import { QUIZ_DATA, CAREER_PATHS } from "./quiz_data.js";
 
 function ProgressBar({pct,color,height=4}){
   return <div style={{height,background:T.border,borderRadius:height}}><div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:height,transition:"width 0.4s"}}/></div>;
