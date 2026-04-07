@@ -249,6 +249,7 @@ function XPToast({amount,onDone}){
 
 import { LearnTab, LESSONS, LEARN_PHASES, SECTION_TO_FIRST_LESSON, LESSON_COMPLETES_TASK } from "./lessons";
 import { sectionProjects, typeColors, typeLabels, portfolioProjects, DEFAULT_ROADMAP, quotes, getTotalProgress } from "./constants";
+import { QUIZ_DATA, CAREER_PATHS } from "./quiz_data";
 
 function ProgressBar({pct,color,height=4}){
   return <div style={{height,background:T.border,borderRadius:height}}><div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:height,transition:"width 0.4s"}}/></div>;
@@ -652,6 +653,41 @@ function LoginPage(){
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+
+      {/* CAREER PATHS */}
+      <div style={{padding:"80px 20px",background:"#0d0c18"}}>
+        <div style={{maxWidth:1000,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// career paths</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Which data role is right for you?</h2>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:520}}>Three distinct career paths — the same curriculum, different focus. Unlock the full path breakdown inside your dashboard.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:16}}>
+            {[
+              {icon:"📊",title:"Data Analyst",tagline:"Turn data into decisions",color:"#7eb8f7",time:"6–9 months",salary:"$45k–$80k",demand:"Very High",skills:["SQL","Python","Statistics","Visualization"]},
+              {icon:"🧠",title:"Data Scientist",tagline:"Build models that predict",color:"#a78bfa",time:"10–14 months",salary:"$60k–$120k",demand:"High",skills:["ML","XGBoost","SHAP","Statistics"]},
+              {icon:"⚙️",title:"ML Engineer",tagline:"Deploy ML to production",color:"#6dd6a0",time:"12–18 months",salary:"$80k–$150k",demand:"Growing fast",skills:["MLOps","Docker","FastAPI","LLMs"]},
+            ].map((path,i)=>(
+              <div key={i} className="lp-card" style={{background:"#11101c",border:`1px solid ${path.color}22`,borderTop:`3px solid ${path.color}`,borderRadius:12,padding:"22px",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:0,right:0,width:60,height:60,background:path.color+"08",borderRadius:"0 0 0 60px"}}/>
+                <div style={{fontSize:30,marginBottom:12}}>{path.icon}</div>
+                <div style={{fontSize:17,fontWeight:700,color:path.color,marginBottom:4}}>{path.title}</div>
+                <div style={{fontSize:12,color:"#7b78a0",marginBottom:14}}>{path.tagline}</div>
+                <div style={{display:"flex",gap:12,marginBottom:14,flexWrap:"wrap"}}>
+                  <div><div style={{fontSize:9,color:"#4a4665",letterSpacing:"0.1em"}}>TIMELINE</div><div style={{fontSize:12,fontWeight:600,color:path.color}}>{path.time}</div></div>
+                  <div><div style={{fontSize:9,color:"#4a4665",letterSpacing:"0.1em"}}>SALARY</div><div style={{fontSize:12,fontWeight:600,color:path.color}}>{path.salary}</div></div>
+                  <div><div style={{fontSize:9,color:"#4a4665",letterSpacing:"0.1em"}}>DEMAND</div><div style={{fontSize:12,fontWeight:600,color:path.color}}>{path.demand}</div></div>
+                </div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                  {path.skills.map(s=><span key={s} style={{fontSize:10,fontFamily:"monospace",padding:"2px 8px",borderRadius:100,background:path.color+"15",color:path.color}}>{s}</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:20,textAlign:"center"}}>
+            <div style={{fontSize:12,color:"#4a4665",marginBottom:8}}>Full path breakdown — which phases to focus on, interview prep, MENA companies hiring — available inside your dashboard.</div>
           </div>
         </div>
       </div>
@@ -1373,9 +1409,441 @@ const unlockPhase=async(studentId,phaseIndex)=>{
   );
 }
 
+
+// ── QUIZ TAB ─────────────────────────────────────────────────────────────────
+function QuizTab({roadmap,progress}){
+  const [activeSec,setActiveSec]=useState(null);
+  const [qIndex,setQIndex]=useState(0);
+  const [selected,setSelected]=useState(null);
+  const [showResult,setShowResult]=useState(false);
+  const [sessionScore,setSessionScore]=useState({correct:0,total:0});
+  const [done,setDone]=useState(false);
+  const [openAnswer,setOpenAnswer]=useState("");
+  const [showModel,setShowModel]=useState(false);
+
+  const allSections=roadmap.flatMap(ph=>
+    ph.sections.filter(s=>QUIZ_DATA[s.id]&&QUIZ_DATA[s.id].length>0).map(s=>({...s,phaseColor:ph.color,phaseTitle:ph.title}))
+  );
+
+  const startQuiz=(sec)=>{setActiveSec(sec);setQIndex(0);setSelected(null);setShowResult(false);setSessionScore({correct:0,total:0});setDone(false);setOpenAnswer("");setShowModel(false);};
+
+  const handleMCAnswer=(idx)=>{
+    if(selected!==null)return;
+    setSelected(idx);setShowResult(true);
+  };
+
+  const nextQuestion=()=>{
+    const questions=QUIZ_DATA[activeSec.id];
+    const q=questions[qIndex];
+    const isCorrect=q.type==="mc"?selected===q.answer:true; // open-ended always counts
+    const newScore={correct:sessionScore.correct+(isCorrect?1:0),total:sessionScore.total+1};
+    setSessionScore(newScore);
+    if(qIndex+1>=questions.length){setDone(true);}
+    else{setQIndex(i=>i+1);setSelected(null);setShowResult(false);setOpenAnswer("");setShowModel(false);}
+  };
+
+  if(activeSec){
+    const questions=QUIZ_DATA[activeSec.id];
+    if(done){
+      const mcQs=questions.filter(q=>q.type==="mc");
+      const pct=mcQs.length?Math.round((sessionScore.correct/mcQs.length)*100):100;
+      const grade=pct>=80?"🏆 Excellent!":pct>=60?"👍 Good work":"📚 Keep studying";
+      return(
+        <div style={{padding:"24px",maxWidth:600,margin:"0 auto"}}>
+          <button onClick={()=>setActiveSec(null)} style={{background:"none",border:"none",color:T.p1,cursor:"pointer",fontSize:13,marginBottom:24,padding:0}}>← All sections</button>
+          <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:16,padding:"36px",textAlign:"center"}}>
+            <div style={{fontSize:48,marginBottom:12}}>{grade.split(" ")[0]}</div>
+            <div style={{fontSize:20,fontWeight:700,color:T.text,marginBottom:8}}>{grade.slice(grade.indexOf(" ")+1)}</div>
+            {mcQs.length>0&&<div style={{fontSize:14,color:T.textDim,marginBottom:24}}>Multiple choice: <span style={{color:pct>=80?T.good:pct>=60?T.p3:T.warn,fontWeight:700}}>{sessionScore.correct}/{mcQs.length}</span> — {pct}%</div>}
+            {mcQs.length>0&&<div style={{height:8,background:T.bgDeep,borderRadius:4,overflow:"hidden",marginBottom:24}}><div style={{height:"100%",width:`${pct}%`,background:pct>=80?T.good:pct>=60?T.p3:T.warn,borderRadius:4,transition:"width 0.6s"}}/></div>}
+            <div style={{fontSize:12,color:T.textDim,marginBottom:24}}>Open-ended questions: {questions.filter(q=>q.type==="open").length} — check your answers against the model answers shown.</div>
+            <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+              <button onClick={()=>startQuiz(activeSec)} style={{background:T.p1+"18",border:`1px solid ${T.p1}44`,color:T.p1,padding:"10px 20px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Retry</button>
+              <button onClick={()=>setActiveSec(null)} style={{background:"none",border:`1px solid ${T.border}`,color:T.textDim,padding:"10px 20px",borderRadius:8,cursor:"pointer",fontSize:13}}>All Sections</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const q=questions[qIndex];
+    const isCorrect=q.type==="mc"&&selected===q.answer;
+    return(
+      <div style={{padding:"24px",maxWidth:640,margin:"0 auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <button onClick={()=>setActiveSec(null)} style={{background:"none",border:"none",color:T.p1,cursor:"pointer",fontSize:13,padding:0}}>← {activeSec.title}</button>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <span style={{fontSize:10,color:activeSec.phaseColor,background:activeSec.phaseColor+"15",padding:"2px 8px",borderRadius:4}}>{q.type==="mc"?"Multiple Choice":"Open-Ended"}</span>
+            <span style={{fontSize:12,color:T.textDim,fontFamily:"monospace"}}>{qIndex+1} / {questions.length}</span>
+          </div>
+        </div>
+        <div style={{height:4,background:T.border,borderRadius:4,marginBottom:20,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${(qIndex/questions.length)*100}%`,background:activeSec.phaseColor,borderRadius:4,transition:"width 0.3s"}}/>
+        </div>
+        <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,padding:"22px",marginBottom:14}}>
+          <pre style={{fontSize:14,color:T.text,lineHeight:1.75,margin:"0 0 18px",fontFamily:"'Segoe UI',system-ui,sans-serif",whiteSpace:"pre-wrap"}}>{q.q}</pre>
+
+          {q.type==="mc"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              {q.options.map((opt,i)=>{
+                let bg=T.bgDeep,border=T.border,color=T.textDim,fw=400;
+                if(selected!==null){
+                  if(i===q.answer){bg=T.good+"15";border=T.good+"55";color=T.good;fw=600;}
+                  else if(i===selected&&selected!==q.answer){bg=T.warn+"15";border=T.warn+"55";color=T.warn;}
+                }
+                return(
+                  <button key={i} onClick={()=>handleMCAnswer(i)} style={{background:bg,border:`1px solid ${border}`,color,padding:"11px 15px",borderRadius:9,cursor:selected!==null?"default":"pointer",fontSize:13,textAlign:"left",transition:"all 0.15s",fontWeight:fw}}>
+                    {opt}
+                  </button>
+                );
+              })}
+              {showResult&&(
+                <div style={{marginTop:8,padding:"12px 15px",borderRadius:9,background:isCorrect?T.good+"12":T.warn+"12",border:`1px solid ${isCorrect?T.good+"44":T.warn+"44"}`}}>
+                  <div style={{fontSize:12,fontWeight:700,color:isCorrect?T.good:T.warn,marginBottom:4}}>{isCorrect?"✓ Correct!":"✗ Incorrect"}</div>
+                  <div style={{fontSize:12,color:T.textDim,lineHeight:1.65}}>{q.explanation}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {q.type==="open"&&(
+            <div>
+              {q.hint&&<div style={{fontSize:11,color:T.p3,background:T.p3+"10",border:`1px solid ${T.p3}22`,borderRadius:7,padding:"9px 13px",marginBottom:12}}>💡 Hint: {q.hint}</div>}
+              <textarea value={openAnswer} onChange={e=>setOpenAnswer(e.target.value)} placeholder="Write your answer here..." rows={5} style={{width:"100%",background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:9,padding:"11px 14px",color:T.text,fontSize:13,outline:"none",resize:"vertical",boxSizing:"border-box",lineHeight:1.7,fontFamily:"'Segoe UI',system-ui,sans-serif"}}/>
+              <button onClick={()=>setShowModel(!showModel)} style={{marginTop:10,background:"none",border:`1px solid ${T.borderHi}`,color:T.textDim,padding:"8px 14px",borderRadius:7,cursor:"pointer",fontSize:12,width:"100%"}}>
+                {showModel?"Hide model answer":"Show model answer"}
+              </button>
+              {showModel&&(
+                <div style={{marginTop:10,background:T.bgDeep,border:`1px solid ${T.good}33`,borderRadius:9,padding:"14px"}}>
+                  <div style={{fontSize:10,color:T.good,letterSpacing:"0.12em",fontWeight:700,marginBottom:8}}>MODEL ANSWER</div>
+                  <pre style={{fontSize:12,color:T.textDim,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap",fontFamily:"'Segoe UI',system-ui,sans-serif"}}>{q.model}</pre>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {(q.type==="mc"?showResult:true)&&(
+          <button onClick={nextQuestion} style={{width:"100%",padding:"12px",background:activeSec.phaseColor,border:"none",color:"#fff",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,opacity:q.type==="open"?1:1}}>
+            {qIndex+1>=questions.length?"See Results →":"Next Question →"}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return(
+    <div style={{padding:"24px",maxWidth:800,margin:"0 auto"}}>
+      <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:8}}>// quiz</div>
+      <div style={{fontSize:18,fontWeight:700,marginBottom:4}}>Section Quizzes</div>
+      <div style={{fontSize:12,color:T.textDim,marginBottom:6}}>Multiple choice questions are auto-graded. Open-ended questions show model answers to self-assess.</div>
+      <div style={{fontSize:11,color:T.textFade,marginBottom:24,fontFamily:"monospace"}}>Complete a section's roadmap tasks before attempting its quiz.</div>
+      {roadmap.map((ph,pi)=>{
+        const secWithQuiz=ph.sections.filter(s=>QUIZ_DATA[s.id]);
+        if(!secWithQuiz.length)return null;
+        return(
+          <div key={pi} style={{marginBottom:22}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:ph.color}}/>
+              <span style={{fontSize:13,fontWeight:700,color:ph.color}}>Phase {ph.phase} — {ph.title}</span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(250px,1fr))",gap:9}}>
+              {secWithQuiz.map(s=>{
+                const qs=QUIZ_DATA[s.id];
+                const mcCount=qs.filter(q=>q.type==="mc").length;
+                const openCount=qs.filter(q=>q.type==="open").length;
+                const done=s.tasks.filter((_,i)=>progress[`${s.id}-${i}`]).length;
+                const pct=s.tasks.length?Math.round(done/s.tasks.length*100):0;
+                return(
+                  <div key={s.id} style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:11,padding:"15px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                      <div style={{fontSize:13,fontWeight:600,color:T.text,lineHeight:1.3,flex:1}}>{s.title}</div>
+                    </div>
+                    <div style={{display:"flex",gap:6,marginBottom:10}}>
+                      {mcCount>0&&<span style={{fontSize:9,color:T.p1,background:T.p1+"15",padding:"2px 7px",borderRadius:4}}>{mcCount} MC</span>}
+                      {openCount>0&&<span style={{fontSize:9,color:T.p3,background:T.p3+"15",padding:"2px 7px",borderRadius:4}}>{openCount} Open</span>}
+                    </div>
+                    <div style={{height:3,background:T.border,borderRadius:3,marginBottom:10,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${pct}%`,background:ph.color+"88",borderRadius:3}}/>
+                    </div>
+                    <button onClick={()=>startQuiz({...s,phaseColor:ph.color,phaseTitle:ph.title})} style={{width:"100%",padding:"8px",background:ph.color+"18",border:`1px solid ${ph.color}44`,color:ph.color,borderRadius:7,cursor:"pointer",fontSize:12,fontWeight:600}}>
+                      Start Quiz →
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── CAREER PATHS TAB ──────────────────────────────────────────────────────────
+function PathsTab({roadmap,progress}){
+  const [activePath,setActivePath]=useState(null);
+
+  const getPathPct=(focusSections)=>{
+    const keys=roadmap.flatMap(ph=>ph.sections.filter(s=>focusSections.includes(s.id)).flatMap(s=>s.tasks.map((_,i)=>`${s.id}-${i}`)));
+    if(!keys.length)return 0;
+    return Math.round(keys.filter(k=>progress[k]).length/keys.length*100);
+  };
+
+  if(activePath){
+    const path=CAREER_PATHS.find(p=>p.id===activePath);
+    const pct=getPathPct(path.focusSections);
+    const emphColors={high:T.good,partial:T.p3,skip:T.textFade};
+    const emphLabels={high:"MUST DO",partial:"PARTIAL",skip:"OPTIONAL"};
+    return(
+      <div style={{padding:"24px",maxWidth:820,margin:"0 auto"}}>
+        <button onClick={()=>setActivePath(null)} style={{background:"none",border:"none",color:T.p1,cursor:"pointer",fontSize:13,marginBottom:20,padding:0}}>← All Paths</button>
+        <div style={{background:T.bgCard,border:`1px solid ${path.color}44`,borderRadius:16,padding:"26px",marginBottom:16,position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,right:0,width:100,height:100,background:path.color+"08",borderRadius:"0 0 0 100px"}}/>
+          <div style={{fontSize:38,marginBottom:10}}>{path.icon}</div>
+          <div style={{fontSize:20,fontWeight:800,color:path.color,marginBottom:4}}>{path.title}</div>
+          <div style={{fontSize:13,color:T.textDim,marginBottom:16,maxWidth:600}}>{path.description}</div>
+          <div style={{display:"flex",gap:20,flexWrap:"wrap",marginBottom:16}}>
+            {[{l:"Timeline",v:path.timeframe},{l:"Avg Salary",v:path.avgSalary},{l:"Demand",v:path.demand}].map((s,i)=>(
+              <div key={i}><div style={{fontSize:9,color:T.textFade,letterSpacing:"0.1em",marginBottom:3}}>{s.l.toUpperCase()}</div><div style={{fontSize:13,fontWeight:700,color:path.color}}>{s.v}</div></div>
+            ))}
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{fontSize:11,color:T.textDim}}>Your progress on this path</span><span style={{fontSize:13,fontWeight:700,color:path.color}}>{pct}%</span></div>
+          <div style={{height:7,background:T.bgDeep,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:path.color,borderRadius:4,transition:"width 0.6s"}}/></div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+          <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:12,padding:"18px"}}>
+            <div style={{fontSize:12,fontWeight:700,marginBottom:12}}>Phase Priorities</div>
+            {path.phases.map((p,i)=>{
+              const ph=roadmap[p.phase-1];if(!ph)return null;
+              const ec=emphColors[p.emphasis];const el=emphLabels[p.emphasis];
+              return(
+                <div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",borderBottom:`1px solid ${T.border}`}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:ph.color,flexShrink:0,marginTop:5}}/>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                      <span style={{fontSize:11,color:T.text}}>Phase {p.phase} — {ph.title}</span>
+                      <span style={{fontSize:9,color:ec,background:ec+"18",padding:"1px 7px",borderRadius:4,fontWeight:700}}>{el}</span>
+                    </div>
+                    <div style={{fontSize:10,color:T.textFade}}>{p.note}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:12,padding:"18px",flex:1}}>
+              <div style={{fontSize:12,fontWeight:700,marginBottom:10}}>Key Skills</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {path.keySkills.map((sk,i)=><span key={i} style={{fontSize:10,color:path.color,background:path.color+"15",border:`1px solid ${path.color}33`,padding:"3px 9px",borderRadius:5}}>{sk}</span>)}
+              </div>
+            </div>
+            <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:12,padding:"18px",flex:1}}>
+              <div style={{fontSize:12,fontWeight:700,marginBottom:10}}>Must-Build Projects</div>
+              {path.projects.map((p,i)=><div key={i} style={{fontSize:11,color:T.textDim,marginBottom:5,display:"flex",gap:6}}><span style={{color:path.color}}>→</span>{p}</div>)}
+            </div>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:12,padding:"18px"}}>
+            <div style={{fontSize:12,fontWeight:700,marginBottom:10}}>Interview Focus</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {path.interviewFocus.map((t,i)=><span key={i} style={{fontSize:10,color:T.textDim,background:T.bgDeep,border:`1px solid ${T.border}`,padding:"4px 9px",borderRadius:5}}>{t}</span>)}
+            </div>
+          </div>
+          <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:12,padding:"18px"}}>
+            <div style={{fontSize:12,fontWeight:700,marginBottom:10}}>Companies Hiring in MENA</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {path.companies.map((c,i)=><span key={i} style={{fontSize:10,color:T.textDim,background:T.bgDeep,padding:"4px 9px",borderRadius:5}}>{c}</span>)}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{padding:"24px",maxWidth:800,margin:"0 auto"}}>
+      <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:8}}>// career paths</div>
+      <div style={{fontSize:18,fontWeight:700,marginBottom:4}}>Choose Your Path</div>
+      <div style={{fontSize:12,color:T.textDim,marginBottom:24}}>Each path shows which phases matter most, what to focus on, and what companies hire for in MENA.</div>
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        {CAREER_PATHS.map(path=>{
+          const pct=getPathPct(path.focusSections);
+          return(
+            <div key={path.id} onClick={()=>setActivePath(path.id)} style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,padding:"20px",cursor:"pointer",transition:"border-color 0.2s,transform 0.15s",position:"relative",overflow:"hidden"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=path.color+"55";e.currentTarget.style.transform="translateX(3px)";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.transform="";}}>
+              <div style={{position:"absolute",left:0,top:0,width:3,height:"100%",background:path.color}}/>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                    <span style={{fontSize:26}}>{path.icon}</span>
+                    <div><div style={{fontSize:15,fontWeight:700,color:path.color}}>{path.title}</div><div style={{fontSize:11,color:T.textDim}}>{path.tagline}</div></div>
+                  </div>
+                  <div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:10}}>
+                    {[{l:"Timeline",v:path.timeframe},{l:"Salary",v:path.avgSalary},{l:"Demand",v:path.demand}].map((s,i)=>(
+                      <span key={i}><span style={{fontSize:9,color:T.textFade}}>{s.l}: </span><span style={{fontSize:11,fontWeight:600,color:T.text}}>{s.v}</span></span>
+                    ))}
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:T.textDim}}>Your progress</span><span style={{fontSize:11,fontWeight:700,color:path.color}}>{pct}%</span></div>
+                  <div style={{height:4,background:T.bgDeep,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:path.color,borderRadius:4,transition:"width 0.6s"}}/></div>
+                </div>
+                <span style={{fontSize:11,color:path.color,background:path.color+"15",border:`1px solid ${path.color}33`,padding:"6px 14px",borderRadius:6}}>View Path →</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── CERTIFICATE TAB ───────────────────────────────────────────────────────────
+function CertificateTab({userDoc,roadmap,progress,xp}){
+  const [generating,setGenerating]=useState(null);
+
+  const getPhasePct=(ph)=>{
+    const keys=ph.sections.flatMap(s=>s.tasks.map((_,i)=>`${s.id}-${i}`));
+    if(!keys.length)return 0;
+    return Math.round(keys.filter(k=>progress[k]).length/keys.length*100);
+  };
+
+  const totalPct=roadmap.length?Math.round(roadmap.reduce((s,ph)=>s+getPhasePct(ph),0)/roadmap.length):0;
+
+  const downloadCert=(title,subtitle,color,unlocked)=>{
+    if(!unlocked)return;
+    setGenerating(title);
+    const name=userDoc.username||"Student";
+    const date=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0f0e1a"/><stop offset="100%" stop-color="#13111a"/></linearGradient>
+    <linearGradient id="ac" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${color}" stop-opacity="0"/><stop offset="50%" stop-color="${color}"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="900" height="620" fill="url(#bg)"/>
+  <rect x="2" y="2" width="896" height="616" fill="none" stroke="${color}" stroke-width="1.5" rx="10" opacity="0.6"/>
+  <rect x="14" y="14" width="872" height="592" fill="none" stroke="${color}" stroke-width="0.5" rx="8" opacity="0.25"/>
+  <rect x="0" y="0" width="900" height="3" fill="url(#ac)"/>
+  <rect x="0" y="617" width="900" height="3" fill="url(#ac)"/>
+  <text x="450" y="72" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="${color}" letter-spacing="8" opacity="0.85">DS ACADEMY · ZEROTODS.NETLIFY.APP</text>
+  <line x1="180" y1="88" x2="340" y2="88" stroke="${color}" stroke-width="0.5" opacity="0.4"/>
+  <text x="450" y="91" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${color}" opacity="0.5">✦</text>
+  <line x1="560" y1="88" x2="720" y2="88" stroke="${color}" stroke-width="0.5" opacity="0.4"/>
+  <text x="450" y="148" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#6b6880" letter-spacing="5">CERTIFICATE OF COMPLETION</text>
+  <text x="450" y="205" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#4a4665">This certifies that</text>
+  <text x="450" y="268" text-anchor="middle" font-family="Georgia,serif" font-size="46" fill="#e2dff0" font-weight="bold">${name}</text>
+  <line x1="210" y1="282" x2="690" y2="282" stroke="${color}" stroke-width="0.4" opacity="0.5"/>
+  <text x="450" y="325" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#4a4665">has successfully completed</text>
+  <text x="450" y="378" text-anchor="middle" font-family="Georgia,serif" font-size="26" fill="${color}" font-weight="bold">${title}</text>
+  <text x="450" y="412" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#6b6880">${subtitle}</text>
+  <text x="450" y="455" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#3a3860">earning a total of ${xp.toLocaleString()} XP on the DS Academy learning platform</text>
+  <line x1="120" y1="502" x2="360" y2="502" stroke="${color}" stroke-width="0.4" opacity="0.3"/>
+  <line x1="540" y1="502" x2="780" y2="502" stroke="${color}" stroke-width="0.4" opacity="0.3"/>
+  <text x="240" y="524" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#4a4665">${date}</text>
+  <text x="660" y="524" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${color}" font-weight="bold">Radwan</text>
+  <text x="240" y="544" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="#2a2540" letter-spacing="2">DATE ISSUED</text>
+  <text x="660" y="544" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="#2a2540" letter-spacing="2">INSTRUCTOR · DS ACADEMY</text>
+  <text x="450" y="590" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="#2a2540" letter-spacing="3">VERIFIED · zerotods.netlify.app · ${date}</text>
+</svg>`;
+    const blob=new Blob([svg],{type:"image/svg+xml"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download=`DSAcademy_${title.replace(/[\s—]+/g,"_")}_${name.replace(/\s+/g,"_")}.svg`;
+    a.click();URL.revokeObjectURL(url);
+    setTimeout(()=>setGenerating(null),800);
+  };
+
+  const phaseCerts=roadmap.map((ph)=>({
+    title:`Phase ${ph.phase} — ${ph.title}`,subtitle:ph.duration,
+    color:ph.color,pct:getPhasePct(ph),unlocked:getPhasePct(ph)===100,
+  }));
+
+  const finalCert={title:"Full DS Academy Roadmap",subtitle:"18-Month Data Science Program · All 5 Phases Completed",color:"#f7c96e",pct:totalPct,unlocked:totalPct===100};
+
+  return(
+    <div style={{padding:"24px",maxWidth:760,margin:"0 auto"}}>
+      <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:8}}>// certificates</div>
+      <div style={{fontSize:18,fontWeight:700,marginBottom:4}}>Your Certificates</div>
+      <div style={{fontSize:12,color:T.textDim,marginBottom:24}}>Complete a phase at 100% to unlock its certificate. Finish all 5 phases for the final certificate. Downloads as SVG — open in browser and print as PDF.</div>
+
+      {/* Final */}
+      <div style={{marginBottom:22}}>
+        <div style={{fontSize:10,color:T.gold,letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:10}}>✦ GRAND CERTIFICATE</div>
+        <div style={{background:finalCert.unlocked?"linear-gradient(135deg,#f7c96e0a,#f7c96e05)":T.bgCard,border:`1px solid ${finalCert.unlocked?T.gold+"55":T.border}`,borderRadius:14,padding:"20px",display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
+          <div style={{fontSize:36}}>{finalCert.unlocked?"🏆":"🔒"}</div>
+          <div style={{flex:1,minWidth:180}}>
+            <div style={{fontSize:14,fontWeight:700,color:finalCert.unlocked?T.gold:T.text,marginBottom:3}}>{finalCert.title}</div>
+            <div style={{fontSize:10,color:T.textFade,marginBottom:8}}>{finalCert.subtitle}</div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:T.textDim}}>Overall progress</span><span style={{fontSize:11,fontWeight:700,color:T.gold}}>{finalCert.pct}%</span></div>
+            <div style={{height:5,background:T.bgDeep,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${finalCert.pct}%`,background:"linear-gradient(90deg,#f7c96e88,#f7c96e)",borderRadius:4,transition:"width 0.6s"}}/></div>
+            {!finalCert.unlocked&&<div style={{fontSize:10,color:T.textFade,marginTop:5}}>Complete all 5 phases to unlock</div>}
+          </div>
+          <button onClick={()=>downloadCert(finalCert.title,finalCert.subtitle,finalCert.color,finalCert.unlocked)} disabled={!finalCert.unlocked||generating===finalCert.title} style={{background:finalCert.unlocked?T.gold+"20":"transparent",border:`1px solid ${finalCert.unlocked?T.gold+"55":T.border}`,color:finalCert.unlocked?T.gold:T.textFade,padding:"9px 16px",borderRadius:7,cursor:finalCert.unlocked?"pointer":"not-allowed",fontSize:11,fontWeight:600,whiteSpace:"nowrap"}}>
+            {generating===finalCert.title?"Generating...":finalCert.unlocked?"⬇ Download":"Locked"}
+          </button>
+        </div>
+      </div>
+
+      {/* Phase certs */}
+      <div style={{fontSize:10,color:T.textDim,letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:10}}>PHASE CERTIFICATES</div>
+      <div style={{display:"flex",flexDirection:"column",gap:9}}>
+        {phaseCerts.map((cert,i)=>(
+          <div key={i} style={{background:cert.unlocked?cert.color+"08":T.bgCard,border:`1px solid ${cert.unlocked?cert.color+"44":T.border}`,borderRadius:11,padding:"15px 18px",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+            <div style={{fontSize:22}}>{cert.unlocked?"🎓":"🔒"}</div>
+            <div style={{flex:1,minWidth:150}}>
+              <div style={{fontSize:13,fontWeight:600,color:cert.unlocked?cert.color:T.text,marginBottom:2}}>{cert.title}</div>
+              <div style={{fontSize:9,color:T.textFade,marginBottom:7}}>{cert.subtitle}</div>
+              <div style={{height:3,background:T.bgDeep,borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${cert.pct}%`,background:cert.color,borderRadius:3,transition:"width 0.5s"}}/></div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:13,fontWeight:700,color:cert.unlocked?cert.color:T.textFade}}>{cert.pct}%</span>
+              <button onClick={()=>downloadCert(cert.title,cert.subtitle,cert.color,cert.unlocked)} disabled={!cert.unlocked||generating===cert.title} style={{background:cert.unlocked?cert.color+"18":"transparent",border:`1px solid ${cert.unlocked?cert.color+"44":T.border}`,color:cert.unlocked?cert.color:T.textFade,padding:"6px 13px",borderRadius:6,cursor:cert.unlocked?"pointer":"not-allowed",fontSize:11,fontWeight:600,whiteSpace:"nowrap"}}>
+                {generating===cert.title?"...":cert.unlocked?"⬇ Download":"Locked"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+// ── DS TUTOR CHATBOT
+function DSTutorTab({userDoc}){
+  return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"calc(100vh - 60px)",padding:"40px 24px",textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:20}}>🤖</div>
+      <div style={{fontSize:9,color:T.p4,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:12}}>// ai tutor</div>
+      <div style={{fontSize:22,fontWeight:700,color:T.text,marginBottom:10,letterSpacing:"-0.02em"}}>AI Tutor</div>
+      <div style={{display:"inline-flex",alignItems:"center",gap:8,background:T.p3+"15",border:`1px solid ${T.p3}44`,borderRadius:100,padding:"6px 16px",marginBottom:24}}>
+        <div style={{width:6,height:6,background:T.p3,borderRadius:"50%",animation:"pulse 2s infinite"}}/>
+        <span style={{fontSize:11,color:T.p3,fontWeight:600,letterSpacing:"0.05em"}}>COMING SOON</span>
+      </div>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+      <div style={{maxWidth:420,background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:16,padding:"28px",marginBottom:24}}>
+        <div style={{fontSize:13,color:T.textDim,lineHeight:1.8,marginBottom:20}}>
+          Your personal data science tutor — powered by AI. Ask anything about Python, pandas, SQL, machine learning, statistics, or any concept you're stuck on.
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {["Explain what a p-value is","How does gradient descent work?","Fix my pandas code","What's overfitting?"].map((q,i)=>(
+            <div key={i} style={{background:T.bgDeep,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 14px",fontSize:12,color:T.textFade,textAlign:"left"}}>💬 {q}</div>
+          ))}
+        </div>
+      </div>
+      <div style={{fontSize:11,color:T.textFade,maxWidth:320,lineHeight:1.7}}>
+        We're working on it. Check back soon — it'll be worth the wait.
+      </div>
+    </div>
+  );
+}
+
 // ── STUDENT DASHBOARD
 function StudentDashboard({currentUser,userDoc}){
   const [tab,setTab]=useState("motivation");
+  const [sidebarOpen,setSidebarOpen]=useState(true);
+  const [progressSubTab,setProgressSubTab]=useState("paths");
   const [expandedSection,setExpandedSection]=useState(null);
   const [activePhase,setActivePhase]=useState(0);
   const [roadmap,setRoadmap]=useState(DEFAULT_ROADMAP);
@@ -1397,9 +1865,13 @@ function StudentDashboard({currentUser,userDoc}){
   const [projectSubmitted,setProjectSubmitted]=useState(userDoc.projectSubmissions||{});
   const [expandedProj,setExpandedProj]=useState(null);
   const [completedProjects,setCompletedProjects]=useState(userDoc.completedProjects||{});
+  const [readMsgIds,setReadMsgIds]=useState(()=>{try{return new Set(JSON.parse(localStorage.getItem("dsReadMsgs")||"[]"));}catch{return new Set();}});
 
+  const xpRef=React.useRef(xp);
+  useEffect(()=>{xpRef.current=xp;},[xp]);
   const awardXP=async(amount)=>{
-    const newXp=xp+amount;
+    const newXp=xpRef.current+amount;
+    xpRef.current=newXp;
     setXp(newXp);
     setXpToast(amount);
     await updateDoc(doc(db,"users",currentUser.uid),{xp:newXp});
@@ -1455,6 +1927,13 @@ function StudentDashboard({currentUser,userDoc}){
     return unsub;
   },[currentUser.uid]);
 
+  const unreadCount=messages.filter(m=>!readMsgIds.has(m.id)).length;
+  const markMessagesRead=()=>{
+    const allIds=messages.map(m=>m.id);
+    const newSet=new Set([...readMsgIds,...allIds]);
+    setReadMsgIds(newSet);
+    try{localStorage.setItem("dsReadMsgs",JSON.stringify([...newSet]));}catch{}
+  };
   const saveProgress=async(p)=>{setProgress(p);await updateDoc(doc(db,"users",currentUser.uid),{progress:p});};
 
   const isPhaseUnlocked=(idx)=>unlockedPhases.includes(idx);
@@ -1491,17 +1970,19 @@ function StudentDashboard({currentUser,userDoc}){
   const nextMilestone=milestones.find(m=>m>total.pct)||100;
 
   const tabs=[
-    {id:"motivation",label:"🏠 Home"},
-    {id:"roadmap",label:"📋 Roadmap"},
-    {id:"learn",label:"📚 Learn"},
-    {id:"projects",label:"🚀 Projects"},
-    {id:"leaderboard",label:"🏅 Leaderboard"},
-    {id:"messages",label:`💬 Messages${messages.length>0?` (${messages.length})`:""}`},
-    {id:"blog",label:"📝 Blog"},
+    {id:"motivation",  icon:"🏠", label:"Home"},
+    {id:"roadmap",     icon:"📋", label:"Roadmap"},
+    {id:"learn",       icon:"📚", label:"Learn"},
+    {id:"tutor",       icon:"🤖", label:"AI Tutor"},
+    {id:"projects",    icon:"🚀", label:"Projects"},
+    {id:"progress",    icon:"📈", label:"Progress"},
+    {id:"leaderboard", icon:"🏅", label:"Leaderboard"},
+    {id:"messages",    icon:"💬", label:`Messages${unreadCount>0?" ("+unreadCount+")":""}`},
+    {id:"blog",        icon:"📝", label:"Blog"},
   ];
 
   return(
-    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",flexDirection:"column"}}>
+    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",flexDirection:"row"}}>
 
       {/* XP TOAST */}
       {xpToast&&<XPToast amount={xpToast} onDone={()=>setXpToast(null)}/>}
@@ -1528,51 +2009,54 @@ function StudentDashboard({currentUser,userDoc}){
         </div>
       )}
 
-      {/* Header */}
-      <div style={{background:T.bgDeep,borderBottom:`1px solid ${T.border}`,padding:"14px 24px 0"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-          <div>
-            <div style={{fontSize:10,color:T.textFade,letterSpacing:"0.12em"}}>DATA SCIENCE LEARNING ROADMAP</div>
-            <div style={{fontSize:18,fontWeight:700}}>Zero → Competitive Candidate</div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <ProgressRing pct={total.pct} color={T.p1} size={48} stroke={4}/>
-            <div><div style={{fontSize:20,fontWeight:700,color:T.p1}}>{total.pct}%</div><div style={{fontSize:9,color:T.textFade}}>{total.done}/{total.total} tasks</div></div>
-            {/* XP BAR */}
-            <div style={{borderLeft:`1px solid ${T.border}`,paddingLeft:12,minWidth:120}}>
-              {(()=>{
-                const lvl=getLevel(xp);
-                const next=getNextLevel(xp);
-                const pct=next?Math.round(((xp-lvl.min)/(next.min-lvl.min))*100):100;
-                return(
-                  <>
-                    <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:4}}>
-                      <span style={{fontSize:12}}>{lvl.icon}</span>
-                      <span style={{fontSize:10,fontWeight:700,color:lvl.color}}>{lvl.label}</span>
-                    </div>
-                    <div style={{height:4,background:T.border,borderRadius:4,overflow:"hidden",marginBottom:3}}>
-                      <div style={{height:"100%",width:`${pct}%`,background:lvl.color,borderRadius:4,transition:"width 0.5s"}}/>
-                    </div>
-                    <div style={{fontSize:9,color:T.textFade}}>{xp.toLocaleString()} XP{next?` · ${next.min-xp} to next`:""}</div>
-                  </>
-                );
-              })()}
-            </div>
-            <div style={{borderLeft:`1px solid ${T.border}`,paddingLeft:12}}>
-              <div style={{fontSize:12,color:T.textDim,marginBottom:2}}>
-                👤 {userDoc.username}
-                {userDoc.role==="free"&&<span style={{fontSize:9,background:"#8b7cf620",color:"#8b7cf6",border:"1px solid #8b7cf633",borderRadius:4,padding:"1px 6px",marginLeft:6}}>FREE</span>}
-              </div>
-              {userDoc.role==="free"&&<button onClick={()=>setShowPaywall(true)} style={{fontSize:10,color:"#8b7cf6",background:"none",border:"none",cursor:"pointer",padding:0,display:"block",marginBottom:2}}>Upgrade →</button>}
-              <button onClick={()=>signOut(auth)} style={{fontSize:10,color:T.textFade,background:"none",border:"none",cursor:"pointer",display:"block"}}>Logout</button>
-            </div>
-          </div>
+      {/* SIDEBAR */}
+      <div style={{width:sidebarOpen?220:60,flexShrink:0,background:T.bgDeep,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,transition:"width 0.25s",overflow:"hidden",zIndex:50}}>
+        <div style={{padding:"16px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+          {sidebarOpen&&<div style={{display:"flex",alignItems:"center",gap:7,overflow:"hidden"}}><div style={{width:7,height:7,background:"#8b7cf6",borderRadius:"50%",flexShrink:0,boxShadow:"0 0 8px #8b7cf6"}}/><span style={{fontSize:13,fontWeight:800,color:T.text,whiteSpace:"nowrap",letterSpacing:"-0.02em"}}>DS Academy</span></div>}
+          <button onClick={()=>setSidebarOpen(o=>!o)} style={{background:"none",border:`1px solid ${T.border}`,color:T.textFade,borderRadius:6,padding:"4px 7px",cursor:"pointer",fontSize:12,flexShrink:0,lineHeight:1}}>{sidebarOpen?"←":"→"}</button>
         </div>
-        <div style={{display:"flex",gap:4,overflowX:"auto"}}>
-          {tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"8px 14px",background:"none",border:"none",borderBottom:`2px solid ${tab===t.id?T.p1:"transparent"}`,color:tab===t.id?T.p1:T.textDim,cursor:"pointer",fontSize:12,fontWeight:tab===t.id?600:400,whiteSpace:"nowrap"}}>{t.label}</button>)}
+        <div style={{flex:1,padding:"10px 8px",overflowY:"auto"}}>
+          {tabs.map(t=>{
+            const active=tab===t.id;
+            const badge=t.id==="messages"&&unreadCount>0?unreadCount:0;
+            return(
+              <button key={t.id} onClick={()=>{setTab(t.id);if(t.id==="messages")markMessagesRead();}} title={!sidebarOpen?t.label:""} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:sidebarOpen?"9px 12px":"9px",borderRadius:8,border:"none",background:active?T.p1+"18":"transparent",color:active?T.p1:T.textDim,cursor:"pointer",marginBottom:2,textAlign:"left",transition:"background 0.15s,color 0.15s",position:"relative"}}
+                onMouseEnter={e=>{if(!active){e.currentTarget.style.background=T.border;e.currentTarget.style.color=T.text;}}}
+                onMouseLeave={e=>{if(!active){e.currentTarget.style.background="transparent";e.currentTarget.style.color=T.textDim;}}}>
+                <span style={{fontSize:16,flexShrink:0,lineHeight:1}}>{t.icon}</span>
+                {sidebarOpen&&<span style={{fontSize:13,fontWeight:active?600:400,whiteSpace:"nowrap",flex:1}}>{t.label}</span>}
+                {badge>0&&<span style={{position:"absolute",top:6,right:sidebarOpen?10:4,background:T.warn,color:"#fff",borderRadius:10,fontSize:9,padding:"1px 5px",fontWeight:700,minWidth:14,textAlign:"center"}}>{badge}</span>}
+                {active&&<div style={{position:"absolute",left:0,top:"20%",bottom:"20%",width:3,background:T.p1,borderRadius:"0 2px 2px 0"}}/>}
+              </button>
+            );
+          })}
+        </div>
+        <div style={{borderTop:`1px solid ${T.border}`,padding:"12px 8px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px",marginBottom:6}}>
+            <ProgressRing pct={total.pct} color={T.p1} size={32} stroke={3}/>
+            {sidebarOpen&&<div><div style={{fontSize:11,fontWeight:700,color:T.p1}}>{total.pct}%</div><div style={{fontSize:9,color:T.textFade}}>{total.done}/{total.total} tasks</div></div>}
+          </div>
+          {sidebarOpen&&(()=>{
+            const lvl=getLevel(xp);const next=getNextLevel(xp);
+            const pct=next?Math.round(((xp-lvl.min)/(next.min-lvl.min))*100):100;
+            return(<div style={{padding:"0 4px",marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:lvl.color,fontWeight:600}}>{lvl.icon} {lvl.label}</span><span style={{fontSize:9,color:T.textFade}}>{xp.toLocaleString()} XP</span></div>
+              <div style={{height:3,background:T.border,borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:lvl.color,borderRadius:3,transition:"width 0.5s"}}/></div>
+              {next&&<div style={{fontSize:9,color:T.textFade,marginTop:3}}>{next.min-xp} XP to {next.label}</div>}
+            </div>);
+          })()}
+          <div style={{padding:"0 4px"}}>
+            {sidebarOpen&&<div style={{fontSize:11,color:T.textDim,marginBottom:6,display:"flex",alignItems:"center",gap:6}}><span>👤</span><span style={{fontWeight:600,color:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{userDoc.username}</span>{userDoc.role==="free"&&<span style={{fontSize:8,background:"#8b7cf620",color:"#8b7cf6",border:"1px solid #8b7cf633",borderRadius:3,padding:"1px 5px",flexShrink:0}}>FREE</span>}</div>}
+            {userDoc.role==="free"&&sidebarOpen&&<button onClick={()=>setShowPaywall(true)} style={{fontSize:10,color:"#8b7cf6",background:"none",border:"none",cursor:"pointer",padding:0,display:"block",marginBottom:4}}>Upgrade →</button>}
+            <button onClick={()=>signOut(auth)} style={{fontSize:10,color:T.textFade,background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:5,padding:"4px 0"}}>
+              <span style={{fontSize:13}}>⎋</span>{sidebarOpen&&<span>Logout</span>}
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* MAIN CONTENT */}
+      <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",height:"100vh",overflowY:"auto"}}>
       <div style={{flex:1}}>
         {/* LEARN TAB */}
         {tab==="learn"&&(()=>{
@@ -1588,6 +2072,41 @@ function StudentDashboard({currentUser,userDoc}){
         {/* HOME */}
         {tab==="motivation"&&(
           <div style={{padding:"24px",maxWidth:700,margin:"0 auto"}}>
+            {/* XP LEVEL CARD — TOP */}
+            {(()=>{
+              const lvl=getLevel(xp);const next=getNextLevel(xp);
+              const pct=next?Math.round(((xp-lvl.min)/(next.min-lvl.min))*100):100;
+              return(
+                <div style={{background:T.bgCard,border:`1px solid ${lvl.color}44`,borderRadius:14,padding:"18px 20px",marginBottom:20}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:28}}>{lvl.icon}</span>
+                      <div>
+                        <div style={{fontSize:9,color:lvl.color,letterSpacing:"0.15em",fontWeight:700}}>⚡ YOUR LEVEL</div>
+                        <div style={{fontSize:18,fontWeight:700,color:lvl.color}}>{lvl.label}</div>
+                      </div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:22,fontWeight:700,color:lvl.color}}>{xp.toLocaleString()}</div>
+                      <div style={{fontSize:9,color:T.textFade}}>total XP</div>
+                    </div>
+                  </div>
+                  <div style={{height:6,background:T.bgDeep,borderRadius:4,overflow:"hidden",marginBottom:6}}>
+                    <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${lvl.color}88,${lvl.color})`,borderRadius:4,transition:"width 0.6s"}}/>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:T.textFade,marginBottom:10}}>
+                    <span>{lvl.label} · {(xp-lvl.min).toLocaleString()} XP earned</span>
+                    {next?<span>{(next.min-xp).toLocaleString()} XP to {next.icon} {next.label}</span>:<span style={{color:lvl.color}}>Max Level! 🎉</span>}
+                  </div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>⚡ Task = 10 XP</span>
+                    <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>📚 Lesson = 25 XP</span>
+                    <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>📝 Check-in = 50 XP</span>
+                    <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>🚀 Project = 100 XP</span>
+                  </div>
+                </div>
+              );
+            })()}
             <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,padding:"24px",marginBottom:20}}>
               <div style={{fontSize:9,color:T.gold,letterSpacing:"0.15em",fontWeight:700,marginBottom:12}}>✦ DAILY MOTIVATION</div>
               <div style={{fontSize:16,color:T.text,fontStyle:"italic",marginBottom:8}}>"{todayQuote.text}"</div>
@@ -1622,43 +2141,7 @@ function StudentDashboard({currentUser,userDoc}){
                 );})}
               </div>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
-              {/* XP LEVEL CARD */}
-              {(()=>{
-                const lvl=getLevel(xp);
-                const next=getNextLevel(xp);
-                const pct=next?Math.round(((xp-lvl.min)/(next.min-lvl.min))*100):100;
-                return(
-                  <div style={{gridColumn:"1 / -1",background:T.bgCard,border:`1px solid ${lvl.color}44`,borderRadius:14,padding:"18px 20px"}}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                      <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <span style={{fontSize:28}}>{lvl.icon}</span>
-                        <div>
-                          <div style={{fontSize:9,color:lvl.color,letterSpacing:"0.15em",fontWeight:700}}>⚡ YOUR LEVEL</div>
-                          <div style={{fontSize:18,fontWeight:700,color:lvl.color}}>{lvl.label}</div>
-                        </div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:22,fontWeight:700,color:lvl.color}}>{xp.toLocaleString()}</div>
-                        <div style={{fontSize:9,color:T.textFade}}>total XP</div>
-                      </div>
-                    </div>
-                    <div style={{height:6,background:T.bgDeep,borderRadius:4,overflow:"hidden",marginBottom:6}}>
-                      <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${lvl.color}88,${lvl.color})`,borderRadius:4,transition:"width 0.6s"}}/>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:T.textFade,marginBottom:12}}>
-                      <span>{lvl.label} · {(xp-lvl.min).toLocaleString()} XP earned</span>
-                      {next?<span>{(next.min-xp).toLocaleString()} XP to {next.icon} {next.label}</span>:<span style={{color:lvl.color}}>Max Level! 🎉</span>}
-                    </div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>⚡ Task = 10 XP</span>
-                      <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>📚 Lesson = 25 XP</span>
-                      <span style={{fontSize:9,color:T.textFade,padding:"3px 9px",borderRadius:4,background:T.bgDeep,border:`1px solid ${T.border}`}}>📝 Check-in = 50 XP</span>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
+
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
               <div style={{background:T.bgCard,border:`1px solid ${streak>=7?T.gold+"88":T.border}`,borderRadius:14,padding:"18px 20px"}}>
                 <div style={{fontSize:9,color:T.gold,letterSpacing:"0.15em",fontWeight:700,marginBottom:10}}>🔥 DAILY STREAK</div>
@@ -1885,7 +2368,13 @@ function StudentDashboard({currentUser,userDoc}){
             const updated={...completedProjects,[projId]:!already};
             setCompletedProjects(updated);
             await updateDoc(doc(db,"users",currentUser.uid),{completedProjects:updated});
-            if(!already) awardXP(100);
+            if(!already){
+              awardXP(100);
+            }else{
+              const newXp=Math.max(0,xpRef.current-100);
+              xpRef.current=newXp;setXp(newXp);
+              await updateDoc(doc(db,"users",currentUser.uid),{xp:newXp});
+            }
           };
 
           const phaseNames=["Foundations","Core ML","Modern Skills","Portfolio & Jobs"];
@@ -2059,6 +2548,45 @@ function StudentDashboard({currentUser,userDoc}){
         {/* BLOG */}
         {tab==="blog"&&<StudentBlogTab/>}
 
+        {/* AI TUTOR */}
+        {tab==="tutor"&&<DSTutorTab userDoc={userDoc}/>}
+
+        {/* PROGRESS HUB */}
+        {tab==="progress"&&(
+          <div style={{padding:"24px",maxWidth:860,margin:"0 auto",width:"100%"}}>
+            <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:6}}>// progress hub</div>
+            <div style={{fontSize:18,fontWeight:700,marginBottom:16}}>Progress Hub</div>
+            <div style={{display:"flex",gap:0,background:T.bgDeep,borderRadius:10,padding:4,marginBottom:24,flexWrap:"wrap"}}>
+              {[{id:"paths",label:"🗺 Career Paths"},{id:"quiz",label:"❓ Quizzes"},{id:"certs",label:"🎓 Certificates"},{id:"checkin",label:"📝 Check-in"},{id:"inbox",label:`💬 Inbox${unreadCount>0?" ("+unreadCount+")":""}`}].map(t=>(
+                <button key={t.id} onClick={()=>{setProgressSubTab(t.id);if(t.id==="inbox")markMessagesRead();}} style={{padding:"8px 16px",borderRadius:7,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,background:progressSubTab===t.id?T.bgCard:"transparent",color:progressSubTab===t.id?T.text:T.textDim,transition:"all 0.15s"}}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            {progressSubTab==="paths"&&<PathsTab roadmap={roadmap} progress={progress} onSignup={()=>{}}/>}
+            {progressSubTab==="quiz"&&<QuizTab roadmap={roadmap} progress={progress}/>}
+            {progressSubTab==="certs"&&<CertificateTab userDoc={userDoc} roadmap={roadmap} progress={progress} xp={xp}/>}
+            {progressSubTab==="checkin"&&(
+              <div style={{maxWidth:600}}>
+                <div style={{background:T.bgCard,border:`1px solid ${thisWeekCheckin?T.good+"55":T.border}`,borderRadius:14,padding:"20px",marginBottom:16}}>
+                  <div style={{fontSize:12,fontWeight:700,color:T.good,marginBottom:12}}>📝 Weekly Check-in</div>
+                  {thisWeekCheckin?(<div><div style={{fontSize:11,color:T.good,marginBottom:8}}>✅ Done this week!</div><div style={{fontSize:10,color:T.textDim,lineHeight:1.6,fontStyle:"italic"}}>"{thisWeekCheckin.learned.slice(0,120)}{thisWeekCheckin.learned.length>120?"...":""}"</div></div>):(<div><div style={{fontSize:12,color:T.textDim,marginBottom:14,lineHeight:1.6}}>Reflect on your week. Each check-in earns <span style={{color:T.good,fontWeight:700}}>+50 XP</span>.</div><button onClick={()=>setShowCheckin(true)} style={{background:T.good+"18",border:`1px solid ${T.good}55`,color:T.good,padding:"9px 20px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>+ Check In Now</button></div>)}
+                </div>
+                {checkins.length>0&&(<div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,padding:"18px 20px"}}><div style={{fontSize:11,fontWeight:600,marginBottom:14}}>📋 Past Check-ins</div>{checkins.slice(0,5).map((c,i)=>(<div key={i} style={{padding:"12px",background:T.bgDeep,borderRadius:10,marginBottom:8}}><div style={{fontSize:9,color:T.textFade,marginBottom:6}}>Week {c.week} — {new Date(c.date).toLocaleDateString()}</div><div style={{fontSize:11,color:T.good,marginBottom:4}}>✅ {c.learned}</div>{c.difficult&&<div style={{fontSize:11,color:T.warn,marginBottom:4}}>⚠ {c.difficult}</div>}{c.goal&&<div style={{fontSize:11,color:T.info}}>🎯 {c.goal}</div>}</div>))}</div>)}
+              </div>
+            )}
+            {progressSubTab==="inbox"&&(
+              <div style={{maxWidth:600}}>
+                <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,overflow:"hidden"}}>
+                  <div style={{padding:"16px 20px",borderBottom:`1px solid ${T.border}`}}><div style={{fontSize:14,fontWeight:700}}>💬 Messages from your Instructor</div></div>
+                  {messages.length===0&&<div style={{padding:"24px",color:T.textFade,fontSize:12}}>No messages yet.</div>}
+                  {messages.map(m=>{const isUnread=!readMsgIds.has(m.id);return(<div key={m.id} style={{padding:"14px 20px",borderBottom:`1px solid ${T.border}`,background:isUnread?T.p4+"08":"transparent"}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6,alignItems:"center"}}><div style={{display:"flex",gap:7,alignItems:"center"}}><span style={{fontSize:10,color:T.p4,background:T.p4+"15",padding:"2px 8px",borderRadius:4}}>{m.to==="all"?"📢 To everyone":"📨 To you"}</span>{isUnread&&<span style={{fontSize:9,color:T.p4,background:T.p4+"25",padding:"1px 6px",borderRadius:4,fontWeight:700}}>NEW</span>}</div><span style={{fontSize:10,color:T.textFade}}>{new Date(m.time).toLocaleString()}</span></div><div style={{fontSize:12,color:T.text,lineHeight:1.7}}>{m.text}</div></div>);})}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* MESSAGES */}
         {tab==="messages"&&(
           <div style={{padding:"24px"}}>
@@ -2074,6 +2602,7 @@ function StudentDashboard({currentUser,userDoc}){
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
