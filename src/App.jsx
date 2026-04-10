@@ -139,12 +139,12 @@ function AIJobCalculator(){
   };
 
   return(
-    <div style={{padding:"80px 20px",background:"#0b0a12"}}>
+    <div style={{padding:"50px 20px",background:"#0b0a12"}}>
       <div style={{maxWidth:700,margin:"0 auto"}}>
         <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// career risk scanner</div>
-        <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Will AI replace your job?</h2>
-        <p style={{color:"#7b78a0",fontSize:15,marginBottom:40,maxWidth:520}}>Enter your current job title and find out your AI replacement risk — and exactly what data skills would make you safe.</p>
-        <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:16,padding:"32px"}}>
+        <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:10}}>Will AI replace your job?</h2>
+        <p style={{color:"#7b78a0",fontSize:15,marginBottom:20,maxWidth:520}}>Enter your current job title and find out your AI replacement risk — and exactly what data skills would make you safe.</p>
+        <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:16,padding:"24px"}}>
           {!result&&!calculating&&(
             <div>
               <div style={{display:"flex",gap:10,marginBottom:12,flexWrap:"wrap"}}>
@@ -283,6 +283,211 @@ function Btn({onClick,children,color=T.info,style={}}){
 }
 
 // ── LANDING PAGE (shown to logged-out visitors)
+// ── TESTIMONIALS CAROUSEL
+const TESTIMONIALS = [
+  {name:"Yasmine",role:"University Student",source:"whatsapp",color:"#6dd6a0",avatar:"Y",text:"I had no idea about my major, even after three years at university. YouTube and ChatGPT didn't help — the ideas felt tangled and unclear. Then I found this site: organized, structured, teaching us projects the university never did. It completely transforms us — from someone who doesn't know what data science means to someone ready to compete in the job market."},
+  {name:"Anastasia Al Rassi",role:"Machine Learning Engineer",source:"linkedin",color:"#7eb8f7",avatar:"A",text:"I found your Roadmap so impactful 😍 Fully recommend 💪"},
+  {name:"Rebecca Rayess",role:"Junior Data Analyst, Suyool SAL",source:"linkedin",color:"#a78bfa",avatar:"R",text:"This roadmap is really impressive and exactly what our current market needs! Well done! 👏"},
+  {name:"Ahmad Sayour",role:"Student at Arab Open University",source:"linkedin",color:"#f7c96e",avatar:"A",text:"Your effort now will turn into success soon 🔥"},
+  {name:"Joanna Ahmad",role:"Financial Accountant",source:"whatsapp",color:"#f472b6",avatar:"J",text:"As a financial accountant, I never thought data science was for me. This platform changed that — it gave me real skills that directly apply to my work and open doors I didn't know existed."},
+];
+
+function TestimonialsCarousel(){
+  const [idx,setIdx]=useState(0);
+  const [anim,setAnim]=useState("in");
+  const t=TESTIMONIALS[idx];
+
+  const go=(dir)=>{
+    setAnim("out");
+    setTimeout(()=>{
+      setIdx(i=>(i+dir+TESTIMONIALS.length)%TESTIMONIALS.length);
+      setAnim("in");
+    },200);
+  };
+
+  // Auto-advance every 5s
+  useEffect(()=>{
+    const timer=setInterval(()=>go(1),5000);
+    return()=>clearInterval(timer);
+  },[idx]);
+
+  return(
+    <div style={{padding:"50px 20px",background:"#0d0c18"}}>
+      <style>{`
+        @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes slideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-30px)}}
+        .t-in{animation:slideIn 0.25s ease forwards;}
+        .t-out{animation:slideOut 0.2s ease forwards;}
+      `}</style>
+      <div style={{maxWidth:720,margin:"0 auto"}}>
+        <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// student voices</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:28,flexWrap:"wrap",gap:12}}>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,4vw,34px)",letterSpacing:"-0.02em",margin:0}}>Real people. Real feedback.</h2>
+          <div style={{display:"flex",gap:6}}>
+            <span style={{fontSize:11,background:"#7eb8f720",color:"#7eb8f7",padding:"3px 10px",borderRadius:100,fontFamily:"monospace"}}>LinkedIn</span>
+            <span style={{fontSize:11,background:"#25D36620",color:"#25D366",padding:"3px 10px",borderRadius:100,fontFamily:"monospace"}}>WhatsApp</span>
+          </div>
+        </div>
+
+        {/* Card */}
+        <div className={anim==="in"?"t-in":"t-out"} style={{background:"#11101c",border:`2px solid ${t.color}33`,borderRadius:16,padding:"32px",position:"relative",minHeight:200}}>
+          {/* Source badge */}
+          <div style={{position:"absolute",top:16,right:16,fontSize:10,padding:"3px 10px",borderRadius:100,background:t.source==="linkedin"?"#7eb8f720":"#25D36620",color:t.source==="linkedin"?"#7eb8f7":"#25D366",fontFamily:"monospace",fontWeight:700}}>
+            {t.source==="linkedin"?"LinkedIn":"WhatsApp"}
+          </div>
+          {/* Quote mark */}
+          <div style={{fontSize:48,color:t.color,opacity:0.15,lineHeight:1,marginBottom:8,fontFamily:"Georgia,serif"}}>"</div>
+          <div style={{fontSize:15,color:"#d8d4f0",lineHeight:1.8,marginBottom:24,fontStyle:"italic"}}>
+            {t.text}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:14,borderTop:"1px solid #1e1c35",paddingTop:18}}>
+            <div style={{width:42,height:42,borderRadius:"50%",background:`linear-gradient(135deg,${t.color}44,${t.color}11)`,border:`2px solid ${t.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:t.color,flexShrink:0}}>
+              {t.avatar}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:700,color:"#e8e4ff"}}>{t.name}</div>
+              <div style={{fontSize:11,color:"#4a4665",marginTop:2}}>{t.role}</div>
+            </div>
+            <div style={{display:"flex",gap:1}}>
+              {[1,2,3,4,5].map(s=><span key={s} style={{fontSize:13,color:"#f7c96e"}}>★</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:20}}>
+          {/* Dots */}
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            {TESTIMONIALS.map((_,i)=>(
+              <button key={i} onClick={()=>{setAnim("out");setTimeout(()=>{setIdx(i);setAnim("in");},200);}} style={{width:i===idx?24:8,height:8,borderRadius:100,background:i===idx?t.color:"#2a2845",border:"none",cursor:"pointer",transition:"all 0.3s",padding:0}}/>
+            ))}
+          </div>
+          {/* Arrows */}
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>go(-1)} style={{width:40,height:40,borderRadius:"50%",background:"#17162a",border:"1px solid #2a2845",color:"#7b78a0",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=t.color;e.currentTarget.style.color=t.color;}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="#2a2845";e.currentTarget.style.color="#7b78a0";}}>
+              ←
+            </button>
+            <button onClick={()=>go(1)} style={{width:40,height:40,borderRadius:"50%",background:"#17162a",border:"1px solid #2a2845",color:"#7b78a0",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=t.color;e.currentTarget.style.color=t.color;}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="#2a2845";e.currentTarget.style.color="#7b78a0";}}>
+              →
+            </button>
+          </div>
+        </div>
+        <div style={{marginTop:12,fontSize:11,color:"#3a3860",textAlign:"center"}}>
+          {idx+1} of {TESTIMONIALS.length} — unsolicited feedback from real users
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── FAQ ITEM
+// ── WHATSAPP FLOAT
+function WhatsAppFloat(){
+  const [pulse,setPulse]=useState(true);
+  useEffect(()=>{
+    const t=setTimeout(()=>setPulse(false),3000);
+    return()=>clearTimeout(t);
+  },[]);
+  return(
+    <a
+      href="https://wa.me/96170895652?text=Hi%20Radwan!%20I%20found%20DS%20Academy%20and%20I%20have%20a%20question."
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        position:"fixed",right:20,bottom:80,zIndex:200,
+        width:54,height:54,borderRadius:"50%",
+        background:"#25D366",
+        display:"flex",alignItems:"center",justifyContent:"center",
+        boxShadow:"0 4px 20px rgba(37,211,102,0.4)",
+        textDecoration:"none",
+        transition:"transform 0.2s, box-shadow 0.2s",
+      }}
+      onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.1)";e.currentTarget.style.boxShadow="0 6px 28px rgba(37,211,102,0.6)";}}
+      onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow="0 4px 20px rgba(37,211,102,0.4)";}}
+    >
+      <style>{`
+        @keyframes waPulse {
+          0%{box-shadow:0 0 0 0 rgba(37,211,102,0.5)}
+          70%{box-shadow:0 0 0 14px rgba(37,211,102,0)}
+          100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}
+        }
+        .wa-pulse { animation: waPulse 1.5s ease-out 3; }
+        .wa-tooltip { opacity:0; pointer-events:none; transition: opacity 0.2s; }
+        .wa-btn:hover .wa-tooltip { opacity:1; }
+      `}</style>
+      <div className={`wa-btn ${pulse?"wa-pulse":""}`} style={{position:"relative",width:"100%",height:"100%",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.121 1.533 5.851L.057 23.714a.5.5 0 00.63.63l5.862-1.476A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.876 9.876 0 01-5.031-1.375l-.36-.214-3.733.979.997-3.642-.235-.374A9.862 9.862 0 012.106 12C2.106 6.58 6.58 2.106 12 2.106c5.421 0 9.894 4.474 9.894 9.894 0 5.421-4.473 9.894-9.894 9.894z"/>
+        </svg>
+        {/* Tooltip */}
+        <div className="wa-tooltip" style={{position:"absolute",right:64,top:"50%",transform:"translateY(-50%)",background:"#11101c",border:"1px solid #2a2845",borderRadius:8,padding:"8px 12px",whiteSpace:"nowrap",fontSize:12,color:"#e8e4ff"}}>
+          Ask Radwan anything 💬
+          <div style={{position:"absolute",right:-5,top:"50%",transform:"translateY(-50%)",width:8,height:8,background:"#11101c",border:"1px solid #2a2845",borderRight:"none",borderBottom:"none",rotate:"135deg"}}/>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function FAQItem({q,a}){
+  const [open,setOpen]=useState(false);
+  return(
+    <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:10,overflow:"hidden"}}>
+      <button onClick={()=>setOpen(!open)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px",background:"none",border:"none",cursor:"pointer",textAlign:"left",gap:12}}>
+        <span style={{fontSize:14,fontWeight:600,color:"#e8e4ff",lineHeight:1.4}}>{q}</span>
+        <span style={{fontSize:18,color:"#8b7cf6",flexShrink:0,transition:"transform 0.2s",transform:open?"rotate(45deg)":"rotate(0deg)"}}>+</span>
+      </button>
+      {open&&<div style={{padding:"0 20px 16px",fontSize:13,color:"#7b78a0",lineHeight:1.7,borderTop:"1px solid #1e1c35",paddingTop:14}}>{a}</div>}
+    </div>
+  );
+}
+
+// ── SCROLL PROGRESS BAR
+function ScrollProgress(){
+  const [pct,setPct]=useState(0);
+  useEffect(()=>{
+    const onScroll=()=>{
+      const el=document.documentElement;
+      const scrolled=el.scrollTop||document.body.scrollTop;
+      const total=el.scrollHeight-el.clientHeight;
+      setPct(total>0?Math.min(100,(scrolled/total)*100):0);
+    };
+    window.addEventListener("scroll",onScroll,{passive:true});
+    return()=>window.removeEventListener("scroll",onScroll);
+  },[]);
+  return(
+    <div style={{position:"fixed",top:0,left:0,right:0,zIndex:200,height:3,background:"transparent",pointerEvents:"none"}}>
+      <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#8b7cf6,#f472b6,#6ee7b7)",transition:"width 0.1s linear",borderRadius:"0 2px 2px 0"}}/>
+    </div>
+  );
+}
+
+// ── STICKY BAR
+function StickyBar({onSignup}){
+  const [visible,setVisible]=useState(false);
+  useEffect(()=>{
+    const onScroll=()=>setVisible(window.scrollY>400);
+    window.addEventListener("scroll",onScroll);
+    return()=>window.removeEventListener("scroll",onScroll);
+  },[]);
+  if(!visible)return null;
+  return(
+    <div className="sticky-bar" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(17,16,28,0.97)",backdropFilter:"blur(20px)",borderTop:"1px solid #2a2845",padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+      <div style={{fontSize:13,color:"#7b78a0"}}>
+        <span style={{color:"#e8e4ff",fontWeight:600}}>DS Academy</span> — Free access to the Python phase. No card needed.
+      </div>
+      <button onClick={onSignup} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"10px 24px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
+        Start Free →
+      </button>
+    </div>
+  );
+}
+
 function LoginPage(){
   const [showLogin,setShowLogin]=useState(false);
   const [showBlog,setShowBlog]=useState(false);
@@ -356,11 +561,11 @@ function LoginPage(){
   const inp={background:"#0f0e1a",border:"1px solid #2a2845",borderRadius:8,padding:"10px 14px",color:"#e8e4ff",fontSize:13,width:"100%",outline:"none",boxSizing:"border-box"};
 
   const phases=[
-    {num:"01",icon:"🐍",title:"Python & Data Tools",desc:"NumPy, Pandas, SQL, Statistics, EDA",color:"#7eb8f7",time:"Months 1–2"},
-    {num:"02",icon:"🤖",title:"Machine Learning",desc:"Linear models, Random Forests, sklearn",color:"#a78bfa",time:"Months 2–4"},
-    {num:"03",icon:"📊",title:"Advanced ML",desc:"XGBoost, feature engineering, SHAP",color:"#6dd6a0",time:"Months 3–7"},
-    {num:"04",icon:"🧠",title:"Deep Learning & LLMs",desc:"Neural nets, NLP, transformers, RAG",color:"#f7c96e",time:"Months 7–12"},
-    {num:"05",icon:"🚀",title:"Portfolio & Jobs",desc:"Projects, interview prep, networking",color:"#c792ea",time:"Months 12–18"},
+    {num:"01",icon:"🐍",title:"Python & Data Tools",desc:"NumPy, Pandas, SQL, Statistics, EDA",color:"#7eb8f7",time:"Months 1–2",lessons:["Python Core","NumPy & Arrays","Pandas","SQL","Statistics","EDA"]},
+    {num:"02",icon:"🤖",title:"Machine Learning",desc:"Linear models, Random Forests, sklearn",color:"#a78bfa",time:"Months 2–4",lessons:["Linear Regression","Logistic Regression","Decision Trees","Random Forests","Cross-Validation"]},
+    {num:"03",icon:"📊",title:"Advanced ML",desc:"XGBoost, feature engineering, SHAP",color:"#6dd6a0",time:"Months 3–7",lessons:["XGBoost","Feature Engineering","SHAP","ML Pipelines","Hyperparameter Tuning"]},
+    {num:"04",icon:"🧠",title:"Deep Learning & LLMs",desc:"Neural nets, NLP, transformers, RAG",color:"#f7c96e",time:"Months 7–12",lessons:["Neural Networks","PyTorch","NLP","Transformers","RAG & LLMs"]},
+    {num:"05",icon:"🚀",title:"Portfolio & Jobs",desc:"Projects, interview prep, networking",color:"#c792ea",time:"Months 12–18",lessons:["Portfolio Projects","Streamlit Apps","GitHub Profile","Interview Prep","Networking"]},
   ];
 
   const features=[
@@ -378,6 +583,28 @@ function LoginPage(){
       {showBlog&&<PublicBlogPage onBack={()=>setShowBlog(false)}/>}
       {showCourses&&<CoursesPage onBack={()=>setShowCourses(false)} onSignup={()=>{setShowCourses(false);openModal("signup");}}/>}
       {!showBlog&&!showCourses&&<>
+
+      {/* STICKY CTA BAR */}
+      <style>{`
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+        .sticky-bar { animation: fadeDown 0.3s ease; }
+        @media(max-width:600px){
+          .phase-grid { grid-template-columns: 1fr 1fr !important; }
+          .hero-btns { flex-direction: column !important; align-items: stretch !important; }
+          .hero-btns a, .hero-btns button { text-align: center !important; justify-content: center !important; }
+          .jobs-grid { grid-template-columns: 1fr !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .projects-grid { grid-template-columns: 1fr !important; }
+          .paths-grid { grid-template-columns: 1fr !important; }
+          .pricing-grid { grid-template-columns: 1fr !important; }
+          .testimonials-grid { grid-template-columns: 1fr !important; }
+          .faq-grid { grid-template-columns: 1fr !important; }
+          .stat-box { flex: 1 1 60px !important; }
+        }
+      `}</style>
+      <ScrollProgress />
+      <StickyBar onSignup={()=>openModal("signup")} />
+      <WhatsAppFloat />
 
       {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 20px",background:"rgba(11,10,18,0.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid #1e1c35",flexWrap:"wrap",gap:8}}>
@@ -456,7 +683,7 @@ function LoginPage(){
       )}
 
       {/* HERO */}
-      <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"120px 20px 80px",position:"relative",overflow:"hidden"}}>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",padding:"100px 20px 50px",position:"relative",overflow:"hidden"}}>
         {/* grid bg */}
         <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(#1e1c35 1px, transparent 1px),linear-gradient(90deg, #1e1c35 1px, transparent 1px)",backgroundSize:"50px 50px",WebkitMaskImage:"radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 100%)",maskImage:"radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 100%)",opacity:0.4}}/>
         {/* glow */}
@@ -464,22 +691,29 @@ function LoginPage(){
         <div style={{position:"absolute",width:400,height:400,background:"rgba(110,231,183,0.06)",borderRadius:"50%",filter:"blur(80px)",bottom:-50,right:-50,zIndex:0}}/>
 
         <div style={{position:"relative",zIndex:1,maxWidth:720}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#17162a",border:"1px solid #2a2845",borderRadius:100,padding:"5px 14px",fontSize:11,color:"#8b7cf6",letterSpacing:"0.08em",marginBottom:28,fontFamily:"monospace"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#17162a",border:"1px solid #2a2845",borderRadius:100,padding:"5px 14px",fontSize:11,color:"#8b7cf6",letterSpacing:"0.08em",marginBottom:16,fontFamily:"monospace"}}>
             <div style={{width:5,height:5,background:"#6ee7b7",borderRadius:"50%",boxShadow:"0 0 6px #6ee7b7"}}/>
             STRUCTURED · PRACTICAL · JOB-FOCUSED
           </div>
 
-          <h1 style={{fontWeight:800,fontSize:"clamp(36px, 7vw, 68px)",lineHeight:1.05,letterSpacing:"-0.03em",marginBottom:20}}>
-            From Zero<br/>
+          <h1 style={{fontWeight:800,fontSize:"clamp(32px, 6vw, 58px)",lineHeight:1.05,letterSpacing:"-0.03em",marginBottom:14}}>
+            Stop watching tutorials.<br/>
             <span style={{background:"linear-gradient(135deg, #8b7cf6, #f472b6, #6ee7b7)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
-              to Data Scientist
+              Start building.
             </span>
           </h1>
 
-          <p style={{fontSize:16,color:"#7b78a0",maxWidth:500,margin:"0 auto 12px",lineHeight:1.7}}>
-            A structured, hands-on platform that takes you from <strong style={{color:"#e8e4ff"}}>complete beginner</strong> to job-ready — starting with Python from scratch. No prior coding experience needed.
+          <p style={{fontSize:15,color:"#7b78a0",maxWidth:480,margin:"0 auto 10px",lineHeight:1.6}}>
+            The structured path from zero to job-ready — built for the MENA region. No fluff, no passive videos, no guessing.
           </p>
-          <div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap",margin:"0 auto 36px",maxWidth:520}}>
+
+          {/* FOUNDER ATTRIBUTION */}
+          <div style={{display:"inline-flex",alignItems:"center",gap:10,background:"#17162a",border:"1px solid #2a2845",borderRadius:100,padding:"6px 16px",marginBottom:16}}>
+            <img src="/radwan.jpg" alt="Radwan" style={{width:28,height:28,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",flexShrink:0,border:"2px solid #8b7cf633"}}/>
+            <div style={{fontSize:12,color:"#7b78a0",fontStyle:"italic"}}>"Built by someone who lived the tutorial hell struggle"</div>
+            <div style={{fontSize:11,color:"#8b7cf6",fontFamily:"monospace",whiteSpace:"nowrap"}}>— Radwan, Founder</div>
+          </div>
+          <div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap",margin:"0 auto 16px",maxWidth:520}}>
             {[
               {label:"Data Scientist",color:"#8b7cf6"},
               {label:"Data Analyst",color:"#7eb8f7"},
@@ -500,13 +734,16 @@ function LoginPage(){
             ))}
           </div>
 
-          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:56}}>
+          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:8}} className="hero-btns">
             <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"13px 28px",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,display:"inline-flex",alignItems:"center",gap:6}}>
               Start Free — No Card Needed →
             </button>
             <a href="#curriculum" style={{background:"transparent",color:"#7b78a0",border:"1px solid #2a2845",padding:"13px 24px",borderRadius:8,cursor:"pointer",fontSize:14,textDecoration:"none"}}>
               See the curriculum
             </a>
+          </div>
+          <div style={{fontSize:12,color:"#4a4665",marginBottom:20,textAlign:"center"}}>
+            Instant access to the full Python phase — 6 lessons, no card required
           </div>
 
           {/* Stats */}
@@ -519,77 +756,28 @@ function LoginPage(){
             .lp-card-blue:hover { box-shadow: 0 8px 24px rgba(126,184,247,0.15); border-color: #7eb8f744 !important; }
           `}</style>
           <div style={{display:"flex",justifyContent:"center",gap:0,border:"1px solid #1e1c35",borderRadius:12,overflow:"hidden",background:"#11101c",flexWrap:"wrap"}}>
-            {[{n:"18+",l:"Lessons"},{n:"5",l:"Phases"},{n:"11",l:"Projects"},{n:studentCount!==null?studentCount+"":"...",l:"Students Enrolled"},{n:"0 → Job",l:"The Goal"}].map((s,i)=>(
-              <div key={i} className="stat-box" style={{padding:"16px 28px",textAlign:"center",borderRight:"1px solid #1e1c35",flex:"1 1 80px",cursor:"default"}}>
-                <div style={{fontWeight:800,fontSize:22,letterSpacing:"-0.02em",color:"#e8e4ff"}}>{s.n}</div>
+            {[{n:"18+",l:"Lessons"},{n:"5",l:"Phases"},{n:"11",l:"Projects"},{n:"MENA",l:"Region Focus"},{n:"0 → Job",l:"The Goal"}].map((s,i)=>(
+              <div key={i} className="stat-box" style={{padding:"12px 20px",textAlign:"center",borderRight:"1px solid #1e1c35",flex:"1 1 80px",cursor:"default"}}>
+                <div style={{fontWeight:800,fontSize:18,letterSpacing:"-0.02em",color:"#e8e4ff"}}>{s.n}</div>
                 <div style={{fontSize:10,color:"#3a3860",letterSpacing:"0.08em",marginTop:2,fontFamily:"monospace"}}>{s.l}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* PLATFORM MOCKUP */}
-        <div style={{marginTop:48,maxWidth:820,margin:"48px auto 0",position:"relative"}}>
-          <div style={{background:"#0d0c18",border:"1px solid #1e1c35",borderRadius:16,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,0.6)"}}>
-            {/* Window chrome */}
-            <div style={{background:"#0b0a12",borderBottom:"1px solid #1e1c35",padding:"10px 16px",display:"flex",alignItems:"center",gap:8}}>
-              <div style={{display:"flex",gap:6}}>{["#f28b82","#f7c96e","#6dd6a0"].map(c=><div key={c} style={{width:10,height:10,borderRadius:"50%",background:c}}/>)}</div>
-              <div style={{flex:1,background:"#17162a",borderRadius:4,padding:"3px 12px",fontSize:10,color:"#4a4665",textAlign:"center",maxWidth:200,margin:"0 auto"}}>zerotods.netlify.app</div>
-            </div>
-            {/* App layout */}
-            <div style={{display:"flex",height:320}}>
-              {/* Sidebar */}
-              <div style={{width:52,background:"#0f0e1a",borderRight:"1px solid #1e1c35",display:"flex",flexDirection:"column",alignItems:"center",padding:"12px 0",gap:8}}>
-                {[{icon:"🏠",active:false},{icon:"📋",active:false},{icon:"📚",active:true},{icon:"🚀",active:false},{icon:"📈",active:false}].map((item,i)=>(
-                  <div key={i} style={{width:34,height:34,borderRadius:8,background:item.active?"#8b7cf620":"transparent",border:item.active?"1px solid #8b7cf644":"1px solid transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>{item.icon}</div>
-                ))}
-              </div>
-              {/* Lesson sidebar */}
-              <div style={{width:160,background:"#0d0c18",borderRight:"1px solid #1e1c35",padding:"12px 8px",overflowY:"hidden"}}>
-                <div style={{fontSize:8,color:"#4a4665",letterSpacing:"0.1em",marginBottom:10,paddingLeft:4}}>LESSONS — 7/26</div>
-                {[{emoji:"🔢",title:"NumPy Arrays",done:true,color:"#38bdf8"},{emoji:"🐼",title:"Pandas Basics",done:true,color:"#a78bfa"},{emoji:"🔗",title:"Pandas Advanced",done:true,color:"#34d399"},{emoji:"🔍",title:"EDA",done:false,active:true,color:"#f472b6"},{emoji:"📊",title:"Visualization",done:false,color:"#fb923c"}].map((l,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 6px",borderRadius:5,background:l.active?"#f472b615":"transparent",borderLeft:l.active?"2px solid #f472b6":"2px solid transparent",marginBottom:2}}>
-                    <span style={{fontSize:11}}>{l.emoji}</span>
-                    <span style={{fontSize:9,color:l.active?"#e8e4ff":l.done?"#4a4665":"#7b78a0",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.title}</span>
-                    {l.done&&<span style={{fontSize:8,color:"#6dd6a0"}}>✓</span>}
-                  </div>
-                ))}
-              </div>
-              {/* Lesson content */}
-              <div style={{flex:1,padding:"16px 20px",overflowY:"hidden"}}>
-                <div style={{display:"inline-block",background:"#f472b620",color:"#f472b6",fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:10,letterSpacing:"0.08em",marginBottom:8}}>PYTHON FOR DS</div>
-                <div style={{fontSize:14,fontWeight:700,color:"#e8e4ff",marginBottom:2}}>🔍 Exploratory Data Analysis</div>
-                <div style={{fontSize:9,color:"#7b78a0",fontFamily:"monospace",marginBottom:12}}>The skill that separates good from great data scientists</div>
-                <div style={{background:"#060d18",border:"1px solid #1e2a3a",borderRadius:8,padding:"10px 12px",marginBottom:10}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
-                    <div style={{width:6,height:6,background:"#6dd6a0",borderRadius:"50%"}}/>
-                    <span style={{fontSize:8,color:"#4a5568",letterSpacing:"0.1em",fontWeight:700}}>CODING EXERCISE</span>
-                    <div style={{marginLeft:"auto",background:"#6dd6a0",color:"#000",fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:4}}>▶ Run Code</div>
-                  </div>
-                  <div style={{fontFamily:"monospace",fontSize:9,color:"#a8d8a8",lineHeight:1.7}}>
-                    <span style={{color:"#7eb8f7"}}>import</span> <span style={{color:"#e8e4ff"}}>pandas</span> <span style={{color:"#7eb8f7"}}>as</span> <span style={{color:"#e8e4ff"}}>pd</span><br/>
-                    <span style={{color:"#e8e4ff"}}>df</span> <span style={{color:"#f472b6"}}>=</span> <span style={{color:"#e8e4ff"}}>pd</span>.<span style={{color:"#6dd6a0"}}>read_csv</span>(<span style={{color:"#f7c96e"}}>'sales.csv'</span>)<br/>
-                    <span style={{color:"#7eb8f7"}}>print</span>(<span style={{color:"#e8e4ff"}}>df</span>.<span style={{color:"#6dd6a0"}}>describe</span>())
-                  </div>
-                </div>
-                <div style={{background:"#040a12",border:"1px solid #6dd6a033",borderRadius:6,padding:"6px 10px"}}>
-                  <div style={{fontSize:8,color:"#4a5568",letterSpacing:"0.1em",marginBottom:4}}>OUTPUT</div>
-                  <div style={{fontFamily:"monospace",fontSize:8,color:"#6dd6a0",lineHeight:1.7}}>{"       sales    units"}<br/>{"mean   4823.5   127.3"}<br/>{"std    1204.2    31.8"}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* Glow effect */}
-          <div style={{position:"absolute",inset:0,borderRadius:16,boxShadow:"0 0 80px rgba(139,124,246,0.15)",pointerEvents:"none"}}/>
-        </div>
+        {/* PLATFORM MOCKUP - hidden to keep hero compact */}
+
       </div>
 
+      {/* AI JOB SCANNER - moved up as section 2 */}
+      <AIJobCalculator/>
+
       {/* CURRICULUM */}
-      <div id="curriculum" style={{padding:"80px 20px",background:"#0b0a12"}}>
+      <div id="curriculum" style={{padding:"50px 20px",background:"#0b0a12"}}>
         <div style={{maxWidth:1000,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// curriculum</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>A clear path. No guessing.</h2>
-          <p style={{color:"#7b78a0",fontSize:15,marginBottom:56,maxWidth:480}}>Every phase builds on the last. No tutorial hell — just a structured sequence designed around what employers hire for.</p>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:28,maxWidth:480}}>Every phase builds on the last. No tutorial hell — just a structured sequence designed around what employers hire for.</p>
           <style>{`
             @keyframes fadeUp2 { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
             .pc { animation: fadeUp2 0.5s ease forwards; opacity:0; }
@@ -600,28 +788,35 @@ function LoginPage(){
             .pc:nth-child(5){animation-delay:0.7s}
             .pc:hover{transform:translateY(-6px)!important;transition:transform 0.2s ease;}
           `}</style>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>
+          <div className="phase-grid" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:14}}>
             {phases.map((p,i)=>(
-              <div key={p.num} className="pc" style={{background:"#11101c",border:`1px solid ${p.color}33`,borderTop:`3px solid ${p.color}`,borderRadius:12,padding:"24px 18px",cursor:"default",position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",top:0,right:0,width:60,height:60,background:p.color+"08",borderRadius:"0 0 0 60px"}}/>
-                <div style={{fontSize:28,marginBottom:12}}>{p.icon}</div>
-                <div style={{fontFamily:"monospace",fontSize:10,color:p.color,marginBottom:6,letterSpacing:"0.1em"}}>{p.num}</div>
-                <div style={{fontWeight:700,fontSize:14,color:"#e8e4ff",marginBottom:6,lineHeight:1.3}}>{p.title}</div>
-                <div style={{fontSize:11,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>{p.desc}</div>
-                <span style={{fontSize:10,fontFamily:"monospace",padding:"3px 8px",borderRadius:100,background:p.color+"18",color:p.color}}>{p.time}</span>
+              <div key={p.num} className="pc" style={{background:"#11101c",border:`1px solid ${p.color}33`,borderTop:`4px solid ${p.color}`,borderRadius:14,padding:"24px 18px",cursor:"default",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:0,right:0,width:80,height:80,background:p.color+"08",borderRadius:"0 0 0 80px"}}/>
+                <div style={{fontSize:32,marginBottom:12}}>{p.icon}</div>
+                <div style={{fontFamily:"monospace",fontSize:11,color:p.color,marginBottom:6,letterSpacing:"0.1em",fontWeight:700}}>{p.num}</div>
+                <div style={{fontWeight:800,fontSize:15,color:"#e8e4ff",marginBottom:6,lineHeight:1.3}}>{p.title}</div>
+                <div style={{marginBottom:14,display:"flex",flexDirection:"column",gap:4}}>
+                  {p.lessons.map((l,li)=>(
+                    <div key={li} style={{fontSize:11,color:"#7b78a0",display:"flex",alignItems:"center",gap:6}}>
+                      <div style={{width:4,height:4,borderRadius:"50%",background:p.color,flexShrink:0,opacity:0.6}}/>
+                      {l}
+                    </div>
+                  ))}
+                </div>
+                <span style={{fontSize:11,fontFamily:"monospace",padding:"4px 10px",borderRadius:100,background:p.color+"18",color:p.color,fontWeight:600}}>{p.time}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* JOBS */}
-      <div style={{padding:"80px 20px",background:"#0d0c18"}}>
+      {/* JOBS — hidden to reduce page length */}
+      <div style={{display:"none"}}>
         <div style={{maxWidth:1000,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// career outcomes</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>What jobs can you land?</h2>
-          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:520}}>The curriculum is designed around real job requirements. Here's what graduates are prepared to apply for:</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))",gap:16}}>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:24,maxWidth:520}}>The curriculum is designed around real job requirements. Here's what graduates are prepared to apply for:</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))",gap:16}} className="jobs-grid">
             {[
               {icon:"📊",title:"Data Analyst",skills:["SQL","Python","Pandas","Visualization","Statistics"],color:"#7eb8f7",desc:"Turn raw data into business insights. Most in-demand DS role in the market."},
               {icon:"🤖",title:"Data Scientist",skills:["ML","sklearn","Statistics","Python","Communication"],color:"#8b7cf6",desc:"Build predictive models and drive data-informed decisions across the company."},
@@ -651,12 +846,12 @@ function LoginPage(){
       </div>
 
       {/* FEATURES */}
-      <div style={{padding:"80px 20px",background:"#0b0a12"}}>
+      <div style={{padding:"50px 20px",background:"#0b0a12"}}>
         <div style={{maxWidth:1000,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// platform</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Built differently.</h2>
-          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:480}}>No passive videos. No disconnected tutorials. Everything is connected, tracked, and designed to get you hired.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}}>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:24,maxWidth:480}}>No passive videos. No disconnected tutorials. Everything is connected, tracked, and designed to get you hired.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}} className="features-grid">
             {features.map((f,i)=>(
               <div key={i} className="lp-card" style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px"}}>
                 <div style={{fontSize:22,marginBottom:12}}>{f.icon}</div>
@@ -669,12 +864,12 @@ function LoginPage(){
       </div>
 
       {/* WHAT YOU'LL BUILD */}
-      <div style={{padding:"80px 20px",background:"#0b0a12"}}>
+      <div style={{padding:"50px 20px",background:"#0b0a12"}}>
         <div style={{maxWidth:1000,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// projects</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>What you'll actually build.</h2>
-          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:520}}>Not toy exercises. Real projects you can show in interviews and deploy live. Every project has a business context, real data, and a deployed demo.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}}>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:24,maxWidth:520}}>Not toy exercises. Real projects you can show in interviews and deploy live. Every project has a business context, real data, and a deployed demo.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}} className="projects-grid">
             {[
               {
                 icon:"📉",title:"Customer Churn Predictor",
@@ -739,13 +934,12 @@ function LoginPage(){
       </div>
 
 
-      {/* CAREER PATHS */}
-      <div style={{padding:"80px 20px",background:"#0d0c18"}}>
-        <div style={{maxWidth:1000,margin:"0 auto"}}>
-          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// career paths</div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Which data role is right for you?</h2>
-          <p style={{color:"#7b78a0",fontSize:15,marginBottom:44,maxWidth:520}}>Three distinct career paths — the same curriculum, different focus. Unlock the full path breakdown inside your dashboard.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:16}}>
+      {/* CAREER PATHS — hidden to reduce page length */}
+      <div style={{display:"none"}}>
+        <div style={{padding:"50px 20px",background:"#0d0c18"}}>
+          <div style={{maxWidth:1000,margin:"0 auto"}}>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:24,maxWidth:520}}>Three distinct career paths — the same curriculum, different focus. Unlock the full path breakdown inside your dashboard.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:16}} className="paths-grid">
             {[
               {icon:"📊",title:"Data Analyst",tagline:"Turn data into decisions",color:"#7eb8f7",time:"6–9 months",salary:"$45k–$80k",demand:"Very High",skills:["SQL","Python","Statistics","Visualization"]},
               {icon:"🧠",title:"Data Scientist",tagline:"Build models that predict",color:"#a78bfa",time:"10–14 months",salary:"$60k–$120k",demand:"High",skills:["ML","XGBoost","SHAP","Statistics"]},
@@ -771,18 +965,28 @@ function LoginPage(){
             <div style={{fontSize:12,color:"#4a4665",marginBottom:8}}>Full path breakdown — which phases to focus on, interview prep, MENA companies hiring — available inside your dashboard.</div>
           </div>
         </div>
+        </div>
       </div>
 
-      {/* AI JOB CALCULATOR */}
-      <AIJobCalculator/>
-
       {/* PRICING */}
-      <div id="apply" style={{padding:"80px 20px",background:"#0b0a12"}}>
+      <div id="apply" style={{padding:"50px 20px",background:"#0b0a12"}}>
         <div style={{maxWidth:1100,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12,textAlign:"center"}}>// pricing</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12,textAlign:"center"}}>Simple, honest pricing.</h2>
-          <p style={{color:"#7b78a0",fontSize:15,margin:"0 auto 48px",maxWidth:480,textAlign:"center"}}>Start free. Upgrade when you're ready to go all in.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:16,marginBottom:32}}>
+          <p style={{color:"#7b78a0",fontSize:15,margin:"0 auto 20px",maxWidth:480,textAlign:"center"}}>Start free. Upgrade when you're ready to go all in.</p>
+          {/* Social proof anchor */}
+          <div style={{display:"flex",justifyContent:"center",marginBottom:28}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:10,background:"#17162a",border:"1px solid #8b7cf633",borderRadius:100,padding:"8px 20px"}}>
+              <div style={{display:"flex",gap:-4}}>
+                {["🇱🇧","🇯🇴","🇸🇦","🇪🇬"].map((f,i)=>(
+                  <span key={i} style={{fontSize:14,marginLeft:i>0?-4:0}}>{f}</span>
+                ))}
+              </div>
+              <span style={{fontSize:12,color:"#8b7cf6",fontWeight:600}}>Students from across MENA already enrolled</span>
+              <span style={{fontSize:11,color:"#4a4665"}}>— Phase 1 cohort filling up</span>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:16,marginBottom:32}} className="pricing-grid">
 
             {/* FREE */}
             <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:16,padding:"28px",position:"relative",overflow:"hidden"}}>
@@ -800,8 +1004,8 @@ function LoginPage(){
               <button onClick={()=>openModal("signup")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Start Free →</button>
             </div>
 
-            {/* MONTHLY */}
-            <div style={{background:"#11101c",border:"1px solid #6dd6a044",borderRadius:16,padding:"28px",position:"relative",overflow:"hidden"}}>
+            {/* MONTHLY - demoted */}
+            <div style={{background:"#0e0d1a",border:"1px solid #1e1c35",borderRadius:16,padding:"24px",position:"relative",overflow:"hidden",opacity:0.85}}>
               <div style={{fontSize:11,color:"#6dd6a0",letterSpacing:"0.1em",fontFamily:"monospace",marginBottom:12}}>SELF-PACED</div>
               <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:2}}>
                 <span style={{fontSize:34,fontWeight:800,color:"#e8e4ff"}}>$19</span>
@@ -826,6 +1030,12 @@ function LoginPage(){
               <div style={{position:"absolute",top:-1,left:"15%",right:"15%",height:2,background:"linear-gradient(90deg,transparent,#8b7cf6,#f472b6,transparent)"}}/>
               <div style={{position:"absolute",top:14,right:14,background:"#8b7cf620",border:"1px solid #8b7cf644",borderRadius:100,padding:"3px 10px",fontSize:9,color:"#8b7cf6",fontWeight:700,fontFamily:"monospace"}}>MOST POPULAR</div>
               <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.1em",fontFamily:"monospace",marginBottom:12}}>PHASE 1 COHORT</div>
+              {/* SPOTS COUNTER */}
+              <div style={{background:"#f28b8211",border:"1px solid #f28b8233",borderRadius:8,padding:"8px 12px",marginBottom:14,display:"flex",alignItems:"center",gap:8}}>
+                <div style={{width:7,height:7,borderRadius:"50%",background:"#f28b82",boxShadow:"0 0 6px #f28b82",flexShrink:0}}/>
+                <span style={{fontSize:12,color:"#f28b82",fontWeight:600}}>Only 3 spots remaining</span>
+                <span style={{fontSize:11,color:"#4a4665",marginLeft:"auto"}}>10 max per cohort</span>
+              </div>
               <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:2}}>
                 <span style={{fontSize:34,fontWeight:800,color:"#e8e4ff"}}>$99</span>
                 <span style={{fontSize:13,color:"#4a4665"}}>one-time</span>
@@ -835,6 +1045,16 @@ function LoginPage(){
                 {["Everything in Self-Paced","Weekly live Zoom sessions with Radwan","Private WhatsApp group","Direct instructor messaging","Phase 1 certificate on completion","Small cohort — max 10 students"].map(f=>(
                   <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#c8c3e0"}}><span style={{color:"#8b7cf6",flexShrink:0}}>✓</span>{f}</div>
                 ))}
+              </div>
+              {/* INSTRUCTOR */}
+              <div style={{display:"flex",alignItems:"center",gap:12,background:"#0b0a12",border:"1px solid #2a2845",borderRadius:10,padding:"12px 14px",marginBottom:14}}>
+                <img src="/radwan.jpg" alt="Radwan" style={{width:42,height:42,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:"2px solid #8b7cf644",flexShrink:0}}/>
+                <div>
+                  <div style={{fontSize:12,color:"#7b78a0",marginBottom:2}}>You'll work directly with</div>
+                  <div style={{fontSize:13,fontWeight:700,color:"#e8e4ff"}}>Radwan</div>
+                  <div style={{fontSize:11,color:"#8b7cf6",fontFamily:"monospace"}}>Founder · Researcher → DS</div>
+                </div>
+                <div style={{marginLeft:"auto",width:8,height:8,borderRadius:"50%",background:"#6dd6a0",boxShadow:"0 0 8px #6dd6a0",flexShrink:0}}/>
               </div>
               <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20DS%20Academy%20Phase%201%20Cohort%20($99).%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
                 Enroll via WhatsApp →
@@ -848,6 +1068,58 @@ function LoginPage(){
             <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7}}>
               <strong style={{color:"#e8e4ff"}}>No automated checkout.</strong> Message on WhatsApp → confirm payment → account activated within 24h. Simple.
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TESTIMONIALS */}
+      <TestimonialsCarousel />
+
+      {/* FAQ */}
+      <div style={{padding:"50px 20px",background:"#0b0a12"}}>
+        <div style={{maxWidth:700,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// faq</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,4vw,34px)",letterSpacing:"-0.02em",marginBottom:28}}>Questions we always get.</h2>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {[
+              {q:"Is this in Arabic or English?",a:"The platform is in English — but Radwan speaks Arabic and all live Zoom sessions in the cohort are conducted in Arabic (Lebanese/Levantine). You can message him in Arabic on WhatsApp anytime."},
+              {q:"Do I need a powerful laptop?",a:"No. All interactive lessons run in the browser using Pyodide — no installation needed. Any laptop from the last 5 years works fine. Even a basic phone can access the content."},
+              {q:"How much time per day do I need?",a:"Around 1–2 hours per day is ideal. The curriculum is designed for students and working professionals. There are no live deadlines on the self-paced plan."},
+              {q:"What if I have zero coding experience?",a:"Perfect — that's exactly who this is built for. Phase 1 starts from Python absolute zero. If you can use WhatsApp, you can start this."},
+              {q:"How is this different from Coursera or YouTube?",a:"Coursera gives you disconnected courses. YouTube gives you tutorials with no structure. DS Academy gives you one connected path with projects, XP tracking, a roadmap, and direct access to a real instructor."},
+              {q:"What happens after I sign up for free?",a:"You get instant access to the full Python for Data Science phase — 6 lessons with interactive code exercises, quizzes, and a portfolio project. No credit card, no trial period."},
+            ].map((f,i)=>(
+              <FAQItem key={i} q={f.q} a={f.a}/>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FINAL CTA */}
+      <div style={{padding:"60px 20px",background:"linear-gradient(135deg, #13111e 0%, #1a1530 50%, #13111e 100%)",borderTop:"1px solid #2a2845",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        {/* glow */}
+        <div style={{position:"absolute",width:400,height:400,background:"rgba(139,124,246,0.08)",borderRadius:"50%",filter:"blur(80px)",top:"50%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
+        <div style={{position:"relative",zIndex:1,maxWidth:600,margin:"0 auto"}}>
+          <div style={{fontSize:13,color:"#8b7cf6",fontFamily:"monospace",letterSpacing:"0.15em",marginBottom:16}}>// ready to start?</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(28px,5vw,48px)",lineHeight:1.1,letterSpacing:"-0.03em",marginBottom:16}}>
+            Ready to stop watching<br/>
+            <span style={{background:"linear-gradient(135deg,#8b7cf6,#f472b6,#6ee7b7)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
+              and start building?
+            </span>
+          </h2>
+          <p style={{fontSize:15,color:"#7b78a0",marginBottom:28,lineHeight:1.6}}>
+            Free access to the Python phase. No card. No fluff.<br/>Just the structured path that actually works.
+          </p>
+          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:16}}>
+            <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"14px 32px",borderRadius:8,cursor:"pointer",fontSize:15,fontWeight:700,display:"inline-flex",alignItems:"center",gap:8}}>
+              Start Free — No Card Needed →
+            </button>
+            <a href="https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20learn%20more%20about%20DS%20Academy." target="_blank" rel="noopener noreferrer" style={{background:"#25D36618",border:"1px solid #25D36644",color:"#25D366",padding:"14px 24px",borderRadius:8,cursor:"pointer",fontSize:15,fontWeight:600,textDecoration:"none",display:"inline-flex",alignItems:"center",gap:8}}>
+              💬 Ask Radwan first
+            </a>
+          </div>
+          <div style={{fontSize:12,color:"#3a3860"}}>
+            Or message on WhatsApp · response within 24h · built in Lebanon 🇱🇧
           </div>
         </div>
       </div>
@@ -866,7 +1138,9 @@ function LoginPage(){
           <div>
             <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:14}}>BUILT BY</div>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-              <div style={{width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#8b7cf6,#f472b6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>👨‍💻</div>
+              <div style={{width:40,height:40,borderRadius:"50%",overflow:"hidden",flexShrink:0,border:"2px solid #8b7cf633"}}>
+                <img src="/radwan.jpg" alt="Radwan" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top"}}/>
+              </div>
               <div>
                 <div style={{fontSize:13,fontWeight:600,color:"#e8e4ff"}}>Radwan</div>
                 <div style={{fontSize:11,color:"#7b78a0"}}>Researcher → Data Scientist</div>
@@ -1151,7 +1425,7 @@ function CoursesPage({onBack, onSignup}){
       <div style={{maxWidth:1000,margin:"0 auto",padding:"100px 20px 60px"}}>
         <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// standalone courses</div>
         <h1 style={{fontWeight:800,fontSize:"clamp(28px,5vw,46px)",letterSpacing:"-0.02em",marginBottom:12}}>Courses</h1>
-        <p style={{color:"#7b78a0",fontSize:15,marginBottom:48,maxWidth:520,lineHeight:1.7}}>Focused, practical courses on specific skills. No fluff, no filler — just the exact skills you need for your job. Buy once, keep forever.</p>
+        <p style={{color:"#7b78a0",fontSize:15,marginBottom:24,maxWidth:520,lineHeight:1.7}}>Focused, practical courses on specific skills. No fluff, no filler — just the exact skills you need for your job. Buy once, keep forever.</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
           {courses.map(c=>(
             <div key={c.id} onClick={()=>setSelected(c.id)} style={{background:"#11101c",border:`1px solid ${c.available?c.color+"33":"#1e1c35"}`,borderRadius:16,overflow:"hidden",cursor:"pointer",position:"relative",transition:"transform 0.2s,border-color 0.2s"}}
@@ -1241,7 +1515,7 @@ function PublicBlogPage({onBack}){
       <div style={{maxWidth:1000,margin:"0 auto",padding:"100px 20px 60px"}}>
         <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// blog</div>
         <h1 style={{fontWeight:800,fontSize:"clamp(28px,5vw,46px)",letterSpacing:"-0.02em",marginBottom:8}}>The DS Academy Blog</h1>
-        <p style={{color:"#7b78a0",fontSize:15,marginBottom:48,maxWidth:480}}>Data science tutorials, career tips, and insights from the field.</p>
+        <p style={{color:"#7b78a0",fontSize:15,marginBottom:24,maxWidth:480}}>Data science tutorials, career tips, and insights from the field.</p>
         {loading&&<div style={{color:"#4a4665",fontSize:13,fontFamily:"monospace"}}>Loading posts...</div>}
         {!loading&&posts.length===0&&<div style={{color:"#4a4665",fontSize:13,fontFamily:"monospace"}}>No posts published yet. Check back soon.</div>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:20}}>
