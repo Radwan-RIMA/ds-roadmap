@@ -394,7 +394,7 @@ function WhatsAppFloat(){
   },[]);
   return(
     <a
-      href="https://wa.me/96170895652?text=Hi%20Radwan!%20I%20found%20DS%20Academy%20and%20I%20have%20a%20question."
+      href="https://wa.me/96181590474?text=Hi%20Radwan!%20I%20found%20DS%20Academy%20and%20I%20have%20a%20question."
       target="_blank"
       rel="noopener noreferrer"
       style={{
@@ -1024,7 +1024,7 @@ function LoginPage(){
                   <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#2a2845"}}><span style={{flexShrink:0}}>–</span>{f}</div>
                 ))}
               </div>
-              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"#6dd6a018",border:"1px solid #6dd6a055",color:"#6dd6a0",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"#6dd6a018",border:"1px solid #6dd6a055",color:"#6dd6a0",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
                 Get Monthly Access →
               </a>
             </div>
@@ -1060,7 +1060,7 @@ function LoginPage(){
                 </div>
                 <div style={{marginLeft:"auto",width:8,height:8,borderRadius:"50%",background:"#6dd6a0",boxShadow:"0 0 8px #6dd6a0",flexShrink:0}}/>
               </div>
-              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20DS%20Academy%20Phase%201%20Cohort%20($99).%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20DS%20Academy%20Phase%201%20Cohort%20($99).%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
                 Enroll via WhatsApp →
               </a>
               <div style={{fontSize:11,color:"#4a4665",textAlign:"center",marginTop:8}}>Wise · local transfer · cash</div>
@@ -1118,7 +1118,7 @@ function LoginPage(){
             <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"14px 32px",borderRadius:8,cursor:"pointer",fontSize:15,fontWeight:700,display:"inline-flex",alignItems:"center",gap:8}}>
               Start Free — No Card Needed →
             </button>
-            <a href="https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20learn%20more%20about%20DS%20Academy." target="_blank" rel="noopener noreferrer" style={{background:"#25D36618",border:"1px solid #25D36644",color:"#25D366",padding:"14px 24px",borderRadius:8,cursor:"pointer",fontSize:15,fontWeight:600,textDecoration:"none",display:"inline-flex",alignItems:"center",gap:8}}>
+            <a href="https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20learn%20more%20about%20DS%20Academy." target="_blank" rel="noopener noreferrer" style={{background:"#25D36618",border:"1px solid #25D36644",color:"#25D366",padding:"14px 24px",borderRadius:8,cursor:"pointer",fontSize:15,fontWeight:600,textDecoration:"none",display:"inline-flex",alignItems:"center",gap:8}}>
               💬 Ask Radwan first
             </a>
           </div>
@@ -1144,7 +1144,7 @@ function LoginPage(){
               {[
                 {label:"LinkedIn",icon:"in",url:"https://www.linkedin.com/in/radwan-rima/",color:"#7eb8f7"},
                 {label:"TikTok",icon:"♪",url:"https://www.tiktok.com/@zero_to_ds",color:"#f472b6"},
-                {label:"WhatsApp",icon:"💬",url:"https://wa.me/96170895652",color:"#25D366"},
+                {label:"WhatsApp",icon:"💬",url:"https://wa.me/96181590474",color:"#25D366"},
               ].map((s,i)=>(
                 <a key={i} href={s.url} target="_blank" rel="noreferrer"
                   style={{width:34,height:34,borderRadius:8,background:s.color+"15",border:`1px solid ${s.color}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:s.color,textDecoration:"none",fontWeight:700,transition:"all 0.2s"}}
@@ -1169,7 +1169,7 @@ function LoginPage(){
               </div>
             </div>
             <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>I built DS Academy because I couldn't find a structured path that actually prepares you for the job market.</div>
-            <a href="https://wa.me/96170895652?text=Hi%20Radwan!%20I%20have%20a%20question%20about%20DS%20Academy." target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(37,211,102,0.08)",border:"1px solid rgba(37,211,102,0.25)",color:"#25d366",padding:"7px 14px",borderRadius:7,fontSize:12,fontWeight:600,textDecoration:"none"}}>
+            <a href="https://wa.me/96181590474?text=Hi%20Radwan!%20I%20have%20a%20question%20about%20DS%20Academy." target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(37,211,102,0.08)",border:"1px solid rgba(37,211,102,0.25)",color:"#25d366",padding:"7px 14px",borderRadius:7,fontSize:12,fontWeight:600,textDecoration:"none"}}>
               💬 Message Radwan
             </a>
           </div>
@@ -1200,7 +1200,7 @@ function LoginPage(){
             </div>
             {[
               {label:"radwanrima0@gmail.com",icon:"✉",href:"mailto:radwanrima0@gmail.com",color:"#8b7cf6"},
-              {label:"WhatsApp",icon:"💬",href:"https://wa.me/96170895652",color:"#25D366"},
+              {label:"WhatsApp",icon:"💬",href:"https://wa.me/96181590474",color:"#25D366"},
               {label:"LinkedIn",icon:"in",href:"https://www.linkedin.com/in/radwan-rima/",color:"#7eb8f7"},
             ].map((c,i)=>(
               <a key={i} href={c.href} target="_blank" rel="noreferrer"
@@ -1450,13 +1450,13 @@ function CoursesPage({onBack, onSignup}){
             <div style={{fontSize:36,fontWeight:800,color:"#e8e4ff",marginBottom:4}}>${c.price} <span style={{fontSize:14,color:"#4a4665",fontWeight:400}}>one-time</span></div>
             <div style={{fontSize:12,color:"#4a4665",marginBottom:20}}>Lifetime access · No subscription</div>
             {c.available?(
-              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20buy%20the%20'"+encodeURIComponent(c.title)+"'%20course%20($"+c.price+").%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",padding:"13px 40px",background:"#8b7cf6",color:"#fff",borderRadius:9,fontSize:14,fontWeight:700,textDecoration:"none"}}>
+              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20buy%20the%20'"+encodeURIComponent(c.title)+"'%20course%20($"+c.price+").%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",padding:"13px 40px",background:"#8b7cf6",color:"#fff",borderRadius:9,fontSize:14,fontWeight:700,textDecoration:"none"}}>
                 Buy via WhatsApp →
               </a>
             ):(
               <div>
                 <div style={{fontSize:13,color:"#7b78a0",marginBottom:16}}>This course is in development. Join the waitlist and get notified + early bird discount.</div>
-                <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20be%20on%20the%20waitlist%20for%20'"+encodeURIComponent(c.title)+"'.%20Please%20notify%20me%20when%20it%20launches."} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",padding:"13px 40px",background:"#1e1c35",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:9,fontSize:13,fontWeight:600,textDecoration:"none"}}>
+                <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20be%20on%20the%20waitlist%20for%20'"+encodeURIComponent(c.title)+"'.%20Please%20notify%20me%20when%20it%20launches."} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",padding:"13px 40px",background:"#1e1c35",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:9,fontSize:13,fontWeight:600,textDecoration:"none"}}>
                   Join Waitlist →
                 </a>
               </div>
@@ -3024,10 +3024,10 @@ function StudentDashboard({currentUser,userDoc}){
               ))}
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#6dd6a018",border:"1px solid #6dd6a055",color:"#6dd6a0",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#6dd6a018",border:"1px solid #6dd6a055",color:"#6dd6a0",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
                 💬 Get Monthly Access — $19/mo →
               </a>
-              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20Phase%201%20Cohort%20($99).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20Phase%201%20Cohort%20($99).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
                 💬 Join Phase 1 Cohort — $99 one-time →
               </a>
               <div style={{fontSize:11,color:"#4a4665",textAlign:"center",lineHeight:1.6}}>
