@@ -385,29 +385,21 @@ function TestimonialsCarousel(){
 }
 
 // ── VISITOR COUNTER (stat box style)
-function VisitorStatBox(){
+function VisitorCounter(){
   const [count,setCount]=useState(()=>Math.floor(Math.random()*8)+10);
   useEffect(()=>{
     const interval=setInterval(()=>{
-      setCount(c=>{
-        const delta=Math.random()<0.5?1:-1;
-        return Math.min(24,Math.max(8,c+delta));
-      });
+      setCount(c=>Math.min(24,Math.max(8,c+(Math.random()<0.5?1:-1))));
     },4000);
     return()=>clearInterval(interval);
   },[]);
   return(
-    <div className="stat-box" style={{padding:"12px 20px",textAlign:"center",flex:"1 1 80px",cursor:"default"}}>
-      <div style={{fontWeight:800,fontSize:18,letterSpacing:"-0.02em",color:"#6dd6a0",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-        <div style={{width:6,height:6,borderRadius:"50%",background:"#6dd6a0",boxShadow:"0 0 6px #6dd6a0",animation:"pulse 2s infinite",flexShrink:0}}/>
-        {count}
-      </div>
-      <div style={{fontSize:10,color:"#3a3860",letterSpacing:"0.08em",marginTop:2,fontFamily:"monospace"}}>Live Now</div>
+    <div style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,color:"#4a4665",fontFamily:"monospace"}}>
+      <div style={{width:5,height:5,borderRadius:"50%",background:"#6dd6a0",boxShadow:"0 0 5px #6dd6a0",animation:"pulse 2s infinite",flexShrink:0}}/>
+      <span><span style={{color:"#7b78a0",fontWeight:600}}>{count} people</span> viewing right now</span>
     </div>
   );
 }
-
-function VisitorCounter(){return null;} // kept for compatibility
 
 // ── CONFETTI
 function Confetti(){
@@ -811,10 +803,6 @@ function LoginPage(){
         <div style={{position:"absolute",width:400,height:400,background:"rgba(110,231,183,0.06)",borderRadius:"50%",filter:"blur(80px)",bottom:-50,right:-50,zIndex:0}}/>
 
         <div style={{position:"relative",zIndex:1,maxWidth:720}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#17162a",border:"1px solid #2a2845",borderRadius:100,padding:"5px 14px",fontSize:11,color:"#8b7cf6",letterSpacing:"0.08em",marginBottom:16,fontFamily:"monospace"}}>
-            <div style={{width:5,height:5,background:"#6ee7b7",borderRadius:"50%",boxShadow:"0 0 6px #6ee7b7"}}/>
-            STRUCTURED · PRACTICAL · JOB-FOCUSED
-          </div>
 
           <h1 style={{fontWeight:800,fontSize:"clamp(32px, 6vw, 58px)",lineHeight:1.05,letterSpacing:"-0.03em",marginBottom:14}}>
             Stop watching tutorials.<br/>
@@ -828,42 +816,19 @@ function LoginPage(){
           </p>
 
           {/* FOUNDER ATTRIBUTION */}
-          <div style={{display:"inline-flex",alignItems:"center",gap:10,background:"#17162a",border:"1px solid #2a2845",borderRadius:100,padding:"6px 16px",marginBottom:16}}>
-            <img src="/radwan.jpg" alt="Radwan" style={{width:28,height:28,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",flexShrink:0,border:"2px solid #8b7cf633"}}/>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#17162a",border:"1px solid #1e1c35",borderRadius:100,padding:"6px 14px",marginBottom:20}}>
+            <img src="/radwan.jpg" alt="Radwan" style={{width:26,height:26,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",flexShrink:0,border:"1px solid #2a2845"}}/>
             <div style={{fontSize:12,color:"#7b78a0",fontStyle:"italic"}}>"Built by someone who lived the tutorial hell struggle"</div>
-            <div style={{fontSize:11,color:"#8b7cf6",fontFamily:"monospace",whiteSpace:"nowrap"}}>— Radwan, Founder</div>
-          </div>
-          <div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap",margin:"0 auto 16px",maxWidth:520}}>
-            {[
-              {label:"Data Scientist",color:"#8b7cf6"},
-              {label:"Data Analyst",color:"#7eb8f7"},
-              {label:"ML Engineer",color:"#6dd6a0"},
-              {label:"Python Developer",color:"#f7c96e"},
-            ].map((j,i)=>(
-              <span key={i} style={{
-                fontSize:12,fontWeight:600,padding:"5px 14px",
-                borderRadius:100,
-                background:j.color+"15",
-                color:j.color,
-                border:`1px solid ${j.color}33`,
-                fontFamily:"monospace",
-                letterSpacing:"0.03em"
-              }}>
-                {j.label}
-              </span>
-            ))}
+            <div style={{fontSize:11,color:"#8b7cf6",fontFamily:"monospace",whiteSpace:"nowrap"}}>— Radwan</div>
           </div>
 
           <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:8}} className="hero-btns">
-            <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"13px 28px",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,display:"inline-flex",alignItems:"center",gap:6}}>
+            <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"14px 32px",borderRadius:8,cursor:"pointer",fontSize:15,fontWeight:700,display:"inline-flex",alignItems:"center",gap:6,boxShadow:"0 0 30px rgba(139,124,246,0.3)"}}>
               Start Free — No Card Needed →
             </button>
-            <a href="#curriculum" style={{background:"transparent",color:"#7b78a0",border:"1px solid #2a2845",padding:"13px 24px",borderRadius:8,cursor:"pointer",fontSize:14,textDecoration:"none"}}>
-              See the curriculum
-            </a>
           </div>
           <div style={{fontSize:12,color:"#4a4665",marginBottom:20,textAlign:"center"}}>
-            Instant access to the full Python phase — 6 lessons, no card required
+            Instant access to the full Python phase — 6 lessons, no card required · <a href="#curriculum" style={{color:"#8b7cf6",textDecoration:"none"}}>See curriculum ↓</a>
           </div>
 
           {/* Stats */}
@@ -883,12 +848,16 @@ function LoginPage(){
                 <div style={{fontSize:10,color:"#3a3860",letterSpacing:"0.08em",marginTop:2,fontFamily:"monospace"}}>{s.l}</div>
               </div>
             ))}
-            {/* Live visitors */}
-            <VisitorStatBox/>
+          </div>
+          <div style={{marginTop:10,textAlign:"center"}}>
+            <VisitorCounter/>
           </div>
         </div>
 
         {/* PLATFORM MOCKUP - hidden to keep hero compact */}
+
+        {/* Bottom gradient fade */}
+        <div style={{position:"absolute",bottom:0,left:0,right:0,height:80,background:"linear-gradient(to bottom, transparent, #0b0a12)",pointerEvents:"none",zIndex:2}}/>
 
       </div>
 
@@ -968,18 +937,47 @@ function LoginPage(){
         </div>
       </div>
 
+      {/* MID-PAGE CTA */}
+      <div style={{padding:"30px 20px",background:"linear-gradient(90deg,#13111e,#1a1530,#13111e)",borderTop:"1px solid #2a2845",borderBottom:"1px solid #2a2845"}}>
+        <div style={{maxWidth:700,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",gap:20,flexWrap:"wrap"}}>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:"#e8e4ff",marginBottom:4}}>Phase 1 is completely free.</div>
+            <div style={{fontSize:12,color:"#7b78a0"}}>Python, NumPy, Pandas, SQL, Statistics — no card required.</div>
+          </div>
+          <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"11px 24px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,whiteSpace:"nowrap",boxShadow:"0 0 20px rgba(139,124,246,0.3)"}}>
+            Start Free Now →
+          </button>
+        </div>
+      </div>
+
       {/* FEATURES */}
       <div style={{padding:"50px 20px",background:"#0b0a12"}}>
-        <div style={{maxWidth:1000,margin:"0 auto"}}>
-          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// platform</div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12}}>Built differently.</h2>
-          <p style={{color:"#7b78a0",fontSize:15,marginBottom:24,maxWidth:480}}>No passive videos. No disconnected tutorials. Everything is connected, tracked, and designed to get you hired.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:16}} className="features-grid">
-            {features.map((f,i)=>(
-              <div key={i} className="lp-card" style={{background:"#0b0a12",border:"1px solid #1e1c35",borderRadius:12,padding:"22px"}}>
-                <div style={{fontSize:22,marginBottom:12}}>{f.icon}</div>
-                <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>{f.title}</div>
-                <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6}}>{f.desc}</div>
+        <div style={{maxWidth:900,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// why ds academy</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:8}}>Not another tutorial site.</h2>
+          <p style={{color:"#7b78a0",fontSize:15,marginBottom:32,maxWidth:480}}>Here's what makes this different from everything else you've tried.</p>
+
+          {/* Comparison table */}
+          <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:16,overflow:"hidden"}}>
+            {/* Header */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",background:"#0d0c18",borderBottom:"1px solid #1e1c35"}}>
+              <div style={{padding:"14px 20px",fontSize:12,color:"#4a4665",fontFamily:"monospace"}}>FEATURE</div>
+              <div style={{padding:"14px 20px",fontSize:12,color:"#4a4665",fontFamily:"monospace",borderLeft:"1px solid #1e1c35",textAlign:"center"}}>YouTube / Coursera</div>
+              <div style={{padding:"14px 20px",fontSize:12,color:"#8b7cf6",fontFamily:"monospace",borderLeft:"1px solid #1e1c35",textAlign:"center",background:"#8b7cf608"}}>DS Academy ✦</div>
+            </div>
+            {[
+              {feature:"Structured path",them:"❌ You figure it out",us:"✅ One clear roadmap"},
+              {feature:"Interactive code",them:"❌ Watch only",us:"✅ Run code in browser"},
+              {feature:"Real projects",them:"❌ Toy exercises",us:"✅ 11 deployable projects"},
+              {feature:"Progress tracking",them:"❌ No system",us:"✅ XP, streaks, roadmap"},
+              {feature:"Instructor access",them:"❌ Comment section",us:"✅ Direct WhatsApp/Zoom"},
+              {feature:"MENA-focused",them:"❌ Generic global",us:"✅ Built for Arab market"},
+              {feature:"Free to start",them:"💳 Paywall first",us:"✅ Full Python phase free"},
+            ].map((row,i)=>(
+              <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderBottom:"1px solid #0d0c18"}}>
+                <div style={{padding:"14px 20px",fontSize:13,color:"#7b78a0",fontWeight:500}}>{row.feature}</div>
+                <div style={{padding:"14px 20px",fontSize:13,color:"#4a4665",borderLeft:"1px solid #1e1c35",textAlign:"center"}}>{row.them}</div>
+                <div style={{padding:"14px 20px",fontSize:13,color:"#6dd6a0",borderLeft:"1px solid #1e1c35",textAlign:"center",background:"#8b7cf605",fontWeight:600}}>{row.us}</div>
               </div>
             ))}
           </div>
@@ -1095,8 +1093,13 @@ function LoginPage(){
       <div id="apply" style={{padding:"50px 20px",background:"#0b0a12"}}>
         <div style={{maxWidth:1100,margin:"0 auto"}}>
           <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12,textAlign:"center"}}>// pricing</div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12,textAlign:"center"}}>Simple, honest pricing.</h2>
-          <p style={{color:"#7b78a0",fontSize:15,margin:"0 auto 20px",maxWidth:480,textAlign:"center"}}>Start free. Upgrade when you're ready to go all in.</p>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:8,textAlign:"center"}}>Simple, honest pricing.</h2>
+          <p style={{color:"#7b78a0",fontSize:15,margin:"0 auto 12px",maxWidth:480,textAlign:"center"}}>Start completely free. No credit card. No tricks. Upgrade only when you're ready.</p>
+          {/* Value context */}
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <span style={{fontSize:12,color:"#4a4665"}}>Coursera charges $49/month for less. </span>
+            <span style={{fontSize:12,color:"#6dd6a0",fontWeight:600}}>We start at $0. Forever.</span>
+          </div>
           {/* Social proof anchor */}
           <div style={{display:"flex",justifyContent:"center",marginBottom:28}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:10,background:"#17162a",border:"1px solid #8b7cf633",borderRadius:100,padding:"8px 20px"}}>
