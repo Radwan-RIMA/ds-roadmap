@@ -232,8 +232,29 @@ function getLevel(xp){
 function getNextLevel(xp){
   return XP_LEVELS.find(l=>l.min>xp)||null;
 }
-function XPToast({amount,onDone}){
-  useEffect(()=>{ const t=setTimeout(onDone,2200); return ()=>clearTimeout(t); },[]);
+function XPToast({amount,onDone,isLesson=false}){
+  useEffect(()=>{ const t=setTimeout(onDone,isLesson?3000:2200); return ()=>clearTimeout(t); },[]);
+  if(isLesson){
+    return(
+      <div style={{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,pointerEvents:"none"}}>
+        <style>{`
+          @keyframes xpSlideIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+          @keyframes lessonPop{0%{opacity:0;transform:scale(0.7)}60%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+          @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(80px) rotate(360deg);opacity:0}}
+        `}</style>
+        <div style={{background:"#11101c",border:"2px solid #a78bfa",borderRadius:20,padding:"32px 40px",textAlign:"center",animation:"lessonPop 0.4s ease",boxShadow:"0 20px 60px rgba(0,0,0,0.8)",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(90deg,#8b7cf6,#f472b6,#6ee7b7)"}}/>
+          {["🎉","⭐","✨","🚀","💫"].map((e,i)=>(
+            <div key={i} style={{position:"absolute",top:0,left:`${10+i*18}%`,fontSize:16,animation:`confettiFall ${0.8+i*0.2}s ease ${i*0.1}s both`}}>{e}</div>
+          ))}
+          <div style={{fontSize:44,marginBottom:8}}>🎓</div>
+          <div style={{fontSize:18,fontWeight:800,color:"#e8e4ff",marginBottom:4}}>Lesson Complete!</div>
+          <div style={{fontSize:28,fontWeight:800,color:"#a78bfa",marginBottom:4}}>+{amount} XP</div>
+          <div style={{fontSize:12,color:"#7b78a0"}}>Keep the momentum going 🔥</div>
+        </div>
+      </div>
+    );
+  }
   return(
     <div style={{position:"fixed",bottom:28,right:28,zIndex:999,background:"#1c1927",border:"1px solid #a78bfa55",borderRadius:12,padding:"12px 18px",display:"flex",alignItems:"center",gap:10,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",animation:"xpSlideIn 0.35s ease"}}>
       <style>{`@keyframes xpSlideIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}`}</style>
@@ -265,6 +286,7 @@ function Btn({onClick,children,color=T.info,style={}}){
 function LoginPage(){
   const [showLogin,setShowLogin]=useState(false);
   const [showBlog,setShowBlog]=useState(false);
+  const [showCourses,setShowCourses]=useState(false);
   const [authTab,setAuthTab]=useState("signup");
   const [email,setEmail]=useState("");
   const [password,setPassword]=useState("");
@@ -312,6 +334,8 @@ function LoginPage(){
         progress:{},
         xp:0,
         completedProjects:{},
+        onboarded:false,
+        lastLessonId:"numpy",
       };
       await setDoc(doc(db,"users",cred.user.uid),userData);
       // Notify admin of new signup
@@ -352,16 +376,19 @@ function LoginPage(){
     <div style={{minHeight:"100vh",background:"#0b0a12",color:"#e8e4ff",fontFamily:"'Segoe UI',system-ui,sans-serif",overflowX:"hidden"}}>
 
       {showBlog&&<PublicBlogPage onBack={()=>setShowBlog(false)}/>}
-      {!showBlog&&<>
+      {showCourses&&<CoursesPage onBack={()=>setShowCourses(false)} onSignup={()=>{setShowCourses(false);openModal("signup");}}/>}
+      {!showBlog&&!showCourses&&<>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 32px",background:"rgba(11,10,18,0.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid #1e1c35"}}>
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 20px",background:"rgba(11,10,18,0.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid #1e1c35",flexWrap:"wrap",gap:8}}>
         <div style={{fontWeight:800,fontSize:17,letterSpacing:"-0.02em",display:"flex",alignItems:"center",gap:8}}>
           <div style={{width:8,height:8,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 10px #8b7cf6"}}/>
           DS Academy
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16}}>
+          <button onClick={()=>setShowCourses(true)} style={{background:"none",border:"none",color:"#7b78a0",cursor:"pointer",fontSize:13,fontWeight:500}}>Courses</button>
           <button onClick={()=>setShowBlog(true)} style={{background:"none",border:"none",color:"#7b78a0",cursor:"pointer",fontSize:13,fontWeight:500}}>Blog</button>
+          <a href="#apply" style={{background:"none",border:"none",color:"#7b78a0",cursor:"pointer",fontSize:13,fontWeight:500,textDecoration:"none"}}>Pricing</a>
           <button onClick={()=>openModal("login")} style={{background:"none",border:"1px solid #2a2845",color:"#7b78a0",padding:"9px 16px",borderRadius:6,cursor:"pointer",fontSize:13}}>Login</button>
           <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"9px 20px",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:600}}>Start Free →</button>
         </div>
@@ -499,6 +526,61 @@ function LoginPage(){
               </div>
             ))}
           </div>
+        </div>
+
+        {/* PLATFORM MOCKUP */}
+        <div style={{marginTop:48,maxWidth:820,margin:"48px auto 0",position:"relative"}}>
+          <div style={{background:"#0d0c18",border:"1px solid #1e1c35",borderRadius:16,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,0.6)"}}>
+            {/* Window chrome */}
+            <div style={{background:"#0b0a12",borderBottom:"1px solid #1e1c35",padding:"10px 16px",display:"flex",alignItems:"center",gap:8}}>
+              <div style={{display:"flex",gap:6}}>{["#f28b82","#f7c96e","#6dd6a0"].map(c=><div key={c} style={{width:10,height:10,borderRadius:"50%",background:c}}/>)}</div>
+              <div style={{flex:1,background:"#17162a",borderRadius:4,padding:"3px 12px",fontSize:10,color:"#4a4665",textAlign:"center",maxWidth:200,margin:"0 auto"}}>zerotods.netlify.app</div>
+            </div>
+            {/* App layout */}
+            <div style={{display:"flex",height:320}}>
+              {/* Sidebar */}
+              <div style={{width:52,background:"#0f0e1a",borderRight:"1px solid #1e1c35",display:"flex",flexDirection:"column",alignItems:"center",padding:"12px 0",gap:8}}>
+                {[{icon:"🏠",active:false},{icon:"📋",active:false},{icon:"📚",active:true},{icon:"🚀",active:false},{icon:"📈",active:false}].map((item,i)=>(
+                  <div key={i} style={{width:34,height:34,borderRadius:8,background:item.active?"#8b7cf620":"transparent",border:item.active?"1px solid #8b7cf644":"1px solid transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>{item.icon}</div>
+                ))}
+              </div>
+              {/* Lesson sidebar */}
+              <div style={{width:160,background:"#0d0c18",borderRight:"1px solid #1e1c35",padding:"12px 8px",overflowY:"hidden"}}>
+                <div style={{fontSize:8,color:"#4a4665",letterSpacing:"0.1em",marginBottom:10,paddingLeft:4}}>LESSONS — 7/26</div>
+                {[{emoji:"🔢",title:"NumPy Arrays",done:true,color:"#38bdf8"},{emoji:"🐼",title:"Pandas Basics",done:true,color:"#a78bfa"},{emoji:"🔗",title:"Pandas Advanced",done:true,color:"#34d399"},{emoji:"🔍",title:"EDA",done:false,active:true,color:"#f472b6"},{emoji:"📊",title:"Visualization",done:false,color:"#fb923c"}].map((l,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 6px",borderRadius:5,background:l.active?"#f472b615":"transparent",borderLeft:l.active?"2px solid #f472b6":"2px solid transparent",marginBottom:2}}>
+                    <span style={{fontSize:11}}>{l.emoji}</span>
+                    <span style={{fontSize:9,color:l.active?"#e8e4ff":l.done?"#4a4665":"#7b78a0",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.title}</span>
+                    {l.done&&<span style={{fontSize:8,color:"#6dd6a0"}}>✓</span>}
+                  </div>
+                ))}
+              </div>
+              {/* Lesson content */}
+              <div style={{flex:1,padding:"16px 20px",overflowY:"hidden"}}>
+                <div style={{display:"inline-block",background:"#f472b620",color:"#f472b6",fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:10,letterSpacing:"0.08em",marginBottom:8}}>PYTHON FOR DS</div>
+                <div style={{fontSize:14,fontWeight:700,color:"#e8e4ff",marginBottom:2}}>🔍 Exploratory Data Analysis</div>
+                <div style={{fontSize:9,color:"#7b78a0",fontFamily:"monospace",marginBottom:12}}>The skill that separates good from great data scientists</div>
+                <div style={{background:"#060d18",border:"1px solid #1e2a3a",borderRadius:8,padding:"10px 12px",marginBottom:10}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                    <div style={{width:6,height:6,background:"#6dd6a0",borderRadius:"50%"}}/>
+                    <span style={{fontSize:8,color:"#4a5568",letterSpacing:"0.1em",fontWeight:700}}>CODING EXERCISE</span>
+                    <div style={{marginLeft:"auto",background:"#6dd6a0",color:"#000",fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:4}}>▶ Run Code</div>
+                  </div>
+                  <div style={{fontFamily:"monospace",fontSize:9,color:"#a8d8a8",lineHeight:1.7}}>
+                    <span style={{color:"#7eb8f7"}}>import</span> <span style={{color:"#e8e4ff"}}>pandas</span> <span style={{color:"#7eb8f7"}}>as</span> <span style={{color:"#e8e4ff"}}>pd</span><br/>
+                    <span style={{color:"#e8e4ff"}}>df</span> <span style={{color:"#f472b6"}}>=</span> <span style={{color:"#e8e4ff"}}>pd</span>.<span style={{color:"#6dd6a0"}}>read_csv</span>(<span style={{color:"#f7c96e"}}>'sales.csv'</span>)<br/>
+                    <span style={{color:"#7eb8f7"}}>print</span>(<span style={{color:"#e8e4ff"}}>df</span>.<span style={{color:"#6dd6a0"}}>describe</span>())
+                  </div>
+                </div>
+                <div style={{background:"#040a12",border:"1px solid #6dd6a033",borderRadius:6,padding:"6px 10px"}}>
+                  <div style={{fontSize:8,color:"#4a5568",letterSpacing:"0.1em",marginBottom:4}}>OUTPUT</div>
+                  <div style={{fontFamily:"monospace",fontSize:8,color:"#6dd6a0",lineHeight:1.7}}>{"       sales    units"}<br/>{"mean   4823.5   127.3"}<br/>{"std    1204.2    31.8"}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Glow effect */}
+          <div style={{position:"absolute",inset:0,borderRadius:16,boxShadow:"0 0 80px rgba(139,124,246,0.15)",pointerEvents:"none"}}/>
         </div>
       </div>
 
@@ -694,47 +776,78 @@ function LoginPage(){
       {/* AI JOB CALCULATOR */}
       <AIJobCalculator/>
 
-      {/* APPLY */}
-      <div id="apply" style={{padding:"80px 20px",background:"#0b0a12",textAlign:"center"}}>
-        <div style={{maxWidth:500,margin:"0 auto",background:"#11101c",border:"1px solid #2a2845",borderRadius:18,padding:"52px 36px",position:"relative"}}>
-          <div style={{position:"absolute",top:-1,left:"20%",right:"20%",height:2,background:"linear-gradient(90deg, transparent, #8b7cf6, #f472b6, transparent)"}}/>
-          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:16}}>// apply for access</div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(22px, 4vw, 34px)",letterSpacing:"-0.02em",marginBottom:12}}>Ready to start?</h2>
-          <p style={{color:"#7b78a0",fontSize:14,marginBottom:32,lineHeight:1.7}}>DS Academy runs in small cohorts. Drop your info and we'll reach out with next steps within 48 hours.</p>
-          <div id="lp-form"><div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left"}}>
-            <input id="lp-name" style={inp} placeholder="Your name"/>
-            <input id="lp-email" style={{...inp,marginBottom:0}} type="email" placeholder="Your email"/>
-            <select id="lp-bg" style={{...inp,color:"#7b78a0",cursor:"pointer",appearance:"none"}}>
-              <option value="" disabled selected>Your background</option>
-              <option>Complete beginner — no coding experience</option>
-              <option>Some Python, want to learn DS</option>
-              <option>University student / fresh graduate</option>
-              <option>Career switcher from another field</option>
-            </select>
-            <button
-              onClick={async()=>{
-                const n=document.getElementById("lp-name").value.trim();
-                const e=document.getElementById("lp-email").value.trim();
-                const b=document.getElementById("lp-bg").value;
-                if(!n||!e||!b){alert("Please fill in all fields.");return;}
-                try{
-                  await fetch("https://formspree.io/f/xreykgey",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({name:n,email:e,background:b})
-                  });
-                }catch(err){console.log("Form error",err);}
-                document.getElementById("lp-form").style.display="none";
-                document.getElementById("lp-success").style.display="block";
-              }}
-              style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"13px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:14,marginTop:4}}
-            >
-              Apply for Access →
-            </button>
-            <div style={{fontSize:11,color:"#3a3860",textAlign:"center",fontFamily:"monospace"}}>No payment required yet.</div>
+      {/* PRICING */}
+      <div id="apply" style={{padding:"80px 20px",background:"#0b0a12"}}>
+        <div style={{maxWidth:1100,margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12,textAlign:"center"}}>// pricing</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px, 4vw, 38px)",letterSpacing:"-0.02em",marginBottom:12,textAlign:"center"}}>Simple, honest pricing.</h2>
+          <p style={{color:"#7b78a0",fontSize:15,margin:"0 auto 48px",maxWidth:480,textAlign:"center"}}>Start free. Upgrade when you're ready to go all in.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:16,marginBottom:32}}>
+
+            {/* FREE */}
+            <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:16,padding:"28px",position:"relative",overflow:"hidden"}}>
+              <div style={{fontSize:11,color:"#7b78a0",letterSpacing:"0.1em",fontFamily:"monospace",marginBottom:12}}>FREE</div>
+              <div style={{fontSize:34,fontWeight:800,color:"#e8e4ff",marginBottom:2}}>$0</div>
+              <div style={{fontSize:12,color:"#4a4665",marginBottom:22}}>forever</div>
+              <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:24}}>
+                {["Python for Data Science (all lessons)","Full SQL — SELECT through window functions","Probability & Bayes","Section quizzes","Roadmap & XP tracking"].map(f=>(
+                  <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#7b78a0"}}><span style={{color:"#6dd6a0",flexShrink:0}}>✓</span>{f}</div>
+                ))}
+                {["Statistics, ML & Deep Learning","Portfolio projects","Certificates"].map(f=>(
+                  <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#2a2845"}}><span style={{flexShrink:0}}>–</span>{f}</div>
+                ))}
+              </div>
+              <button onClick={()=>openModal("signup")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Start Free →</button>
+            </div>
+
+            {/* MONTHLY */}
+            <div style={{background:"#11101c",border:"1px solid #6dd6a044",borderRadius:16,padding:"28px",position:"relative",overflow:"hidden"}}>
+              <div style={{fontSize:11,color:"#6dd6a0",letterSpacing:"0.1em",fontFamily:"monospace",marginBottom:12}}>SELF-PACED</div>
+              <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:2}}>
+                <span style={{fontSize:34,fontWeight:800,color:"#e8e4ff"}}>$19</span>
+                <span style={{fontSize:13,color:"#4a4665"}}>/month</span>
+              </div>
+              <div style={{fontSize:12,color:"#4a4665",marginBottom:22}}>cancel anytime</div>
+              <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:24}}>
+                {["Everything in Free","Full access to all 5 phases","All ML, Deep Learning & MLOps lessons","11 portfolio projects with datasets","Phase completion certificates","Leaderboard & community"].map(f=>(
+                  <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#c8c3e0"}}><span style={{color:"#6dd6a0",flexShrink:0}}>✓</span>{f}</div>
+                ))}
+                {["Weekly Zoom sessions","Private WhatsApp group"].map(f=>(
+                  <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#2a2845"}}><span style={{flexShrink:0}}>–</span>{f}</div>
+                ))}
+              </div>
+              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"#6dd6a018",border:"1px solid #6dd6a055",color:"#6dd6a0",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+                Get Monthly Access →
+              </a>
+            </div>
+
+            {/* COHORT */}
+            <div style={{background:"#11101c",border:"2px solid #8b7cf6",borderRadius:16,padding:"28px",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:-1,left:"15%",right:"15%",height:2,background:"linear-gradient(90deg,transparent,#8b7cf6,#f472b6,transparent)"}}/>
+              <div style={{position:"absolute",top:14,right:14,background:"#8b7cf620",border:"1px solid #8b7cf644",borderRadius:100,padding:"3px 10px",fontSize:9,color:"#8b7cf6",fontWeight:700,fontFamily:"monospace"}}>MOST POPULAR</div>
+              <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.1em",fontFamily:"monospace",marginBottom:12}}>PHASE 1 COHORT</div>
+              <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:2}}>
+                <span style={{fontSize:34,fontWeight:800,color:"#e8e4ff"}}>$99</span>
+                <span style={{fontSize:13,color:"#4a4665"}}>one-time</span>
+              </div>
+              <div style={{fontSize:12,color:"#4a4665",marginBottom:22}}>3 months · Phase 1 only</div>
+              <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:24}}>
+                {["Everything in Self-Paced","Weekly live Zoom sessions with Radwan","Private WhatsApp group","Direct instructor messaging","Phase 1 certificate on completion","Small cohort — max 10 students"].map(f=>(
+                  <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#c8c3e0"}}><span style={{color:"#8b7cf6",flexShrink:0}}>✓</span>{f}</div>
+                ))}
+              </div>
+              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20DS%20Academy%20Phase%201%20Cohort%20($99).%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+                Enroll via WhatsApp →
+              </a>
+              <div style={{fontSize:11,color:"#4a4665",textAlign:"center",marginTop:8}}>Wise · local transfer · cash</div>
+            </div>
           </div>
-          </div><div id="lp-success" style={{display:"none",background:"rgba(110,231,183,0.08)",border:"1px solid rgba(110,231,183,0.2)",borderRadius:10,padding:"20px",color:"#6ee7b7",fontSize:13,lineHeight:1.7,marginTop:16}}>
-            ✅ Application received! We'll reach out within 48 hours.
+
+          <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:12,padding:"18px 24px",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",justifyContent:"center",textAlign:"center"}}>
+            <span style={{fontSize:18}}>🤝</span>
+            <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7}}>
+              <strong style={{color:"#e8e4ff"}}>No automated checkout.</strong> Message on WhatsApp → confirm payment → account activated within 24h. Simple.
+            </div>
           </div>
         </div>
       </div>
@@ -821,6 +934,260 @@ function renderContent(text){
     i++;
   }
   return out;
+}
+
+
+// ── COURSES PAGE
+function CoursesPage({onBack, onSignup}){
+  const courses=[
+    {
+      id:"sql-business",
+      emoji:"🗄️",
+      tag:"AVAILABLE NOW",
+      tagColor:"#6dd6a0",
+      title:"SQL for Business",
+      subtitle:"Query databases like a data analyst — no coding background needed",
+      price:29,
+      duration:"4 weeks",
+      level:"Beginner",
+      audience:"Accountants, finance teams, operations, HR managers",
+      color:"#7eb8f7",
+      outcomes:["Write SELECT, WHERE, GROUP BY, JOIN queries from scratch","Build a real business KPI dashboard in SQL","Answer 10 real business questions using the Chinook database","Use CTEs and window functions — the skills interviewers test"],
+      modules:["Week 1 — SQL Foundations: SELECT, WHERE, ORDER BY","Week 2 — Aggregations: GROUP BY, HAVING, COUNT, SUM","Week 3 — JOINs: combine tables, INNER/LEFT/RIGHT","Week 4 — Advanced: CTEs, window functions, real project"],
+      available:true,
+    },
+    {
+      id:"excel-python",
+      emoji:"🐍",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"Excel to Python",
+      subtitle:"Automate everything you do in Excel — in half the time",
+      price:29,
+      duration:"4 weeks",
+      level:"Beginner",
+      audience:"Finance professionals, business analysts, admin teams",
+      color:"#6dd6a0",
+      outcomes:["Load, clean, and analyze Excel files in Python","Replace VLOOKUP, pivot tables, and macros with pandas","Automate repetitive Excel tasks with one script","Build charts and reports that update automatically"],
+      modules:["Week 1 — Python Basics for non-programmers","Week 2 — pandas: the Excel replacement","Week 3 — Automation: loops, functions, file handling","Week 4 — Real project: automate a monthly report"],
+      available:false,
+    },
+    {
+      id:"stats-business",
+      emoji:"📐",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"Statistics for Business Decisions",
+      subtitle:"Stop guessing. Make decisions with data confidence",
+      price:39,
+      duration:"3 weeks",
+      level:"Beginner",
+      audience:"Managers, consultants, MBAs, marketing teams",
+      color:"#a78bfa",
+      outcomes:["Understand p-values, confidence intervals, and significance","Design and interpret A/B tests for real business decisions","Spot misleading statistics in reports and presentations","Apply statistical thinking without heavy math"],
+      modules:["Week 1 — Descriptive statistics and data intuition","Week 2 — Hypothesis testing: A/B tests, p-values","Week 3 — Real cases: marketing, finance, HR decisions"],
+      available:false,
+    },
+    {
+      id:"python-finance",
+      emoji:"💹",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"Python for Finance",
+      subtitle:"Automate financial models, analysis, and reporting",
+      price:59,
+      duration:"6 weeks",
+      level:"Intermediate",
+      audience:"Bankers, accountants, financial analysts, CFOs",
+      color:"#f7c96e",
+      outcomes:["Build financial models in Python instead of Excel","Automate P&L, balance sheet, and cash flow analysis","Pull live market data and build dashboards","Create professional PDF reports automatically"],
+      modules:["Week 1–2 — Python and pandas for financial data","Week 3 — Financial modeling: DCF, ratios, forecasting","Week 4 — Market data: APIs, live prices, portfolio analysis","Week 5–6 — Automation and reporting project"],
+      available:false,
+    },
+    {
+      id:"power-bi",
+      emoji:"📊",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"Power BI for Business",
+      subtitle:"Build professional dashboards without writing a single line of code",
+      price:49,
+      duration:"4 weeks",
+      level:"Beginner",
+      audience:"Business analysts, finance teams, managers, consultants",
+      color:"#f59e0b",
+      outcomes:["Build interactive dashboards from scratch in Power BI","Connect to Excel, SQL databases, and live data sources","Create calculated columns and measures with DAX basics","Share dashboards with your team and management"],
+      modules:["Week 1 — Power BI interface, loading data, basic visuals","Week 2 — Relationships, filters, slicers, and drill-through","Week 3 — DAX basics: calculated columns, measures, KPIs","Week 4 — Real project: full business dashboard, published online"],
+      available:false,
+    },
+    {
+      id:"arabic-ds",
+      emoji:"🌍",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"Arabic Data Science Fundamentals",
+      subtitle:"تعلم علم البيانات بالعربي — المنهج الوحيد المنظم باللغة العربية",
+      price:49,
+      duration:"6 weeks",
+      level:"Beginner",
+      audience:"Arabic speakers across MENA who prefer learning in their native language",
+      color:"#6dd6a0",
+      outcomes:["Learn Python and data analysis fully in Arabic","Understand statistics and ML concepts in your native language","Build a real data project with Arabic-language guidance","Join a community of Arabic-speaking data professionals"],
+      modules:["Week 1–2 — Python basics explained in Arabic","Week 3 — Data analysis with pandas (Arabic)","Week 4 — Statistics and visualization (Arabic)","Week 5–6 — Mini project: real dataset, full analysis in Arabic"],
+      available:false,
+    },
+    {
+      id:"freelancing-data",
+      emoji:"💼",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"Freelancing with Data Skills",
+      subtitle:"Earn USD from Upwork and Fiverr using the data skills you already have",
+      price:39,
+      duration:"3 weeks",
+      level:"Beginner",
+      audience:"Graduates and career switchers in Lebanon, Syria, Egypt wanting USD income",
+      color:"#a78bfa",
+      outcomes:["Set up a winning Upwork/Fiverr profile as a data freelancer","Find and close your first 3 data clients","Price your services correctly for MENA and international markets","Deliver SQL, Excel, and Python projects professionally"],
+      modules:["Week 1 — Setting up your freelance profile and positioning","Week 2 — Finding clients: proposals, niches, pricing strategies","Week 3 — Delivering projects: communication, revisions, reviews"],
+      available:false,
+    },
+    {
+      id:"cv-portfolio",
+      emoji:"🎯",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"CV & Portfolio for Data Jobs",
+      subtitle:"Land your first data job — resume, LinkedIn, GitHub, and interview prep",
+      price:29,
+      duration:"2 weeks",
+      level:"Beginner",
+      audience:"DS Academy graduates and self-taught data learners ready to apply for jobs",
+      color:"#7eb8f7",
+      outcomes:["Write a data science resume that passes ATS filters","Build a GitHub portfolio that impresses hiring managers","Optimize your LinkedIn profile for data recruiters in MENA","Present your projects confidently in interviews"],
+      modules:["Week 1 — Resume writing, LinkedIn optimization, GitHub setup","Week 2 — Portfolio projects: how to present, what to say, mock interview"],
+      available:false,
+    },
+    {
+      id:"sheets-automation",
+      emoji:"⚡",
+      tag:"COMING SOON",
+      tagColor:"#f7c96e",
+      title:"Google Sheets + Python Automation",
+      subtitle:"Automate everything you do manually in Google Sheets — in minutes",
+      price:29,
+      duration:"3 weeks",
+      level:"Beginner",
+      audience:"Small business owners, executive assistants, operations teams in MENA",
+      color:"#34d399",
+      outcomes:["Connect Python to Google Sheets and automate updates","Build reports that refresh automatically every day","Send automated email summaries from your spreadsheet data","Eliminate 5+ hours of manual work per week"],
+      modules:["Week 1 — Google Sheets API setup and reading/writing data with Python","Week 2 — Automation: scheduled scripts, conditional updates, alerts","Week 3 — Real project: fully automated weekly business report"],
+      available:false,
+    },
+  ];
+
+  const [selected,setSelected]=useState(null);
+
+  if(selected){
+    const c=courses.find(x=>x.id===selected);
+    return(
+      <div style={{minHeight:"100vh",background:"#0b0a12",color:"#e8e4ff",fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
+        <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 28px",background:"rgba(11,10,18,0.95)",backdropFilter:"blur(20px)",borderBottom:"1px solid #1e1c35"}}>
+          <div style={{fontWeight:800,fontSize:16,display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:7,height:7,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 8px #8b7cf6"}}/>DS Academy
+          </div>
+          <button onClick={()=>setSelected(null)} style={{background:"none",border:"1px solid #2a2845",color:"#7b78a0",padding:"7px 16px",borderRadius:6,cursor:"pointer",fontSize:13}}>← All Courses</button>
+        </nav>
+        <div style={{maxWidth:760,margin:"0 auto",padding:"100px 20px 60px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
+            <span style={{fontSize:10,padding:"3px 10px",borderRadius:100,background:c.tagColor+"20",color:c.tagColor,fontFamily:"monospace",fontWeight:700}}>{c.tag}</span>
+            <span style={{fontSize:10,color:"#4a4665"}}>{c.level} · {c.duration}</span>
+          </div>
+          <h1 style={{fontSize:"clamp(26px,5vw,42px)",fontWeight:800,letterSpacing:"-0.02em",marginBottom:8,lineHeight:1.15}}>{c.emoji} {c.title}</h1>
+          <p style={{fontSize:16,color:"#7b78a0",marginBottom:32,lineHeight:1.7}}>{c.subtitle}</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:16,marginBottom:32}}>
+            <div style={{background:"#11101c",border:`1px solid ${c.color}33`,borderRadius:14,padding:"24px"}}>
+              <div style={{fontSize:10,color:c.color,letterSpacing:"0.12em",marginBottom:14,fontFamily:"monospace"}}>WHAT YOU'LL BE ABLE TO DO</div>
+              {c.outcomes.map((o,i)=><div key={i} style={{display:"flex",gap:10,fontSize:13,color:"#c8c3e0",marginBottom:10}}><span style={{color:c.color,flexShrink:0}}>✓</span>{o}</div>)}
+            </div>
+            <div style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:14,padding:"24px"}}>
+              <div style={{fontSize:10,color:"#7b78a0",letterSpacing:"0.12em",marginBottom:14,fontFamily:"monospace"}}>CURRICULUM</div>
+              {c.modules.map((m,i)=><div key={i} style={{fontSize:12,color:"#7b78a0",marginBottom:10,paddingBottom:10,borderBottom:"1px solid #1e1c35"}}>{m}</div>)}
+              <div style={{fontSize:11,color:"#4a4665",marginTop:4}}>👥 For: {c.audience}</div>
+            </div>
+          </div>
+          <div style={{background:"#11101c",border:`1px solid ${c.color}44`,borderRadius:14,padding:"28px",textAlign:"center"}}>
+            <div style={{fontSize:36,fontWeight:800,color:"#e8e4ff",marginBottom:4}}>${c.price} <span style={{fontSize:14,color:"#4a4665",fontWeight:400}}>one-time</span></div>
+            <div style={{fontSize:12,color:"#4a4665",marginBottom:20}}>Lifetime access · No subscription</div>
+            {c.available?(
+              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20buy%20the%20'"+encodeURIComponent(c.title)+"'%20course%20($"+c.price+").%20Please%20send%20payment%20details."} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",padding:"13px 40px",background:"#8b7cf6",color:"#fff",borderRadius:9,fontSize:14,fontWeight:700,textDecoration:"none"}}>
+                Buy via WhatsApp →
+              </a>
+            ):(
+              <div>
+                <div style={{fontSize:13,color:"#7b78a0",marginBottom:16}}>This course is in development. Join the waitlist and get notified + early bird discount.</div>
+                <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20be%20on%20the%20waitlist%20for%20'"+encodeURIComponent(c.title)+"'.%20Please%20notify%20me%20when%20it%20launches."} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",padding:"13px 40px",background:"#1e1c35",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:9,fontSize:13,fontWeight:600,textDecoration:"none"}}>
+                  Join Waitlist →
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{minHeight:"100vh",background:"#0b0a12",color:"#e8e4ff",fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 28px",background:"rgba(11,10,18,0.95)",backdropFilter:"blur(20px)",borderBottom:"1px solid #1e1c35",flexWrap:"wrap",gap:8}}>
+        <div style={{fontWeight:800,fontSize:16,display:"flex",alignItems:"center",gap:8}}>
+          <div style={{width:7,height:7,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 8px #8b7cf6"}}/>DS Academy
+        </div>
+        <div style={{display:"flex",gap:12,alignItems:"center"}}>
+          <button onClick={onBack} style={{background:"none",border:"none",color:"#7b78a0",cursor:"pointer",fontSize:13}}>← Home</button>
+          <button onClick={onSignup} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"8px 18px",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:600}}>Start Free →</button>
+        </div>
+      </nav>
+      <div style={{maxWidth:1000,margin:"0 auto",padding:"100px 20px 60px"}}>
+        <div style={{fontFamily:"monospace",fontSize:11,color:"#8b7cf6",letterSpacing:"0.15em",marginBottom:12}}>// standalone courses</div>
+        <h1 style={{fontWeight:800,fontSize:"clamp(28px,5vw,46px)",letterSpacing:"-0.02em",marginBottom:12}}>Courses</h1>
+        <p style={{color:"#7b78a0",fontSize:15,marginBottom:48,maxWidth:520,lineHeight:1.7}}>Focused, practical courses on specific skills. No fluff, no filler — just the exact skills you need for your job. Buy once, keep forever.</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
+          {courses.map(c=>(
+            <div key={c.id} onClick={()=>setSelected(c.id)} style={{background:"#11101c",border:`1px solid ${c.available?c.color+"33":"#1e1c35"}`,borderRadius:16,overflow:"hidden",cursor:"pointer",position:"relative",transition:"transform 0.2s,border-color 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.borderColor=c.color+"66";}}
+              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=c.available?c.color+"33":"#1e1c35";}}>
+              <div style={{height:96,background:`linear-gradient(135deg,${c.color}20,${c.color}08)`,borderBottom:`1px solid ${c.color}20`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",right:-16,top:-16,width:90,height:90,background:c.color+"10",borderRadius:"50%"}}/>
+                <span style={{fontSize:40,position:"relative",zIndex:1}}>{c.emoji}</span>
+                <div style={{textAlign:"right",position:"relative",zIndex:1}}>
+                  <div style={{fontSize:22,fontWeight:800,color:c.color}}>${c.price}</div>
+                  <div style={{fontSize:9,color:c.color+"88"}}>{c.duration}</div>
+                </div>
+              </div>
+              <div style={{padding:"16px 20px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <span style={{fontSize:9,padding:"3px 9px",borderRadius:100,background:c.tagColor+"20",color:c.tagColor,fontFamily:"monospace",fontWeight:700}}>{c.tag}</span>
+                <span style={{fontSize:9,color:"#4a4665",background:"#17162a",padding:"2px 7px",borderRadius:4}}>{c.level}</span>
+              </div>
+              <div style={{fontSize:15,fontWeight:700,color:"#e8e4ff",marginBottom:5,lineHeight:1.3}}>{c.title}</div>
+              <div style={{fontSize:11,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>{c.subtitle}</div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid #1e1c35",paddingTop:12,marginTop:12}}>
+                <span style={{fontSize:10,color:"#4a4665"}}>{c.audience.split(",")[0]}</span>
+                <span style={{fontSize:10,color:c.color,fontWeight:600}}>{c.available?"Available →":"Waitlist →"}</span>
+              </div>
+              </div>{/* end padding div */}
+            </div>
+          ))}
+        </div>
+        <div style={{marginTop:48,background:"#11101c",border:"1px solid #1e1c35",borderRadius:12,padding:"24px",textAlign:"center"}}>
+          <div style={{fontSize:14,fontWeight:700,color:"#e8e4ff",marginBottom:8}}>Part of the DS Academy ecosystem</div>
+          <div style={{fontSize:13,color:"#7b78a0",marginBottom:16,lineHeight:1.7}}>These courses are standalone — but they also connect to the full DS Academy roadmap. Complete SQL for Business and continue into the full data science curriculum.</div>
+          <button onClick={onSignup} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"11px 28px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Start Free on DS Academy →</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── PUBLIC BLOG PAGE (shown on landing page)
@@ -927,7 +1294,7 @@ function StudentBlogTab(){
   }
 
   return(
-    <div style={{padding:"24px",maxWidth:900,margin:"0 auto"}}>
+    <div className="ds-admin-content" style={{padding:"24px",maxWidth:900,margin:"0 auto"}}>
       <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:8}}>// blog</div>
       <div style={{fontSize:18,fontWeight:700,marginBottom:4,color:T.text}}>Blog</div>
       <div style={{fontSize:12,color:T.textDim,marginBottom:24}}>Tutorials, tips, and insights.</div>
@@ -1157,6 +1524,13 @@ function AdminDashboard({currentUser}){
     }catch(e){setUserErr("Error: "+e.message);}
   };
   const removeUser=async(id)=>{if(!window.confirm("Remove this student?"))return;await setDoc(doc(db,"users",id),{disabled:true},{merge:true});};
+  const upgradeStudent=async(id,plan="monthly")=>{
+    const label=plan==="student"?"Phase 1 Cohort ($99)":"Monthly Plan ($19/mo)";
+    if(!window.confirm(`Confirm payment received — upgrade to ${label}?`))return;
+    await updateDoc(doc(db,"users",id),{role:plan,upgradedAt:new Date().toISOString(),plan});
+    setUserOk(`✅ Student upgraded to ${label}!`);
+    setTimeout(()=>setUserOk(""),3000);
+  };
   const sendMessage=async()=>{if(!newMsg.text.trim())return;await addDoc(collection(db,"messages"),{from:currentUser.email,to:newMsg.to,text:newMsg.text.trim(),time:new Date().toISOString()});setNewMsg({to:"all",text:""});};
   const updateTask=(pi,si,ti,value)=>{const r=JSON.parse(JSON.stringify(roadmap));r[pi].sections[si].tasks[ti]=value;saveRoadmap(r);setEditingTask(null);};
   const deleteTask=(pi,si,ti)=>{if(!window.confirm("Delete this task?"))return;const r=JSON.parse(JSON.stringify(roadmap));r[pi].sections[si].tasks.splice(ti,1);saveRoadmap(r);};
@@ -1174,7 +1548,16 @@ const unlockPhase=async(studentId,phaseIndex)=>{
 
   return(
     <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
-      <div style={{background:T.bgDeep,borderBottom:`1px solid ${T.border}`,padding:"14px 24px 0"}}>
+      <style>{`
+        @media (max-width: 768px) {
+          .ds-admin-header { padding: 12px 16px 0 !important; }
+          .ds-admin-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+          .ds-admin-tabs button { flex-shrink: 0; padding: 8px 10px !important; font-size: 11px !important; white-space: nowrap; }
+          .ds-admin-content { padding: 16px !important; }
+          .ds-admin-content .admin-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="ds-admin-header" style={{background:T.bgDeep,borderBottom:`1px solid ${T.border}`,padding:"14px 24px 0"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
           <div>
             <div style={{fontSize:10,color:T.textFade,letterSpacing:"0.12em"}}>DATA SCIENCE LEARNING ROADMAP</div>
@@ -1203,7 +1586,7 @@ const unlockPhase=async(studentId,phaseIndex)=>{
             <Btn onClick={()=>signOut(auth)} color={T.warn} style={{padding:"5px 12px",fontSize:11}}>Logout</Btn>
           </div>
         </div>
-        <div style={{display:"flex",gap:4}}>
+        <div className="ds-admin-tabs" style={{display:"flex",gap:4}}>
           {tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"8px 14px",background:"none",border:"none",borderBottom:`2px solid ${tab===t.id?T.p1:"transparent"}`,color:tab===t.id?T.p1:T.textDim,cursor:"pointer",fontSize:12,fontWeight:tab===t.id?600:400}}>{t.label}</button>)}
         </div>
       </div>
@@ -1257,7 +1640,13 @@ const unlockPhase=async(studentId,phaseIndex)=>{
                 return(
                   <div key={u.id} style={{padding:"14px 20px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
                     <div style={{width:36,height:36,borderRadius:"50%",background:color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color,flexShrink:0}}>{u.username[0].toUpperCase()}</div>
-                    <div style={{flex:1,minWidth:160}}><div style={{fontSize:13,fontWeight:600,marginBottom:2}}>{u.username}</div><div style={{fontSize:10,color:T.textFade}}>{u.email}</div></div>
+                    <div style={{flex:1,minWidth:160}}>
+                      <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:2}}>
+                        <span style={{fontSize:13,fontWeight:600}}>{u.username}</span>
+                        <span style={{fontSize:9,padding:"1px 6px",borderRadius:3,fontWeight:700,background:u.role==="free"?T.p4+"20":T.good+"20",color:u.role==="free"?T.p4:T.good}}>{u.role==="free"?"FREE":u.role==="student"?"COHORT":"$19/MO"}</span>
+                      </div>
+                      <div style={{fontSize:10,color:T.textFade}}>{u.email}</div>
+                    </div>
                     <div style={{flex:2,minWidth:160}}>
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:T.textFade}}>Progress</span><span style={{fontSize:10,color}}>{prog.pct}% ({prog.done}/{prog.total})</span></div>
                       <ProgressBar pct={prog.pct} color={color}/>
@@ -1274,6 +1663,10 @@ const unlockPhase=async(studentId,phaseIndex)=>{
                         );
                         return null;
                       })}
+                      {u.role==="free"&&<>
+                        <button onClick={()=>upgradeStudent(u.id,"monthly")} style={{background:T.p1+"18",border:`1px solid ${T.p1}44`,color:T.p1,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600}}>⬆ $19/mo</button>
+                        <button onClick={()=>upgradeStudent(u.id,"student")} style={{background:T.good+"18",border:`1px solid ${T.good}44`,color:T.good,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600}}>⬆ $99 Cohort</button>
+                      </>}
                       <button onClick={()=>setManagingStudent(u)} style={{background:T.p1+"18",border:`1px solid ${T.p1}44`,color:T.p1,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11}}>Manage</button>
                       <button onClick={()=>removeUser(u.id)} style={{background:T.warn+"15",border:`1px solid ${T.warn}44`,color:T.warn,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11}}>Remove</button>
                     </div>
@@ -1410,7 +1803,7 @@ const unlockPhase=async(studentId,phaseIndex)=>{
 
 
 // ── QUIZ TAB ─────────────────────────────────────────────────────────────────
-function QuizTab({roadmap,progress}){
+function QuizTab({roadmap,progress,userDoc}){
   const [activeSec,setActiveSec]=useState(null);
   const [qIndex,setQIndex]=useState(0);
   const [selected,setSelected]=useState(null);
@@ -1420,8 +1813,13 @@ function QuizTab({roadmap,progress}){
   const [openAnswer,setOpenAnswer]=useState("");
   const [showModel,setShowModel]=useState(false);
 
+  const freeSectionIds=["python-core","python-ds","sql","stats-prob","stats-dist"];
+  const isFree=userDoc?.role==="free";
   const allSections=roadmap.flatMap(ph=>
-    ph.sections.filter(s=>QUIZ_DATA[s.id]&&QUIZ_DATA[s.id].length>0).map(s=>({...s,phaseColor:ph.color,phaseTitle:ph.title}))
+    ph.sections
+      .filter(s=>QUIZ_DATA[s.id]&&QUIZ_DATA[s.id].length>0)
+      .filter(s=>!isFree||freeSectionIds.includes(s.id))
+      .map(s=>({...s,phaseColor:ph.color,phaseTitle:ph.title}))
   );
 
   const startQuiz=(sec)=>{setActiveSec(sec);setQIndex(0);setSelected(null);setShowResult(false);setSessionScore({correct:0,total:0});setDone(false);setOpenAnswer("");setShowModel(false);};
@@ -1809,6 +2207,194 @@ function CertificateTab({userDoc,roadmap,progress,xp}){
 }
 
 
+
+// ── ONBOARDING QUIZ
+function OnboardingQuiz({currentUser, userDoc, onComplete}){
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  const questions = [
+    {
+      id: "background",
+      emoji: "👋",
+      question: `Nice to meet you, ${userDoc.username}! What's your coding background?`,
+      subtitle: "This helps us set the right starting point for you.",
+      options: [
+        {value:"none",    label:"Complete beginner", sub:"Never written a line of code"},
+        {value:"some",    label:"A little coding",    sub:"Learned some basics, nothing serious"},
+        {value:"python",  label:"I know Python",      sub:"Comfortable with the language"},
+        {value:"dev",     label:"Developer / engineer", sub:"Professional coding experience"},
+      ]
+    },
+    {
+      id: "goal",
+      emoji: "🎯",
+      question: "What's your main career goal?",
+      subtitle: "We'll highlight the path and phases that matter most for you.",
+      options: [
+        {value:"data-analyst",   label:"Data Analyst",    sub:"SQL, Python, dashboards, business insights"},
+        {value:"data-scientist", label:"Data Scientist",  sub:"ML models, statistics, predictions"},
+        {value:"ml-engineer",    label:"ML Engineer",     sub:"Deploy models, MLOps, production systems"},
+        {value:"explore",        label:"Still exploring", sub:"I want to learn and see where it leads"},
+      ]
+    },
+    {
+      id: "hours",
+      emoji: "⏰",
+      question: "How many hours per week can you dedicate?",
+      subtitle: "Be honest — consistency beats intensity every time.",
+      options: [
+        {value:"2-4",  label:"2–4 hours/week",  sub:"Weekend learner"},
+        {value:"5-10", label:"5–10 hours/week", sub:"Part-time serious"},
+        {value:"10-20",label:"10–20 hours/week",sub:"Full commitment"},
+        {value:"20+",  label:"20+ hours/week",  sub:"All in"},
+      ]
+    },
+    {
+      id: "fear",
+      emoji: "😅",
+      question: "What worries you most about learning data science?",
+      subtitle: "You're not alone — everyone struggles with something.",
+      options: [
+        {value:"math",    label:"The math & statistics", sub:"Feels like it requires a PhD"},
+        {value:"code",    label:"The coding",            sub:"Programming is intimidating"},
+        {value:"time",    label:"Staying consistent",    sub:"Starting strong but losing momentum"},
+        {value:"jobs",    label:"Getting a job after",   sub:"Will this actually lead somewhere?"},
+      ]
+    },
+  ];
+
+  const pathRecommendations = {
+    "data-analyst":   {id:"data-analyst",   color:"#7eb8f7", icon:"📊", label:"Data Analyst",    why:"Perfect match — SQL, Python, and business analytics are exactly this path."},
+    "data-scientist": {id:"data-scientist", color:"#a78bfa", icon:"🧠", label:"Data Scientist",  why:"Great choice — statistics and ML are the core of this curriculum."},
+    "ml-engineer":    {id:"ml-engineer",    color:"#6dd6a0", icon:"⚙️", label:"ML Engineer",     why:"Ambitious and achievable — you'll build deployed systems by Phase 3."},
+    "explore":        {id:"data-analyst",   color:"#7eb8f7", icon:"📊", label:"Data Analyst",    why:"Best starting point — most in-demand role in MENA, great foundation for everything else."},
+  };
+
+  const startLessons = {
+    "none":   "pycore-basics",
+    "some":   "numpy",
+    "python": "pandas-basics",
+    "dev":    "pandas-advanced",
+  };
+
+  const isLastQuestion = step === questions.length - 1;
+  const isDone = step === questions.length;
+  const q = questions[step];
+  const recommendation = pathRecommendations[answers.goal] || pathRecommendations["explore"];
+  const startLesson = startLessons[answers.background] || "numpy";
+
+  const selectAnswer = (value) => {
+    setAnswers(a => ({...a, [q.id]: value}));
+  };
+
+  const next = async () => {
+    if(!answers[q.id]) return;
+    if(isLastQuestion){
+      setSaving(true);
+      const finalAnswers = {...answers};
+      const rec = pathRecommendations[finalAnswers.goal] || pathRecommendations["explore"];
+      const sl = startLessons[finalAnswers.background] || "numpy";
+      await updateDoc(doc(db,"users",currentUser.uid),{
+        onboarded: true,
+        onboardingAnswers: finalAnswers,
+        recommendedPath: rec.id,
+        recommendedStartLesson: sl,
+      });
+      setSaving(false);
+      setStep(s => s+1);
+    } else {
+      setStep(s => s+1);
+    }
+  };
+
+  const progressPct = Math.round((step / questions.length) * 100);
+
+  // Result screen
+  if(isDone){
+    return(
+      <div style={{position:"fixed",inset:0,background:"#0b0a12",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500,padding:"20px"}}>
+        <div style={{maxWidth:480,width:"100%",textAlign:"center"}}>
+          <div style={{fontSize:48,marginBottom:16}}>🎉</div>
+          <div style={{fontSize:9,color:T.p2,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:12}}>// you're all set</div>
+          <div style={{fontSize:26,fontWeight:800,color:T.text,letterSpacing:"-0.02em",marginBottom:8}}>Your path is ready.</div>
+          <div style={{fontSize:14,color:T.textDim,marginBottom:32,lineHeight:1.7}}>
+            Based on your answers, here's where we recommend you start.
+          </div>
+          <div style={{background:T.bgCard,border:`2px solid ${recommendation.color}44`,borderRadius:16,padding:"24px",marginBottom:20,position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:recommendation.color}}/>
+            <div style={{fontSize:32,marginBottom:10}}>{recommendation.icon}</div>
+            <div style={{fontSize:11,color:recommendation.color,letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:6}}>RECOMMENDED PATH</div>
+            <div style={{fontSize:20,fontWeight:700,color:T.text,marginBottom:8}}>{recommendation.label}</div>
+            <div style={{fontSize:13,color:T.textDim,lineHeight:1.7,marginBottom:16}}>{recommendation.why}</div>
+            <div style={{background:T.bgDeep,borderRadius:8,padding:"12px 16px",textAlign:"left"}}>
+              <div style={{fontSize:10,color:T.textFade,letterSpacing:"0.1em",marginBottom:8}}>YOUR PERSONALISED START</div>
+              {answers.background==="none"&&<div style={{fontSize:12,color:T.textDim}}>📍 Starting from Python Basics — no prior experience needed</div>}
+              {answers.background==="some"&&<div style={{fontSize:12,color:T.textDim}}>📍 Starting from NumPy — skipping the very basics</div>}
+              {answers.background==="python"&&<div style={{fontSize:12,color:T.textDim}}>📍 Starting from Pandas — your Python is ready</div>}
+              {answers.background==="dev"&&<div style={{fontSize:12,color:T.textDim}}>📍 Starting from Pandas Advanced — you move fast</div>}
+              {answers.hours==="2-4"&&<div style={{fontSize:12,color:T.textDim,marginTop:6}}>⏱ At your pace, Phase 1 takes about 3–4 months</div>}
+              {answers.hours==="5-10"&&<div style={{fontSize:12,color:T.textDim,marginTop:6}}>⏱ At your pace, Phase 1 takes about 6–8 weeks</div>}
+              {answers.hours==="10-20"&&<div style={{fontSize:12,color:T.textDim,marginTop:6}}>⏱ At your pace, Phase 1 takes about 3–4 weeks</div>}
+              {answers.hours==="20+"&&<div style={{fontSize:12,color:T.textDim,marginTop:6}}>⏱ At your pace, you could finish Phase 1 in 2 weeks</div>}
+            </div>
+          </div>
+          <button onClick={()=>onComplete(startLesson)} style={{width:"100%",padding:"14px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:10,cursor:"pointer",fontSize:15,fontWeight:700,letterSpacing:"-0.01em"}}>
+            Start Learning →
+          </button>
+          <div style={{fontSize:11,color:T.textFade,marginTop:12}}>You can always change your path later from the Progress tab</div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"#0b0a12",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500,padding:"20px"}}>
+      <div style={{maxWidth:520,width:"100%"}}>
+        {/* Progress bar */}
+        <div style={{marginBottom:32}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+            <div style={{fontSize:10,color:T.textFade,fontFamily:"monospace"}}>{step+1} of {questions.length}</div>
+            <div style={{fontSize:10,color:T.textFade,fontFamily:"monospace"}}>{progressPct}%</div>
+          </div>
+          <div style={{height:3,background:T.bgCard,borderRadius:3,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${progressPct}%`,background:"#8b7cf6",borderRadius:3,transition:"width 0.4s ease"}}/>
+          </div>
+        </div>
+        {/* Question */}
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:40,marginBottom:16}}>{q.emoji}</div>
+          <div style={{fontSize:22,fontWeight:800,color:T.text,letterSpacing:"-0.02em",marginBottom:8,lineHeight:1.3}}>{q.question}</div>
+          <div style={{fontSize:13,color:T.textDim}}>{q.subtitle}</div>
+        </div>
+        {/* Options */}
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
+          {q.options.map(opt=>{
+            const selected = answers[q.id]===opt.value;
+            return(
+              <button key={opt.value} onClick={()=>selectAnswer(opt.value)} style={{background:selected?"#8b7cf618":T.bgCard,border:`1.5px solid ${selected?"#8b7cf6":T.border}`,borderRadius:12,padding:"14px 18px",cursor:"pointer",textAlign:"left",transition:"all 0.15s",display:"flex",alignItems:"center",gap:14}}>
+                <div style={{width:18,height:18,borderRadius:"50%",border:`2px solid ${selected?"#8b7cf6":T.borderHi}`,background:selected?"#8b7cf6":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {selected&&<div style={{width:6,height:6,borderRadius:"50%",background:"#fff"}}/>}
+                </div>
+                <div>
+                  <div style={{fontSize:14,fontWeight:600,color:selected?T.text:T.textDim,marginBottom:2}}>{opt.label}</div>
+                  <div style={{fontSize:11,color:T.textFade}}>{opt.sub}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        {/* Next button */}
+        <button onClick={next} disabled={!answers[q.id]||saving} style={{width:"100%",padding:"13px",background:answers[q.id]?"#8b7cf6":"#1e1c35",border:"none",color:answers[q.id]?"#fff":T.textFade,borderRadius:10,cursor:answers[q.id]?"pointer":"not-allowed",fontSize:14,fontWeight:700,transition:"all 0.2s"}}>
+          {saving?"Saving...":isLastQuestion?"See My Path →":"Continue →"}
+        </button>
+        {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{width:"100%",padding:"10px",background:"none",border:"none",color:T.textFade,cursor:"pointer",fontSize:12,marginTop:8}}>← Back</button>}
+      </div>
+    </div>
+  );
+}
+
 // ── DS TUTOR CHATBOT
 function DSTutorTab({userDoc}){
   return(
@@ -1865,14 +2451,25 @@ function StudentDashboard({currentUser,userDoc}){
   const [expandedProj,setExpandedProj]=useState(null);
   const [completedProjects,setCompletedProjects]=useState(userDoc.completedProjects||{});
   const [readMsgIds,setReadMsgIds]=useState(()=>{try{return new Set(JSON.parse(localStorage.getItem("dsReadMsgs")||"[]"));}catch{return new Set();}});
+  const [showOnboarding,setShowOnboarding]=useState(!userDoc.onboarded);
+  const [startLessonOverride,setStartLessonOverride]=useState(userDoc.recommendedStartLesson||null);
+
+  const handleOnboardingComplete=(startLesson)=>{
+    setShowOnboarding(false);
+    if(startLesson){
+      setStartLessonOverride(startLesson);
+      setActiveLearnId(startLesson);
+      setTab("learn");
+    }
+  };
 
   const xpRef=React.useRef(xp);
   useEffect(()=>{xpRef.current=xp;},[xp]);
-  const awardXP=async(amount)=>{
+  const awardXP=async(amount,isLesson=false)=>{
     const newXp=xpRef.current+amount;
     xpRef.current=newXp;
     setXp(newXp);
-    setXpToast(amount);
+    setXpToast({amount,isLesson});
     await updateDoc(doc(db,"users",currentUser.uid),{xp:newXp});
   };
 
@@ -1882,7 +2479,7 @@ function StudentDashboard({currentUser,userDoc}){
     const key = `${mapping.section}-${mapping.task}`;
     if(!progress[key]){
       saveProgress({...progress,[key]:true});
-      awardXP(25);
+      awardXP(25,true); // true = lesson celebration
     }
   };
 
@@ -1919,7 +2516,7 @@ function StudentDashboard({currentUser,userDoc}){
   const thisWeekCheckin=checkins.find(c=>c.week===getWeekNumber());
 
   useEffect(()=>{const load=async()=>{const snap=await getDoc(doc(db,"config","roadmap"));if(snap.exists())setRoadmap(snap.data().data);};load();},[]);
-  useEffect(()=>{const unsub=onSnapshot(collection(db,"users"),snap=>{setStudents(snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role==="student"&&!u.disabled));});return unsub;},[]);
+  useEffect(()=>{const unsub=onSnapshot(collection(db,"users"),snap=>{setStudents(snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role!=="admin"&&!u.disabled));});return unsub;},[]);
   useEffect(()=>{
     const q=query(collection(db,"messages"),orderBy("time","desc"));
     const unsub=onSnapshot(q,snap=>{setMessages(snap.docs.map(d=>({id:d.id,...d.data()})).filter(m=>m.to==="all"||m.to===currentUser.uid));});
@@ -1982,34 +2579,137 @@ function StudentDashboard({currentUser,userDoc}){
 
   return(
     <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",flexDirection:"row"}}>
+      <style>{`
+        /* ── MOBILE RESPONSIVE ── */
+        @media (max-width: 768px) {
+          .ds-sidebar {
+            display: none !important;
+          }
+          .ds-main {
+            height: 100vh !important;
+            padding-bottom: 64px !important;
+          }
+          .ds-bottom-nav {
+            display: flex !important;
+          }
+          .ds-roadmap-panel {
+            width: 100% !important;
+            height: auto !important;
+            flex-direction: column !important;
+          }
+          .ds-roadmap-inner {
+            width: 100% !important;
+            border-right: none !important;
+            border-bottom: 1px solid #2a2540 !important;
+            display: flex !important;
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            gap: 6px !important;
+            padding: 10px 12px !important;
+            height: auto !important;
+          }
+          .ds-roadmap-inner button {
+            flex-shrink: 0 !important;
+            width: auto !important;
+          }
+          .ds-roadmap-inner-sections {
+            display: none !important;
+          }
+          .ds-roadmap-content {
+            overflow-y: auto !important;
+            flex: 1 !important;
+          }
+          .ds-admin-header {
+            padding: 12px 16px 0 !important;
+          }
+          .ds-admin-tabs {
+            overflow-x: auto !important;
+            flex-wrap: nowrap !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          .ds-admin-tabs button {
+            flex-shrink: 0 !important;
+            padding: 8px 10px !important;
+            font-size: 11px !important;
+          }
+          .ds-admin-content {
+            padding: 16px !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .ds-bottom-nav { display: none !important; }
+        }
+        .ds-bottom-nav {
+          position: fixed;
+          bottom: 0; left: 0; right: 0;
+          height: 60px;
+          background: #161320;
+          border-top: 1px solid #2a2540;
+          display: none;
+          align-items: center;
+          justify-content: space-around;
+          z-index: 100;
+          padding: 0 4px;
+        }
+        .ds-bottom-nav button {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 3px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 6px 4px;
+          border-radius: 8px;
+          min-width: 0;
+        }
+        .ds-bottom-nav button .nav-icon { font-size: 18px; line-height: 1; }
+        .ds-bottom-nav button .nav-label { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52px; }
+      `}</style>
+
+      {/* ONBOARDING QUIZ */}
+      {showOnboarding&&<OnboardingQuiz currentUser={currentUser} userDoc={userDoc} onComplete={handleOnboardingComplete}/>}
 
       {/* XP TOAST */}
-      {xpToast&&<XPToast amount={xpToast} onDone={()=>setXpToast(null)}/>}
+      {xpToast&&<XPToast amount={xpToast.amount} isLesson={xpToast.isLesson} onDone={()=>setXpToast(null)}/>}
 
       {/* PAYWALL MODAL */}
       {showPaywall&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,backdropFilter:"blur(6px)"}}>
-          <div style={{background:"#11101c",border:"1px solid #2a2845",borderRadius:16,padding:"36px",width:380,maxWidth:"90vw",textAlign:"center",position:"relative"}}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,backdropFilter:"blur(8px)"}}>
+          <div style={{background:"#11101c",border:"1px solid #2a2845",borderRadius:18,padding:"36px",width:420,maxWidth:"92vw",position:"relative"}}>
             <button onClick={()=>setShowPaywall(false)} style={{position:"absolute",top:14,right:14,background:"none",border:"none",color:"#4a4665",cursor:"pointer",fontSize:18}}>✕</button>
-            <div style={{fontSize:36,marginBottom:12}}>🔒</div>
-            <div style={{fontSize:18,fontWeight:700,marginBottom:8,color:T.text}}>Full Access Required</div>
-            <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7,marginBottom:24}}>You've completed the free Python phase! SQL, Statistics, ML and Advanced ML are available with a paid plan.</div>
-            <div style={{background:"#17162a",border:"1px solid #2a2845",borderRadius:10,padding:"16px",marginBottom:20,textAlign:"left"}}>
-              <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.1em",marginBottom:10}}>WHAT YOU UNLOCK</div>
-              {["🗄️ SQL — basics, joins, window functions","📐 Statistics & Probability","🤖 Machine Learning (sklearn, trees, evaluation)","⚡ Advanced ML — XGBoost, SHAP, pipelines","🚀 11 real projects with datasets","💬 Direct instructor messaging"].map(item=>(
-                <div key={item} style={{fontSize:12,color:"#c8c3e0",marginBottom:6,display:"flex",gap:8}}><span style={{color:"#6dd6a0"}}>✓</span>{item}</div>
+            <div style={{position:"absolute",top:-1,left:"20%",right:"20%",height:2,background:"linear-gradient(90deg,transparent,#8b7cf6,#f472b6,transparent)"}}/>
+            <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:12}}>// upgrade to full access</div>
+            <div style={{fontSize:20,fontWeight:800,color:T.text,marginBottom:6,letterSpacing:"-0.02em"}}>Unlock the full roadmap</div>
+            <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7,marginBottom:20}}>You've used everything on the free plan — Python, SQL, and Probability. The full cohort unlocks Statistics, ML, Deep Learning, and 11 real projects.</div>
+            <div style={{background:"#0d0c18",border:"1px solid #1e1c35",borderRadius:10,padding:"16px",marginBottom:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                <div style={{fontSize:16,fontWeight:700,color:T.text}}>Guided Cohort</div>
+                <div style={{fontSize:22,fontWeight:800,color:"#8b7cf6"}}>$99 <span style={{fontSize:12,color:"#4a4665",fontWeight:400}}>one-time</span></div>
+              </div>
+              {["Full access to all 5 phases & lessons","11 portfolio projects with real datasets","Weekly live Zoom sessions with Radwan","Private WhatsApp group","Direct instructor messaging","Phase completion certificates"].map(f=>(
+                <div key={f} style={{display:"flex",gap:10,fontSize:12,color:"#c8c3e0",marginBottom:7}}><span style={{color:"#8b7cf6",flexShrink:0}}>✓</span>{f}</div>
               ))}
             </div>
-            <a href="https://wa.me/96170895652" target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#25D366",border:"none",color:"#fff",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:600,textDecoration:"none",boxSizing:"border-box"}}>
-              💬 Enroll via WhatsApp — $29/month
-            </a>
-            <div style={{marginTop:10,fontSize:11,color:"#3a3860"}}>Or apply for the Guided Cohort ($99 one-time) ↑</div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#6dd6a018",border:"1px solid #6dd6a055",color:"#6dd6a0",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+                💬 Get Monthly Access — $19/mo →
+              </a>
+              <a href={"https://wa.me/96170895652?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20Phase%201%20Cohort%20($99).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+                💬 Join Phase 1 Cohort — $99 one-time →
+              </a>
+              <div style={{fontSize:11,color:"#4a4665",textAlign:"center",lineHeight:1.6}}>
+                Message Radwan on WhatsApp → confirm payment → activated within 24h
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* SIDEBAR */}
-      <div style={{width:sidebarOpen?220:60,flexShrink:0,background:T.bgDeep,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,transition:"width 0.25s",overflow:"hidden",zIndex:50}}>
+      <div className="ds-sidebar" style={{width:sidebarOpen?220:60,flexShrink:0,background:T.bgDeep,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,transition:"width 0.25s",overflow:"hidden",zIndex:50}}>
         <div style={{padding:"16px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
           {sidebarOpen&&<div style={{display:"flex",alignItems:"center",gap:7,overflow:"hidden"}}><div style={{width:7,height:7,background:"#8b7cf6",borderRadius:"50%",flexShrink:0,boxShadow:"0 0 8px #8b7cf6"}}/><span style={{fontSize:13,fontWeight:800,color:T.text,whiteSpace:"nowrap",letterSpacing:"-0.02em"}}>DS Academy</span></div>}
           <button onClick={()=>setSidebarOpen(o=>!o)} style={{background:"none",border:`1px solid ${T.border}`,color:T.textFade,borderRadius:6,padding:"4px 7px",cursor:"pointer",fontSize:12,flexShrink:0,lineHeight:1}}>{sidebarOpen?"←":"→"}</button>
@@ -2019,11 +2719,12 @@ function StudentDashboard({currentUser,userDoc}){
             const active=tab===t.id;
             const badge=t.id==="messages"&&unreadCount>0?unreadCount:0;
             return(
-              <button key={t.id} onClick={()=>{setTab(t.id);if(t.id==="messages")markMessagesRead();}} title={!sidebarOpen?t.label:""} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:sidebarOpen?"9px 12px":"9px",borderRadius:8,border:"none",background:active?T.p1+"18":"transparent",color:active?T.p1:T.textDim,cursor:"pointer",marginBottom:2,textAlign:"left",transition:"background 0.15s,color 0.15s",position:"relative"}}
+              <button key={t.id} onClick={()=>{setTab(t.id);if(t.id==="messages")markMessagesRead();}} title={!sidebarOpen?t.label:""} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:sidebarOpen?"9px 12px":"9px 4px 18px",borderRadius:8,border:"none",background:active?T.p1+"18":"transparent",color:active?T.p1:T.textDim,cursor:"pointer",marginBottom:2,textAlign:"left",transition:"background 0.15s,color 0.15s",position:"relative"}}
                 onMouseEnter={e=>{if(!active){e.currentTarget.style.background=T.border;e.currentTarget.style.color=T.text;}}}
                 onMouseLeave={e=>{if(!active){e.currentTarget.style.background="transparent";e.currentTarget.style.color=T.textDim;}}}>
                 <span style={{fontSize:16,flexShrink:0,lineHeight:1}}>{t.icon}</span>
                 {sidebarOpen&&<span style={{fontSize:13,fontWeight:active?600:400,whiteSpace:"nowrap",flex:1}}>{t.label}</span>}
+                {!sidebarOpen&&<span style={{position:"absolute",bottom:2,left:0,right:0,fontSize:7,color:active?T.p1:T.textFade,textAlign:"center",letterSpacing:"0.02em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",padding:"0 2px"}}>{t.label.replace(/\s*\(.*\)/,"").slice(0,6)}</span>}
                 {badge>0&&<span style={{position:"absolute",top:6,right:sidebarOpen?10:4,background:T.warn,color:"#fff",borderRadius:10,fontSize:9,padding:"1px 5px",fontWeight:700,minWidth:14,textAlign:"center"}}>{badge}</span>}
                 {active&&<div style={{position:"absolute",left:0,top:"20%",bottom:"20%",width:3,background:T.p1,borderRadius:"0 2px 2px 0"}}/>}
               </button>
@@ -2046,7 +2747,12 @@ function StudentDashboard({currentUser,userDoc}){
           })()}
           <div style={{padding:"0 4px"}}>
             {sidebarOpen&&<div style={{fontSize:11,color:T.textDim,marginBottom:6,display:"flex",alignItems:"center",gap:6}}><span>👤</span><span style={{fontWeight:600,color:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{userDoc.username}</span>{userDoc.role==="free"&&<span style={{fontSize:8,background:"#8b7cf620",color:"#8b7cf6",border:"1px solid #8b7cf633",borderRadius:3,padding:"1px 5px",flexShrink:0}}>FREE</span>}</div>}
-            {userDoc.role==="free"&&sidebarOpen&&<button onClick={()=>setShowPaywall(true)} style={{fontSize:10,color:"#8b7cf6",background:"none",border:"none",cursor:"pointer",padding:0,display:"block",marginBottom:4}}>Upgrade →</button>}
+            {userDoc.role==="free"&&sidebarOpen&&(
+              <div style={{marginBottom:6,display:"flex",flexDirection:"column",gap:4}}>
+                <button onClick={()=>setShowPaywall(true)} style={{fontSize:10,color:"#6dd6a0",background:"#6dd6a010",border:"1px solid #6dd6a030",borderRadius:5,cursor:"pointer",padding:"4px 8px",textAlign:"left"}}>⬆ $19/mo — Full Access</button>
+                <button onClick={()=>setShowPaywall(true)} style={{fontSize:10,color:"#8b7cf6",background:"#8b7cf610",border:"1px solid #8b7cf630",borderRadius:5,cursor:"pointer",padding:"4px 8px",textAlign:"left"}}>⬆ $99 — Phase 1 Cohort</button>
+              </div>
+            )}
             <button onClick={()=>signOut(auth)} style={{fontSize:10,color:T.textFade,background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:5,padding:"4px 0"}}>
               <span style={{fontSize:13}}>⎋</span>{sidebarOpen&&<span>Logout</span>}
             </button>
@@ -2055,22 +2761,46 @@ function StudentDashboard({currentUser,userDoc}){
       </div>
 
       {/* MAIN CONTENT */}
-      <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",height:"100vh",overflowY:"auto"}}>
+      <div className="ds-main" style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",height:"100vh",overflowY:"auto"}}>
       <div style={{flex:1}}>
         {/* LEARN TAB */}
         {tab==="learn"&&(()=>{
-          const isFree=userDoc.role==="free";
-          const freeIds=["numpy","pandas-basics","pandas-advanced","eda","visualization"];
+          const isFree=userDoc.role==="free"; // monthly + student + cohort = full access
+          const freeIds=["numpy","pandas-basics","pandas-advanced","eda","visualization","sql-basics","sql-joins","sql-window","probability"];
           const handleSetActiveId=(id)=>{
-            if(isFree&&!freeIds.includes(id)){setShowPaywall(true);return;}
+            const isFullAccess=userDoc.role==="student"||userDoc.role==="monthly";
+            if(isFree&&!isFullAccess&&!freeIds.includes(id)){setShowPaywall(true);return;}
             setActiveLearnId(id);
+            updateDoc(doc(db,"users",currentUser.uid),{lastLessonId:id}).catch(()=>{});
           };
-          return <LearnTab currentUser={currentUser} activeId={freeIds.includes(activeLearnId)||!isFree?activeLearnId:"numpy"} setActiveId={handleSetActiveId} onLessonComplete={onLessonComplete}/>;
+          const defaultId=startLessonOverride&&(freeIds.includes(startLessonOverride)||!isFree)?startLessonOverride:"numpy";
+          return <LearnTab currentUser={currentUser} activeId={freeIds.includes(activeLearnId)||!isFree?activeLearnId:defaultId} setActiveId={handleSetActiveId} onLessonComplete={onLessonComplete}/>;
         })()}
 
         {/* HOME */}
         {tab==="motivation"&&(
           <div style={{padding:"24px",maxWidth:700,margin:"0 auto"}}>
+            {(()=>{
+              const lastId=userDoc.lastLessonId;
+              const lastLesson=lastId?LESSONS.find(l=>l.id===lastId):null;
+              const nextUndone=LESSONS.find(l=>!Object.values(userDoc.lessonsDone||{}).length||(userDoc.lessonsDone||{})[l.id]!==true);
+              const target=lastLesson||nextUndone||LESSONS[0];
+              if(!target)return null;
+              return(
+                <div style={{background:T.bgCard,border:`1px solid ${target.color}44`,borderRadius:14,padding:"18px 20px",marginBottom:20,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}
+                  onClick={()=>{setActiveLearnId(target.id);setTab("learn");}}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor=target.color+"88"}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor=target.color+"44"}
+                  style={{background:T.bgCard,border:`1px solid ${target.color}44`,borderRadius:14,padding:"18px 20px",marginBottom:20,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",cursor:"pointer",transition:"border-color 0.15s"}}>
+                  <div style={{width:44,height:44,borderRadius:12,background:target.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{target.emoji}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:9,color:target.color,letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:3}}>{lastLesson?"CONTINUE WHERE YOU LEFT OFF":"START HERE"}</div>
+                    <div style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{target.title}</div>
+                    <div style={{fontSize:11,color:T.textDim}}>{target.phase}</div>
+                  </div>
+                  <div style={{background:target.color,color:"#000",padding:"8px 16px",borderRadius:8,fontSize:12,fontWeight:700,flexShrink:0}}>Continue →</div>
+                </div>
+              );
             {/* XP LEVEL CARD — TOP */}
             {(()=>{
               const lvl=getLevel(xp);const next=getNextLevel(xp);
@@ -2105,6 +2835,24 @@ function StudentDashboard({currentUser,userDoc}){
                   </div>
                 </div>
               );
+            })()}
+            {userDoc.onboarded&&userDoc.recommendedPath&&(()=>{
+              const pathInfo={
+                "data-analyst":{color:"#7eb8f7",icon:"📊",label:"Data Analyst"},
+                "data-scientist":{color:"#a78bfa",icon:"🧠",label:"Data Scientist"},
+                "ml-engineer":{color:"#6dd6a0",icon:"⚙️",label:"ML Engineer"},
+              }[userDoc.recommendedPath]||{color:"#8b7cf6",icon:"🎯",label:"Your Path"};
+              return(
+                <div style={{background:T.bgCard,border:`1px solid ${pathInfo.color}33`,borderRadius:14,padding:"16px 20px",marginBottom:20,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                  <span style={{fontSize:24}}>{pathInfo.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:10,color:pathInfo.color,letterSpacing:"0.1em",fontFamily:"monospace",marginBottom:3}}>YOUR RECOMMENDED PATH</div>
+                    <div style={{fontSize:14,fontWeight:700,color:T.text}}>{pathInfo.label}</div>
+                  </div>
+                  <button onClick={()=>{setTab("progress");setProgressSubTab("paths");}} style={{background:pathInfo.color+"18",border:`1px solid ${pathInfo.color}44`,color:pathInfo.color,padding:"6px 14px",borderRadius:7,cursor:"pointer",fontSize:11,fontWeight:600,whiteSpace:"nowrap"}}>View Path →</button>
+                </div>
+              );
+            })()}
             })()}
             <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,padding:"24px",marginBottom:20}}>
               <div style={{fontSize:9,color:T.gold,letterSpacing:"0.15em",fontWeight:700,marginBottom:12}}>✦ DAILY MOTIVATION</div>
@@ -2206,15 +2954,15 @@ function StudentDashboard({currentUser,userDoc}){
 
         {/* ROADMAP */}
         {tab==="roadmap"&&(
-          <div style={{display:"flex",height:"calc(100vh - 120px)"}}>
-            <div style={{width:210,borderRight:`1px solid ${T.border}`,padding:"16px 12px",overflowY:"auto",background:T.bgDeep,flexShrink:0}}>
+          <div className="ds-roadmap-panel" style={{display:"flex",height:"calc(100vh - 120px)"}}>
+            <div className="ds-roadmap-inner" style={{width:210,borderRight:`1px solid ${T.border}`,padding:"16px 12px",overflowY:"auto",background:T.bgDeep,flexShrink:0}}>
               {roadmap.map((ph,i)=>{const p2=getPP(ph);const a=i===activePhase;const locked=!isPhaseUnlocked(i);return(
                 <button key={i} onClick={()=>{if(!locked){setActivePhase(i);setExpandedSection(null);}}} style={{width:"100%",background:a?ph.color+"15":locked?"#0f0e1a":"transparent",border:`1px solid ${a?ph.color+"55":locked?T.border:"transparent"}`,color:locked?T.textFade:a?ph.color:T.textDim,padding:"8px 12px",borderRadius:7,cursor:locked?"not-allowed":"pointer",fontSize:11,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,textAlign:"left",opacity:locked?0.5:1}}>
                   <span>{locked?"🔒 ":""}{ph.title}</span>
                   <span style={{fontSize:10,background:ph.color+"18",color:ph.color,padding:"1px 5px",borderRadius:3}}>{locked?"locked":p2.pct+"%"}</span>
                 </button>
               );})}
-              <div style={{borderTop:`1px solid ${T.border}`,marginTop:8,paddingTop:12}}>
+              <div className="ds-roadmap-inner-sections" style={{borderTop:`1px solid ${T.border}`,marginTop:8,paddingTop:12}}>
                 {phase.sections.map(s=>{const sp=getSP(s);const a=expandedSection===s.id;return(
                   <div key={s.id} onClick={()=>setExpandedSection(a?null:s.id)} style={{marginBottom:6,cursor:"pointer",padding:"7px 9px",borderRadius:6,background:a?C+"0e":"transparent"}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:sp.done===sp.total?C:T.textDim}}>{s.title}</span><span style={{fontSize:9,color:T.textFade}}>{sp.done}/{sp.total}</span></div>
@@ -2223,7 +2971,7 @@ function StudentDashboard({currentUser,userDoc}){
                 );})}
               </div>
             </div>
-            <div style={{flex:1,overflowY:"auto",padding:"20px 24px"}}>
+            <div className="ds-roadmap-content" style={{flex:1,overflowY:"auto",padding:"20px 24px"}}>
               {!isPhaseUnlocked(activePhase)?(
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"60%",textAlign:"center",padding:40}}>
                   <div style={{fontSize:48,marginBottom:16}}>🔒</div>
@@ -2379,7 +3127,7 @@ function StudentDashboard({currentUser,userDoc}){
           const phaseNames=["Foundations","Core ML","Modern Skills","Portfolio & Jobs"];
 
           return(
-            <div style={{flex:1,overflowY:"auto",padding:"20px 24px"}}>
+            <div className="ds-roadmap-content" style={{flex:1,overflowY:"auto",padding:"20px 24px"}}>
               <style>{`
                 @keyframes projUnlock{0%{transform:scale(0.92);opacity:0}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
                 .proj-card-done{animation:projUnlock 0.4s ease forwards;}
@@ -2563,7 +3311,7 @@ function StudentDashboard({currentUser,userDoc}){
               ))}
             </div>
             {progressSubTab==="paths"&&<PathsTab roadmap={roadmap} progress={progress} onSignup={()=>{}}/>}
-            {progressSubTab==="quiz"&&<QuizTab roadmap={roadmap} progress={progress}/>}
+            {progressSubTab==="quiz"&&<QuizTab roadmap={roadmap} progress={progress} userDoc={userDoc}/>}
             {progressSubTab==="certs"&&<CertificateTab userDoc={userDoc} roadmap={roadmap} progress={progress} xp={xp}/>}
             {progressSubTab==="checkin"&&(
               <div style={{maxWidth:600}}>
@@ -2602,6 +3350,22 @@ function StudentDashboard({currentUser,userDoc}){
           </div>
         )}
       </div>
+      </div>
+
+      {/* MOBILE BOTTOM NAV */}
+      <div className="ds-bottom-nav">
+        {tabs.map(t=>{
+          const active=tab===t.id;
+          const badge=t.id==="messages"&&unreadCount>0?unreadCount:0;
+          return(
+            <button key={t.id} onClick={()=>{setTab(t.id);if(t.id==="messages")markMessagesRead();}}
+              style={{color:active?T.p1:T.textFade}}>
+              <span className="nav-icon">{t.icon}</span>
+              <span className="nav-label">{t.label.replace(/\s*\(.*\)/,"")}</span>
+              {badge>0&&<span style={{position:"absolute",top:4,background:T.warn,color:"#fff",borderRadius:10,fontSize:8,padding:"1px 4px",fontWeight:700}}>{badge}</span>}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -2491,9 +2491,9 @@ total   = round(sum(prices), 2)
 average = round(sum(prices) / len(prices), 2)
 over_10 = len([p for p in prices if p > ___])
 
-print(f"Total: ${total}")
-print(f"Average: ${average}")
-print(f"Over $10: {over_10}")`}
+print(f"Total: {total}")
+print(f"Average: {average}")
+print(f"Over 10+: {over_10}")`}
         hint="p.replace('$', ''). p > 10. len(prices) for average."
         validate={(out)=>out.includes("Total:")&&out.includes("Average:")&&out.includes("Over $10: 4")}
       />
@@ -5580,237 +5580,665 @@ st.metric("Average Score", round(df['score'].mean(), 1))`}
 LESSONS.push(...PHASE2_LESSONS);
 
 // ══ PHASE 3 LESSONS ══════════════════════════════════════════════════════════
+// ══ PHASE 3 LESSONS ══════════════════════════════════════════════════════════
 const PHASE3_LESSONS = [
-
   // ── DEEP LEARNING & NEURAL NETWORKS
-  {id:"dl-nn-lesson", phase:"🧠 Deep Learning", emoji:"🧠", color:"#818cf8", title:"Neural Networks & Deep Learning", subtitle:"How machines actually learn — from neurons to backprop",
+  {id:"dl-nn-lesson", phase:"🧠 Deep Learning", emoji:"🧠", color:"#818cf8", title:"Neural Networks & Deep Learning", subtitle:"How machines actually learn — from neurons to backpropagation",
    body:()=>(
     <div>
-      <LP>Neural networks are the engine behind image recognition, language models, and most modern AI. This lesson builds your intuition from scratch — how a neuron works, how networks learn, and how to train your first model with sklearn.</LP>
-      <Callout icon="🧠" color="#818cf8" title="The big picture">A neural network is a function approximator. You feed it inputs, it produces outputs, and through millions of tiny adjustments it learns to map inputs to the right outputs. That's it.</Callout>
+      <LP>Neural networks are the engine behind image recognition, language models, fraud detection, and most modern AI. This lesson builds your intuition from scratch — how a single neuron works, how layers combine, how backpropagation trains the network, and how to build and evaluate real models using sklearn and the patterns used in industry.</LP>
+      <Callout icon="🧠" color="#818cf8" title="The big picture">A neural network is a universal function approximator. Given enough neurons and data, it can learn any mapping from inputs to outputs. The magic isn't the math — it's that the learning process (backpropagation + gradient descent) is fully automatic.</Callout>
 
-      <LH>1. The Neuron — building block of everything</LH>
-      <Block label="One neuron in Python">{`import numpy as np
+      <LH>1. The Neuron — what it actually does</LH>
+      <LP>A single neuron takes multiple inputs, multiplies each by a weight, adds a bias, and passes the result through an activation function. That's the entire computation. The network learns by finding the right weights.</LP>
+      <Block label="One neuron from scratch">{`import numpy as np
 
-def neuron(inputs, weights, bias):
-    z = np.dot(inputs, weights) + bias  # linear combination
-    output = max(0, z)                  # ReLU activation
-    return output
+# A single artificial neuron
+def neuron(inputs, weights, bias, activation='relu'):
+    # Step 1: weighted sum (dot product + bias)
+    z = np.dot(inputs, weights) + bias
 
-inputs  = [12, 75.5, 3]    # tenure, monthly_charge, num_services
-weights = [0.02, -0.05, 0.1]
-bias    = 0.3
+    # Step 2: activation function
+    if activation == 'relu':
+        return max(0, z)          # ReLU: pass positive, kill negative
+    elif activation == 'sigmoid':
+        return 1 / (1 + np.exp(-z))  # Sigmoid: squash to 0-1
+    elif activation == 'linear':
+        return z                  # No activation (regression output)
 
-print(f"Neuron output: {neuron(inputs, weights, bias):.3f}")`}</Block>
+# Example: predict churn probability from 3 features
+# inputs: [tenure=12 months, monthly_charge=$75, num_services=3]
+inputs  = np.array([12, 75.0, 3])
+weights = np.array([-0.08, 0.03, -0.05])  # learned during training
+bias    = 0.5
 
-      <LH>2. Activation Functions</LH>
+prob = neuron(inputs, weights, bias, activation='sigmoid')
+print(f"Churn probability: {prob:.3f}")   # e.g. 0.623
+
+# What weights mean:
+# tenure weight = -0.08 → longer tenure → LESS likely to churn
+# monthly_charge weight = +0.03 → higher charge → MORE likely to churn`}</Block>
+
+      <LH>2. Activation Functions — why they matter</LH>
+      <LP>Without activation functions, a neural network is just a linear model no matter how many layers it has. Activations introduce non-linearity, letting the network learn complex patterns.</LP>
       <Compare items={[
-        {label:"ReLU", color:"#6dd6a0", text:"max(0, x). Default for hidden layers. Fast, avoids vanishing gradient."},
-        {label:"Sigmoid", color:"#7eb8f7", text:"1/(1+e^-x). Output 0-1. Binary classification output layer only."},
-        {label:"Softmax", color:"#f7c96e", text:"Converts scores to probabilities summing to 1. Multi-class output layer."},
-        {label:"Tanh", color:"#c792ea", text:"Output -1 to 1. Centered at 0. Alternative to sigmoid in hidden layers."},
+        {label:"ReLU", color:"#6dd6a0", text:"max(0, x). Default choice for hidden layers. Fast, simple, avoids vanishing gradients. Most networks use this."},
+        {label:"Sigmoid", color:"#7eb8f7", text:"1/(1+e^-x). Output 0 to 1. Use ONLY for binary classification output. Has vanishing gradient problem in deep networks."},
+        {label:"Softmax", color:"#f7c96e", text:"Converts logits to probabilities summing to 1. Use for multi-class classification output layers only."},
+        {label:"Tanh", color:"#c792ea", text:"Output -1 to 1. Centered at 0 unlike sigmoid. Sometimes used in recurrent networks. Similar vanishing gradient issue."},
       ]}/>
-      <Block label="Activations in NumPy">{`import numpy as np
+      <Block label="Activation functions in NumPy">{`import numpy as np
 
-z = np.array([-2, -1, 0, 1, 2])
+z = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
 
-relu    = np.maximum(0, z)              # [0, 0, 0, 1, 2]
-sigmoid = 1 / (1 + np.exp(-z))         # [0.12, 0.27, 0.5, 0.73, 0.88]
-tanh_v  = np.tanh(z)                   # [-0.96, -0.76, 0, 0.76, 0.96]
+# ReLU — kills negatives, passes positives unchanged
+relu    = np.maximum(0, z)
+print("ReLU:   ", relu)    # [0. 0. 0. 1. 3.]
 
+# Sigmoid — smooth 0→1 curve
+sigmoid = 1 / (1 + np.exp(-z))
+print("Sigmoid:", sigmoid.round(3))  # [0.047 0.269 0.5 0.731 0.953]
+
+# Tanh — smooth -1→1 curve
+tanh_v  = np.tanh(z)
+print("Tanh:   ", tanh_v.round(3))   # [-0.995 -0.762 0. 0.762 0.995]
+
+# Softmax — multi-class probabilities
 def softmax(x):
-    e = np.exp(x - np.max(x))  # subtract max for numerical stability
+    # Subtract max for numerical stability (prevents overflow)
+    e = np.exp(x - np.max(x))
     return e / e.sum()
 
-scores = np.array([2.0, 1.0, 0.5])
-probs  = softmax(scores)
-print(probs)        # [0.627, 0.231, 0.142]
-print(probs.sum())  # 1.0`}</Block>
+logits = np.array([2.1, 0.8, 1.4])  # raw scores for 3 classes
+probs  = softmax(logits)
+print("Softmax:", probs.round(3))    # [0.508 0.161 0.332]
+print("Sum:    ", probs.sum())        # 1.0 (always)
 
-      <LH>3. Forward Pass — how a network makes predictions</LH>
-      <Block label="2-layer network from scratch">{`import numpy as np
-np.random.seed(42)
+# Derivative of ReLU (used in backprop)
+# 0 if x < 0, 1 if x > 0 — that's it`}</Block>
+      <Warn>Sigmoid and Tanh suffer from the vanishing gradient problem in deep networks — gradients shrink to near-zero during backprop, and deep layers stop learning. Use ReLU in hidden layers to avoid this. Only use sigmoid at the output layer for binary classification.</Warn>
 
-W1 = np.random.randn(3, 4) * 0.1   # (3 inputs → 4 neurons)
-b1 = np.zeros(4)
-W2 = np.random.randn(4, 1) * 0.1   # (4 neurons → 1 output)
-b2 = np.zeros(1)
+      <LH>3. Network Architecture — layers and shapes</LH>
+      <LP>A neural network is just layers of neurons stacked together. Each layer's output becomes the next layer's input. The key skill is understanding how data flows through the shapes.</LP>
+      <Block label="Understanding layer shapes">{`import numpy as np
 
-def forward(X):
-    z1 = X @ W1 + b1            # linear
-    a1 = np.maximum(0, z1)      # ReLU
-    z2 = a1 @ W2 + b2           # linear
-    a2 = 1 / (1 + np.exp(-z2)) # sigmoid → probability
-    return a2
+# Data: 100 customers, 5 features each
+n_samples  = 100
+n_features = 5   # tenure, charges, services, contract_enc, senior
 
-X = np.array([[12, 75.5, 3],
-              [36, 42.0, 5],
-              [3,  88.0, 1]])
+X = np.random.randn(n_samples, n_features)  # shape: (100, 5)
 
-preds = forward(X)
-print("Churn probabilities:", preds.flatten().round(3))`}</Block>
+# Layer 1: 5 inputs → 32 neurons
+W1 = np.random.randn(5, 32) * 0.01    # shape: (5, 32)
+b1 = np.zeros(32)                      # shape: (32,)
 
-      <LH>4. Backpropagation — how networks learn</LH>
-      <LP>Backprop computes gradients using the chain rule. The network predicts → measures loss → works backwards to update every weight slightly toward lower loss. You don't implement this — PyTorch/TensorFlow do it automatically.</LP>
-      <Block label="The training loop concept">{`# Conceptual — what frameworks do automatically
-for epoch in range(100):
-    predictions = forward(X)   # 1. Predict
+z1 = X @ W1 + b1                       # shape: (100, 32)
+a1 = np.maximum(0, z1)                 # ReLU → shape: (100, 32)
 
-    # 2. Loss — binary cross-entropy
-    loss = -np.mean(
-        y * np.log(predictions + 1e-8) +
-        (1-y) * np.log(1 - predictions + 1e-8)
+# Layer 2: 32 inputs → 16 neurons
+W2 = np.random.randn(32, 16) * 0.01   # shape: (32, 16)
+b2 = np.zeros(16)
+
+z2 = a1 @ W2 + b2                      # shape: (100, 16)
+a2 = np.maximum(0, z2)                 # ReLU → shape: (100, 16)
+
+# Output layer: 16 inputs → 1 output (binary classification)
+W3 = np.random.randn(16, 1) * 0.01    # shape: (16, 1)
+b3 = np.zeros(1)
+
+z3 = a2 @ W3 + b3                      # shape: (100, 1)
+output = 1 / (1 + np.exp(-z3))         # Sigmoid → probabilities
+
+print(f"Input shape:   {X.shape}")       # (100, 5)
+print(f"After layer 1: {a1.shape}")      # (100, 32)
+print(f"After layer 2: {a2.shape}")      # (100, 16)
+print(f"Output shape:  {output.shape}")  # (100, 1)`}</Block>
+      <Callout icon="💡" color="#818cf8" title="Shape rule">Matrix multiply: (m, n) @ (n, p) = (m, p). Inner dimensions must match. When you get shape errors in ML, this is almost always the cause. Print .shape everywhere when debugging.</Callout>
+
+      <LH>4. Loss Functions — measuring how wrong we are</LH>
+      <Block label="Loss functions for different tasks">{`import numpy as np
+
+# ── BINARY CLASSIFICATION: Binary Cross-Entropy (Log Loss)
+# Penalizes confident wrong predictions most severely
+def binary_cross_entropy(y_true, y_pred):
+    eps = 1e-8  # prevent log(0)
+    return -np.mean(
+        y_true * np.log(y_pred + eps) +
+        (1 - y_true) * np.log(1 - y_pred + eps)
     )
 
-    # 3. Backprop — compute gradients (framework handles this)
-    # 4. Update: W = W - learning_rate * gradient
+y_true = np.array([1, 0, 1, 1, 0])
+y_pred = np.array([0.9, 0.1, 0.8, 0.4, 0.3])  # probabilities
 
-    if epoch % 20 == 0:
-        print(f"Epoch {epoch}: loss = {loss:.4f}")`}</Block>
-      <Callout icon="★" color="#f7c96e" title="What you need to understand">Forward pass makes predictions → loss measures error → backprop computes gradients → optimizer updates weights. PyTorch handles the math. You set the architecture and hyperparameters.</Callout>
+loss = binary_cross_entropy(y_true, y_pred)
+print(f"BCE Loss: {loss:.4f}")   # lower is better, 0 = perfect
 
-      <LH>5. Neural Networks with sklearn</LH>
-      <Block label="MLPClassifier in practice">{`from sklearn.neural_network import MLPClassifier
+# What BCE penalizes:
+# y=1, pred=0.9 → small loss (correct and confident)
+# y=1, pred=0.1 → large loss (wrong and confident!)
+per_sample = -(y_true * np.log(y_pred + 1e-8) +
+               (1-y_true) * np.log(1-y_pred + 1e-8))
+print("Per-sample loss:", per_sample.round(3))
+
+# ── REGRESSION: Mean Squared Error
+y_reg_true = np.array([100, 200, 150, 300])
+y_reg_pred = np.array([110, 190, 160, 280])
+mse = np.mean((y_reg_true - y_reg_pred)**2)
+rmse = np.sqrt(mse)
+print(f"MSE: {mse:.1f}, RMSE: {rmse:.1f}")
+
+# ── MULTI-CLASS: Categorical Cross-Entropy
+# Similar to BCE but for multiple classes
+# sklearn handles this automatically in MLPClassifier`}</Block>
+
+      <LH>5. Backpropagation — how the network learns</LH>
+      <LP>Backprop is the chain rule of calculus applied to neural networks. The network makes a prediction, measures the loss, then computes how much each weight contributed to the error — and adjusts accordingly. You never implement this yourself; frameworks do it automatically.</LP>
+      <Block label="The training loop — what happens every iteration">{`import numpy as np
+
+# Simulated training loop (conceptual — what PyTorch/TF do automatically)
+np.random.seed(42)
+
+# Tiny network: 2 inputs → 4 hidden → 1 output
+W1 = np.random.randn(2, 4) * 0.1
+b1 = np.zeros(4)
+W2 = np.random.randn(4, 1) * 0.1
+b2 = np.zeros(1)
+
+# Training data: XOR pattern (non-linearly separable)
+X = np.array([[0,0],[0,1],[1,0],[1,1]])
+y = np.array([[0],[1],[1],[0]])
+
+learning_rate = 0.1
+losses = []
+
+for epoch in range(500):
+    # ── FORWARD PASS ──
+    z1 = X @ W1 + b1
+    a1 = np.maximum(0, z1)        # ReLU
+    z2 = a1 @ W2 + b2
+    output = 1/(1+np.exp(-z2))   # Sigmoid
+
+    # Loss
+    loss = -np.mean(y*np.log(output+1e-8)+(1-y)*np.log(1-output+1e-8))
+    losses.append(loss)
+
+    # ── BACKWARD PASS (chain rule) ──
+    dL_dout  = (output - y) / len(y)
+    dL_dz2   = dL_dout * output * (1 - output)
+    dL_dW2   = a1.T @ dL_dz2
+    dL_db2   = dL_dz2.sum(axis=0)
+    dL_da1   = dL_dz2 @ W2.T
+    dL_dz1   = dL_da1 * (z1 > 0)  # ReLU derivative
+    dL_dW1   = X.T @ dL_dz1
+    dL_db1   = dL_dz1.sum(axis=0)
+
+    # ── WEIGHT UPDATE (gradient descent) ──
+    W2 -= learning_rate * dL_dW2
+    b2 -= learning_rate * dL_db2
+    W1 -= learning_rate * dL_dW1
+    b1 -= learning_rate * dL_db1
+
+    if epoch % 100 == 0:
+        print(f"Epoch {epoch:3d}: loss = {loss:.4f}")
+
+print(f"\nFinal predictions: {output.flatten().round(2)}")
+print(f"Expected:          {y.flatten()}")
+# Network learned XOR: [0, 1, 1, 0]`}</Block>
+      <Callout icon="★" color="#f7c96e" title="What you need to understand — not memorize">Understand the CONCEPT: forward pass computes predictions, loss measures error, backward pass computes gradients (how much each weight contributed to the error), optimizer updates weights in the direction that reduces loss. PyTorch/TF handle the math. You control architecture and hyperparameters.</Callout>
+
+      <LH>6. Neural Networks with sklearn — MLPClassifier</LH>
+      <LP>For tabular data, sklearn's MLPClassifier is practical and fast. For images, text, or very large datasets, use PyTorch or TensorFlow. Learn MLPClassifier first — same concepts, much simpler API.</LP>
+      <Block label="Full MLPClassifier workflow on churn data">{`from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
-from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import classification_report, roc_auc_score
+import pandas as pd
+import numpy as np
 
-X, y = make_classification(n_samples=1000, n_features=10,
-                            n_informative=6, random_state=42)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Real churn dataset (simulated)
+np.random.seed(42)
+n = 1000
+df = pd.DataFrame({
+    'tenure':          np.random.randint(1, 72, n),
+    'monthly_charges': np.random.uniform(20, 120, n),
+    'num_services':    np.random.randint(1, 8, n),
+    'senior_citizen':  np.random.randint(0, 2, n),
+    'contract_enc':    np.random.randint(0, 3, n),  # 0=month, 1=1yr, 2=2yr
+})
+# Churn depends on contract, tenure, charges
+df['churn'] = ((df['contract_enc'] == 0) &
+               (df['monthly_charges'] > 70) &
+               (df['tenure'] < 12)).astype(int)
+df.loc[np.random.choice(n, 200), 'churn'] = 1  # add noise
 
+X = df.drop('churn', axis=1)
+y = df['churn']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# ALWAYS scale for neural networks
 pipeline = Pipeline([
-    ('scaler', StandardScaler()),  # ALWAYS scale for neural nets
+    ('scaler', StandardScaler()),
     ('nn', MLPClassifier(
-        hidden_layer_sizes=(64, 32), # 2 hidden layers
+        hidden_layer_sizes=(64, 32, 16),  # 3 hidden layers
         activation='relu',
-        max_iter=300,
-        early_stopping=True,         # stop when val loss plateaus
-        random_state=42
+        solver='adam',         # adaptive learning rate optimizer
+        alpha=0.001,           # L2 regularization strength
+        batch_size=32,
+        learning_rate_init=0.001,
+        max_iter=500,
+        early_stopping=True,   # monitor validation, stop when plateau
+        validation_fraction=0.1,
+        n_iter_no_change=15,
+        random_state=42,
+        verbose=False
     ))
 ])
 
 pipeline.fit(X_train, y_train)
-print(classification_report(y_test, pipeline.predict(X_test)))`}</Block>
 
-      <LH>6. Key Hyperparameters</LH>
+# Evaluation
+preds = pipeline.predict(X_test)
+probs = pipeline.predict_proba(X_test)[:, 1]
+
+print(classification_report(y_test, preds, target_names=['Stay','Churn']))
+print(f"AUC-ROC: {roc_auc_score(y_test, probs):.3f}")
+print(f"Converged after {pipeline.named_steps['nn'].n_iter_} epochs")`}</Block>
+
+      <LH>7. Hyperparameters — what to tune and how</LH>
+      <Block label="Hyperparameter guide">{`from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('nn', MLPClassifier(random_state=42, max_iter=300))
+])
+
+# Key hyperparameters to tune
+param_grid = {
+    'nn__hidden_layer_sizes': [
+        (64,),           # 1 layer, 64 neurons — start here
+        (64, 32),        # 2 layers — usually better
+        (128, 64, 32),   # 3 layers — more capacity
+    ],
+    'nn__alpha': [0.0001, 0.001, 0.01],  # L2 regularization
+    'nn__learning_rate_init': [0.001, 0.01],
+}
+
+grid = GridSearchCV(pipeline, param_grid, cv=5,
+                    scoring='roc_auc', n_jobs=-1, verbose=1)
+grid.fit(X_train, y_train)
+
+print(f"Best AUC:    {grid.best_score_:.3f}")
+print(f"Best params: {grid.best_params_}")
+
+# ── What each hyperparameter does ──
+# hidden_layer_sizes: architecture — start simple, add if underfitting
+# alpha: L2 regularization — increase if overfitting
+# learning_rate_init: step size — 0.001 is usually safe
+# batch_size: samples per gradient update — larger = smoother, faster
+# early_stopping: ALWAYS True — prevents overfitting automatically`}</Block>
+
+      <LH>8. Diagnosing Training Problems</LH>
       <Compare items={[
-        {label:"Learning Rate", color:"#7eb8f7", text:"Step size for weight updates. Start at 0.001. Too high = unstable. Too low = slow."},
-        {label:"Batch Size", color:"#6dd6a0", text:"Samples per gradient update. 32-256 typical. Smaller = noisier but often generalizes better."},
-        {label:"Epochs", color:"#f7c96e", text:"Passes through training data. Use early stopping — stop when validation loss plateaus."},
-        {label:"Architecture", color:"#c792ea", text:"Start simple: 1-2 layers, 64-128 neurons. Add complexity only if underfitting."},
+        {label:"Overfitting", color:"#f28b82", text:"Train loss low, val loss high. Fix: increase alpha (L2), reduce hidden_layer_sizes, add more training data, use early_stopping."},
+        {label:"Underfitting", color:"#f7c96e", text:"Both losses high. Fix: increase hidden_layer_sizes, add layers, reduce alpha, train longer (increase max_iter)."},
+        {label:"Not converging", color:"#7eb8f7", text:"Loss oscillates or explodes. Fix: reduce learning_rate_init, increase batch_size, check data for NaN/infinite values."},
+        {label:"Slow training", color:"#6dd6a0", text:"Takes too many epochs. Fix: increase learning_rate_init slightly, use larger batch_size, check if features are scaled."},
+      ]}/>
+      <Block label="Monitoring convergence">{`import matplotlib.pyplot as plt
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_train_s = scaler.fit_transform(X_train)
+
+mlp = MLPClassifier(
+    hidden_layer_sizes=(64, 32),
+    max_iter=500,
+    early_stopping=True,
+    validation_fraction=0.1,
+    random_state=42,
+    verbose=False
+)
+mlp.fit(X_train_s, y_train)
+
+# Plot learning curve
+plt.figure(figsize=(10, 4))
+plt.plot(mlp.loss_curve_, label='Training Loss', color='#818cf8')
+if mlp.validation_scores_:
+    # validation_scores_ is accuracy, not loss
+    plt.plot(mlp.validation_scores_, label='Val Accuracy', color='#6dd6a0')
+plt.xlabel('Epoch')
+plt.ylabel('Loss / Score')
+plt.title('Learning Curve')
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print(f"Best validation score: {max(mlp.validation_scores_):.3f}")
+print(f"Stopped at epoch: {mlp.n_iter_}")`}</Block>
+
+      <LH>9. Neural Networks vs Tree Models — when to use each</LH>
+      <Compare items={[
+        {label:"Use Neural Networks when", color:"#818cf8", text:"Unstructured data (images, text, audio). Very large datasets (100k+ rows). Complex non-linear patterns. Many input features with interactions."},
+        {label:"Use XGBoost/RF when", color:"#6dd6a0", text:"Tabular structured data. Smaller datasets (<100k rows). You need feature importance. Faster training and tuning needed. Interpretability matters."},
+        {label:"In practice for tabular data", color:"#f7c96e", text:"Try XGBoost first — it usually wins on tabular data. Add a neural net as comparison. Ensemble both if you care about every 0.1% of performance."},
       ]}/>
 
       <Quiz questions={[
-        {q:"ReLU activation: what does it output for input = -3?",options:["-3","0","3","0.05"],answer:"0",explanation:"ReLU = max(0, x). Any negative input → output is 0. Positive inputs pass through unchanged. This sparsity helps networks learn efficient representations."},
-        {q:"Why must you StandardScale inputs before a neural network?",options:["Neural nets only work on 0-1 data","Gradient descent converges much faster when features are on similar scales","Scaling is required by PyTorch","It prevents overfitting"],answer:"Gradient descent converges much faster when features are on similar scales",explanation:"Without scaling, large-range features dominate gradients. The optimizer spends time correcting for scale differences rather than learning patterns. Always scale for neural nets, SVMs, and any gradient-based model."},
-        {q:"Training loss = 0.05, validation loss = 0.45. This means:",options:["The model is underfitting","The model is generalizing well","The model is overfitting","The learning rate is too low"],answer:"The model is overfitting",explanation:"Large gap between train and validation loss = overfitting. The model memorized training data including noise. Fix: dropout, regularization, reduce complexity, get more data."},
-        {q:"Softmax is used in the output layer when:",options:["There are exactly 2 classes","Predicting a continuous number","Predicting one of 3+ classes","Using ReLU in hidden layers"],answer:"Predicting one of 3+ classes",explanation:"Softmax converts raw scores to probabilities summing to 1. Use for multi-class output. For binary: sigmoid. For regression: linear (no activation)."},
-        {q:"What does early_stopping=True do in MLPClassifier?",options:["Stops after 100 epochs","Stops when validation loss stops improving","Stops if training loss reaches 0","Stops after each epoch"],answer:"Stops when validation loss stops improving",explanation:"Early stopping monitors a held-out validation set. When validation loss doesn't improve for n_iter_no_change epochs, training stops — preventing overfitting and wasted computation."},
+        {q:"A neuron computes: z = dot(inputs, weights) + bias, then applies activation. What is the purpose of the bias term?",options:["It scales the inputs","It allows the activation to shift left or right — the neuron can fire even when all inputs are zero","It prevents overfitting","It speeds up training"],answer:"It allows the activation to shift left or right — the neuron can fire even when all inputs are zero",explanation:"Without bias, the neuron's output is always 0 when inputs are 0. Bias gives the neuron an independent offset — it can activate at any input level. Like the y-intercept in linear regression, it adds flexibility to the model."},
+        {q:"Why does ReLU help with the vanishing gradient problem compared to sigmoid?",options:["ReLU is always between 0 and 1","ReLU's derivative is 0 or 1 — gradients don't shrink as they backpropagate through many layers","ReLU is faster to compute","ReLU prevents overfitting"],answer:"ReLU's derivative is 0 or 1 — gradients don't shrink as they backpropagate through many layers",explanation:"Sigmoid's derivative is at most 0.25. In deep networks, multiplying many small gradients together (chain rule) causes them to vanish. ReLU's derivative is 1 for positive values — gradients pass through unchanged, enabling training of deep networks."},
+        {q:"hidden_layer_sizes=(128, 64, 32) creates:",options:["1 layer with 224 neurons","3 hidden layers with 128, 64, and 32 neurons respectively","3 layers each with 128 neurons","128 input, 64 hidden, 32 output neurons"],answer:"3 hidden layers with 128, 64, and 32 neurons respectively",explanation:"Each tuple element defines one hidden layer and the number of neurons in it. (128, 64, 32) = three hidden layers: first has 128 neurons, second has 64, third has 32. The input and output layer sizes are determined by your data."},
+        {q:"Training loss = 0.08, validation loss = 0.52 after 100 epochs. What's happening and how do you fix it?",options:["Underfitting — add more layers","Overfitting — increase alpha regularization, reduce architecture complexity","Normal — this gap is expected","Learning rate too high — reduce it"],answer:"Overfitting — increase alpha regularization, reduce architecture complexity",explanation:"Large gap between train and validation loss = overfitting. The model memorized training data including noise. Fixes: increase alpha (L2 regularization), use early_stopping=True, reduce hidden_layer_sizes, get more training data."},
+        {q:"You're building a churn predictor on a 50,000-row tabular dataset. Which should you try first?",options:["Deep neural network with 10 layers","Convolutional neural network","XGBoost or Random Forest","BERT fine-tuning"],answer:"XGBoost or Random Forest",explanation:"For tabular structured data, gradient boosting (XGBoost/LightGBM) and random forests consistently outperform neural networks. They're faster to train, easier to tune, and more interpretable. Use neural networks when you have unstructured data (images, text) or very large datasets where their capacity advantage shows."},
       ]}/>
 
       <CodeExercise
-        title="Train a neural network on real data"
-        description="Build an MLPClassifier pipeline with StandardScaler. Train on the breast cancer dataset, print accuracy and iteration count."
+        title="Train and evaluate a neural network on customer data"
+        description="Build an MLPClassifier pipeline with StandardScaler. Use hidden_layer_sizes=(64, 32), early_stopping=True. Train on the data, print the classification report and AUC-ROC score."
         starterCode={`from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.datasets import load_breast_cancer
+from sklearn.metrics import classification_report, roc_auc_score
+from sklearn.datasets import make_classification
+import numpy as np
 
-data = load_breast_cancer()
-X, y = data.data, data.target
+np.random.seed(42)
+X, y = make_classification(
+    n_samples=800, n_features=8, n_informative=5,
+    n_redundant=1, weights=[0.7, 0.3], random_state=42
+)
+
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+    X, y, test_size=0.2, random_state=42, stratify=y
 )
 
 pipeline = Pipeline([
     ('scaler', ___()),
     ('nn', MLPClassifier(
-        hidden_layer_sizes=(___,),
+        hidden_layer_sizes=(___),
         activation='relu',
-        max_iter=500,
+        max_iter=300,
+        early_stopping=___,
         random_state=42
     ))
 ])
 
 pipeline.___(X_train, y_train)
-preds = pipeline.___(X_test)
 
-print(f"Accuracy: {round(accuracy_score(y_test, preds), 3)}")
-print(f"Iterations: {pipeline.named_steps['nn'].n_iter_}")`}
-        hint="StandardScaler(). (64,) for hidden_layer_sizes. pipeline.fit(). pipeline.predict()."
-        validate={(out)=>out.includes("Accuracy:")&&out.includes("Iterations:")}
+preds = pipeline.___(X_test)
+probs = pipeline.predict_proba(X_test)[:, 1]
+
+print(classification_report(y_test, preds, target_names=['Stay','Churn']))
+print(f"AUC-ROC: {round(roc_auc_score(y_test, probs), 3)}")
+print(f"Epochs:  {pipeline.named_steps['nn'].n_iter_}")`}
+        hint="StandardScaler(). (64,32). early_stopping=True. pipeline.fit(). pipeline.predict()."
+        validate={(out)=>out.includes("AUC-ROC:")&&out.includes("Epochs:")&&out.includes("precision")}
       />
     </div>
   )},
-
   // ── NLP & TRANSFORMERS
-  {id:"dl-nlp-lesson", phase:"🧠 Deep Learning", emoji:"📝", color:"#f472b6", title:"NLP & Transformers", subtitle:"From text to predictions — the Hugging Face way",
+  {id:"dl-nlp-lesson", phase:"🧠 Deep Learning", emoji:"📝", color:"#f472b6", title:"NLP & Transformers", subtitle:"From raw text to predictions — the full pipeline",
    body:()=>(
     <div>
-      <LP>NLP is the fastest-growing area of data science. Every company with text data — reviews, tickets, documents — needs NLP. This lesson takes you from raw text to a sentiment classifier.</LP>
-      <Callout icon="🧠" color="#f472b6" title="The modern approach">In 2025, you don't build NLP from scratch. You use pretrained transformers from Hugging Face and fine-tune on your data. Hours of fine-tuning beats months of custom model building.</Callout>
+      <LP>Natural Language Processing is the fastest-growing area of data science. Every company with text data — customer reviews, support tickets, social media, legal documents — needs NLP. This lesson takes you from raw messy text all the way to a fine-tuned transformer model, covering every step a real data scientist encounters.</LP>
+      <Callout icon="🧠" color="#f472b6" title="The modern NLP stack">2018: Word2Vec embeddings + custom models. 2020: Fine-tune BERT on your task. 2024: Prompt pretrained LLMs, or fine-tune smaller models (DistilBERT) for production. Knowing the full evolution helps you choose the right tool.</Callout>
 
-      <LH>1. Text Preprocessing</LH>
-      <Block label="Cleaning text data">{`import re, string
+      <LH>1. Text Cleaning — the foundation of every NLP pipeline</LH>
+      <LP>Raw text from the real world is noisy. URLs, HTML tags, punctuation, inconsistent casing, emojis — all of these need handling before any model sees the data. Garbage in, garbage out applies especially to NLP.</LP>
+      <Block label="Production text cleaning pipeline">{`import re
+import string
+import unicodedata
 
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(r'http\S+|www\S+', '', text)   # remove URLs
-    text = re.sub(r'<.*?>', '', text)             # remove HTML
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    return ' '.join(text.split())                 # normalize whitespace
+def clean_text(text, 
+               lowercase=True,
+               remove_urls=True,
+               remove_html=True,
+               remove_punctuation=True,
+               normalize_unicode=True):
+    """
+    Production-ready text cleaning function.
+    Call this on every text sample before any vectorization.
+    """
+    if not isinstance(text, str):
+        return ""
 
-raw = "Check out https://example.com! AMAZING product!! 🔥"
-print(clean_text(raw))
-# "check out amazing product"`}</Block>
+    # Normalize unicode (fix encoding issues)
+    if normalize_unicode:
+        text = unicodedata.normalize('NFKD', text)
 
-      <LH>2. Text Vectorization</LH>
-      <Compare items={[
-        {label:"TF-IDF", color:"#7eb8f7", text:"Term Frequency × Inverse Doc Frequency. Fast, interpretable, great baseline. Rare important words get high scores."},
-        {label:"Word2Vec/GloVe", color:"#6dd6a0", text:"Dense word embeddings. Similar words have similar vectors. Captures semantic meaning."},
-        {label:"BERT Embeddings", color:"#f472b6", text:"Contextual. 'bank' in 'river bank' ≠ 'bank account'. Most powerful, slowest."},
-      ]}/>
-      <Block label="TF-IDF + Logistic Regression baseline">{`from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import classification_report
+    # Lowercase
+    if lowercase:
+        text = text.lower()
 
-texts = [
-    "This product is amazing love it",
-    "Terrible quality waste of money",
-    "Great value highly recommend",
-    "Broken on arrival very disappointed",
-    "Exceeded expectations fantastic",
-    "Would not buy again awful",
-    "Best purchase ever made",
-    "Complete garbage do not buy",
+    # Remove URLs (http, https, www)
+    if remove_urls:
+        text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
+
+    # Remove HTML tags
+    if remove_html:
+        text = re.sub(r'<.*?>', '', text)
+
+    # Remove email addresses
+    text = re.sub(r'\S+@\S+', '', text)
+
+    # Remove punctuation
+    if remove_punctuation:
+        text = text.translate(str.maketrans('', '', string.punctuation))
+
+    # Remove extra whitespace (tabs, newlines, multiple spaces)
+    text = ' '.join(text.split())
+
+    return text.strip()
+
+# Test on realistic messy data
+samples = [
+    "Check out https://example.com! This product is AMAZING!! 🔥 #bestever",
+    "<p>Terrible quality.</p> Would NOT recommend. Cost me $200!!!",
+    "Great service   lots of spaces and\nnewlines\there",
+    None,  # handle None gracefully
 ]
-labels = [1, 0, 1, 0, 1, 0, 1, 0]
 
-pipeline = Pipeline([
-    ('tfidf', TfidfVectorizer(max_features=5000, ngram_range=(1,2))),
-    ('clf',   LogisticRegression(random_state=42))
+for s in samples:
+    print(repr(clean_text(s)))`}</Block>
+
+      <LH>2. Tokenization and Stopword Removal</LH>
+      <Block label="From string to tokens">{`import re
+from collections import Counter
+
+# Simple tokenization without NLTK (works anywhere)
+def simple_tokenize(text):
+    """Split on non-alphanumeric characters."""
+    return re.findall(r'\b[a-z]+\b', text.lower())
+
+# Common English stopwords (no library needed)
+STOPWORDS = {
+    'i','me','my','myself','we','our','you','your','he','she','it',
+    'is','was','are','were','be','been','being','have','has','had',
+    'do','does','did','will','would','could','should','may','might',
+    'a','an','the','and','but','or','nor','for','yet','so',
+    'in','on','at','to','of','with','by','from','as','into',
+    'this','that','these','those','not','no','nor','what','which','who',
+}
+
+def tokenize_and_clean(text):
+    tokens = simple_tokenize(clean_text(text))
+    return [t for t in tokens if t not in STOPWORDS and len(t) > 2]
+
+# Test
+review = "This product is absolutely terrible! I would never buy it again."
+tokens = tokenize_and_clean(review)
+print("Tokens:", tokens)
+# ['product', 'absolutely', 'terrible', 'never', 'buy', 'again']
+
+# Vocabulary analysis
+corpus = [
+    "amazing product love it",
+    "terrible quality never again",
+    "great value highly recommend",
+    "broken arrived disappointed",
+]
+all_tokens = [t for text in corpus for t in tokenize_and_clean(text)]
+vocab = Counter(all_tokens)
+print("Most common:", vocab.most_common(5))`}</Block>
+
+      <LH>3. TF-IDF — the go-to baseline for text classification</LH>
+      <LP>TF-IDF (Term Frequency–Inverse Document Frequency) converts text into numerical vectors. Words that appear often in one document but rarely across all documents get high scores — they're informative. Common words like "the" get low scores.</LP>
+      <Block label="TF-IDF math and implementation">{`import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# The math:
+# TF(word, doc) = count of word in doc / total words in doc
+# IDF(word) = log(total docs / docs containing word)
+# TF-IDF = TF × IDF
+
+corpus = [
+    "machine learning model training data",
+    "deep learning neural network training",
+    "data science python pandas numpy",
+    "machine learning data analysis",
+]
+
+# sklearn TF-IDF
+vectorizer = TfidfVectorizer(
+    max_features=1000,      # keep top 1000 terms by TF-IDF score
+    ngram_range=(1, 2),     # unigrams AND bigrams: "machine", "machine learning"
+    min_df=1,               # ignore terms in fewer than N docs
+    max_df=0.95,            # ignore terms in more than 95% of docs (too common)
+    sublinear_tf=True,      # replace TF with 1+log(TF) — dampens very frequent words
+    strip_accents='unicode',
+)
+
+X = vectorizer.fit_transform(corpus)
+print(f"Matrix shape: {X.shape}")  # (4 docs, N terms)
+
+# Most important terms per document
+feature_names = vectorizer.get_feature_names_out()
+for i, doc in enumerate(corpus):
+    row = X[i].toarray()[0]
+    top_terms = sorted(zip(feature_names, row), key=lambda x: -x[1])[:3]
+    print(f"Doc {i}: {top_terms}")`}</Block>
+      <Tip>ngram_range=(1,2) captures phrases like "machine learning" as single features, not just individual words. This dramatically improves accuracy for sentiment analysis — "not good" would be split into "not" and "good" with unigrams, losing the negation.</Tip>
+
+      <LH>4. Full Text Classification Pipeline</LH>
+      <Block label="Production NLP pipeline — sentiment classification">{`import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import classification_report, roc_auc_score
+
+# Dataset
+reviews = [
+    "absolutely love this product amazing quality build",
+    "terrible waste of money broke in two days",
+    "great customer service highly recommend to everyone",
+    "very disappointed quality not as described in listing",
+    "exceeded all my expectations works perfectly fantastic",
+    "poor quality fell apart after one week of use",
+    "best purchase I have ever made outstanding product",
+    "complete garbage do not buy return immediately",
+    "shipping was fast product is exactly as described",
+    "horrible experience customer service ignored my complaint",
+    "five stars this item is exactly what I needed",
+    "one star avoid this seller at all costs",
+    "works as advertised great price for the quality",
+    "broken on arrival packaging was also damaged",
+    "really happy with this purchase will buy again",
+    "total scam product looks nothing like the picture",
+]
+labels = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    reviews, labels, test_size=0.25, random_state=42, stratify=labels
+)
+
+# ── Model 1: TF-IDF + Logistic Regression (always start here)
+lr_pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer(max_features=5000, ngram_range=(1,2), sublinear_tf=True)),
+    ('clf',   LogisticRegression(C=1.0, max_iter=1000, random_state=42))
 ])
 
-pipeline.fit(texts[:6], labels[:6])
-preds = pipeline.predict(texts[6:])
-print("Predictions:", preds)  # [1, 0]
+lr_pipeline.fit(X_train, y_train)
+lr_preds = lr_pipeline.predict(X_test)
+lr_probs = lr_pipeline.predict_proba(X_test)[:,1]
 
-# Predict new
-print(pipeline.predict(["absolutely love this amazing product"]))`}</Block>
+print("=== Logistic Regression ===")
+print(classification_report(y_test, lr_preds, target_names=['Negative','Positive']))
 
-      <LH>3. The Transformer — intuition</LH>
+# Cross-validation for honest estimate
+cv_scores = cross_val_score(lr_pipeline, reviews, labels, cv=4, scoring='f1')
+print(f"CV F1: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
+
+# Predict new reviews
+new = [
+    "this is an outstanding product I love it",
+    "completely broken and useless waste of money"
+]
+predictions = lr_pipeline.predict(new)
+probabilities = lr_pipeline.predict_proba(new)[:,1]
+for text, pred, prob in zip(new, predictions, probabilities):
+    label = "Positive" if pred==1 else "Negative"
+    print(f"{label} ({prob:.1%}): {text[:40]}...")`}</Block>
+
+      <LH>5. Word Embeddings — giving words meaning</LH>
+      <LP>TF-IDF treats words as independent symbols. Embeddings capture meaning — "good" and "excellent" have similar vectors. This semantic understanding dramatically improves performance on complex tasks.</LP>
+      <Block label="Word embeddings concept and usage">{`import numpy as np
+
+# Word2Vec intuition (trained on billions of words)
+# Each word → dense vector of 50-300 numbers
+# Similar words → similar vectors
+
+# Classic examples of embedding arithmetic:
+# king - man + woman ≈ queen
+# paris - france + italy ≈ rome
+
+# In practice: use pretrained embeddings
+# Option 1: sklearn (TF-IDF) — no embeddings, bag of words
+# Option 2: gensim Word2Vec — train on your corpus
+# Option 3: spaCy pretrained embeddings — good for small datasets
+# Option 4: Hugging Face sentence-transformers — best quality
+
+# Sentence-transformers: convert whole sentences to vectors
+# pip install sentence-transformers
+
+# from sentence_transformers import SentenceTransformer
+# model = SentenceTransformer('all-MiniLM-L6-v2')  # fast, good quality
+# sentences = ["I love this product", "Terrible quality"]
+# embeddings = model.encode(sentences)
+# print(embeddings.shape)  # (2, 384) — 384-dimensional vectors
+
+# Cosine similarity — measure semantic closeness
+def cosine_similarity(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+# Simulated: "amazing" and "excellent" should be similar
+amazing   = np.random.randn(384); amazing  /= np.linalg.norm(amazing)
+excellent = amazing + np.random.randn(384)*0.3  # similar
+terrible  = np.random.randn(384); terrible /= np.linalg.norm(terrible)
+
+print(f"amazing vs excellent: {cosine_similarity(amazing, excellent):.3f}")  # high
+print(f"amazing vs terrible:  {cosine_similarity(amazing, terrible):.3f}")   # low`}</Block>
+
+      <LH>6. Transformers — the architecture that changed everything</LH>
       <div style={{display:"grid",gap:8,margin:"12px 0"}}>
         {[
-          {n:"01",color:"#7eb8f7",title:"Attention",desc:"Each token 'attends' to all others. 'bank' looks at surrounding words to decide river vs finance."},
-          {n:"02",color:"#f472b6",title:"Self-Attention",desc:"Every word computes a weighted sum of all others based on relevance. Related words get high attention."},
-          {n:"03",color:"#6dd6a0",title:"Positional Encoding",desc:"Transformers process all tokens in parallel — positional encoding adds order information."},
-          {n:"04",color:"#f7c96e",title:"Pretrain + Fine-tune",desc:"BERT pretrained on billions of words. Fine-tune on your small labeled dataset for your specific task."},
+          {n:"01",color:"#7eb8f7",title:"Attention Mechanism",desc:"Each token computes how much it should 'attend' to every other token. 'bank' in 'river bank' attends strongly to 'river', not 'money'. This context-sensitivity is the breakthrough."},
+          {n:"02",color:"#f472b6",title:"Self-Attention (Multi-Head)",desc:"Multiple attention heads run in parallel, each capturing different types of relationships — syntax, semantics, coreference. Outputs are concatenated and projected."},
+          {n:"03",color:"#6dd6a0",title:"Positional Encoding",desc:"Transformers process all tokens in parallel (unlike RNNs which process sequentially). Positional encoding adds position information so the model knows token order."},
+          {n:"04",color:"#f7c96e",title:"Pretraining on Massive Data",desc:"BERT trained on all of Wikipedia + BooksCorpus. GPT-3 on 570GB of text. This pretraining builds deep language understanding — grammar, facts, reasoning."},
+          {n:"05",color:"#c792ea",title:"Fine-tuning for Your Task",desc:"Transfer the pretrained knowledge to your task with a small labeled dataset. 1000 labeled examples + fine-tuned BERT often beats 100k examples + custom model."},
         ].map((s,i)=>(
           <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",background:"#0d1520",borderRadius:8,border:`1px solid ${s.color}22`}}>
             <div style={{width:28,height:28,borderRadius:"50%",background:s.color+"22",border:`1px solid ${s.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"monospace",fontSize:10,color:s.color,fontWeight:700}}>{s.n}</div>
@@ -5819,113 +6247,208 @@ print(pipeline.predict(["absolutely love this amazing product"]))`}</Block>
         ))}
       </div>
 
-      <LH>4. Hugging Face — pretrained models in 3 lines</LH>
-      <Block label="Zero-shot and fine-tuning">{`from transformers import pipeline as hf_pipeline
+      <LH>7. Hugging Face — using pretrained models</LH>
+      <Block label="Zero-shot, few-shot, and fine-tuning">{`from transformers import pipeline as hf_pipeline
 
-# Zero-shot — no training needed at all
-classifier = hf_pipeline("sentiment-analysis")
-result = classifier("This product changed my life!")
-print(result)  # [{'label': 'POSITIVE', 'score': 0.9998}]
+# ── ZERO-SHOT: No training at all
+# Use when you have no labeled data
+classifier = hf_pipeline("sentiment-analysis",
+    model="distilbert-base-uncased-finetuned-sst-2-english")
+results = classifier([
+    "This product is absolutely fantastic!",
+    "Terrible quality, complete waste of money.",
+    "It's okay, nothing special."
+])
+for r in results:
+    print(f"{r['label']} ({r['score']:.1%})")
 
-# Named entity recognition
+# ── ZERO-SHOT CLASSIFICATION: classify into custom labels
+zero_shot = hf_pipeline("zero-shot-classification")
+text = "The quarterly revenue grew by 23% driven by cloud services"
+result = zero_shot(text, candidate_labels=["finance","technology","healthcare","sports"])
+for label, score in zip(result['labels'], result['scores']):
+    print(f"{label}: {score:.1%}")
+
+# ── NAMED ENTITY RECOGNITION: extract entities
 ner = hf_pipeline("ner", grouped_entities=True)
-entities = ner("Apple Inc. was founded by Steve Jobs in California.")
-print(entities)
+text = "Apple Inc. CEO Tim Cook announced new products in California."
+entities = ner(text)
+for e in entities:
+    print(f"{e['entity_group']}: {e['word']} ({e['score']:.1%})")`}</Block>
+      <Block label="Fine-tuning DistilBERT on your data">{`from transformers import (
+    AutoTokenizer, AutoModelForSequenceClassification,
+    TrainingArguments, Trainer
+)
+from datasets import Dataset
+import numpy as np
+from sklearn.metrics import accuracy_score, f1_score
 
-# Text generation
-generator = hf_pipeline("text-generation", model="gpt2")
-out = generator("Data science is", max_new_tokens=30)
-print(out[0]['generated_text'])`}</Block>
-      <Block label="Fine-tuning workflow (conceptual)">{`# Fine-tuning DistilBERT on your data:
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+# Your labeled data
+texts  = ["Amazing product!", "Terrible quality", "Love it", "Hate it",
+          "Best purchase ever", "Complete waste", "Highly recommend",
+          "Would not buy again"]
+labels = [1, 0, 1, 0, 1, 0, 1, 0]
 
+# Load tokenizer and model
 model_name = "distilbert-base-uncased"
 tokenizer  = AutoTokenizer.from_pretrained(model_name)
 model      = AutoModelForSequenceClassification.from_pretrained(
                  model_name, num_labels=2)
 
 # Tokenize
-tokens = tokenizer(
-    ["Amazing product!", "Terrible quality"],
-    padding=True, truncation=True, max_length=128,
-    return_tensors="pt"   # PyTorch tensors
+def tokenize_batch(batch):
+    return tokenizer(
+        batch["text"],
+        padding="max_length",
+        truncation=True,
+        max_length=128
+    )
+
+# Create HuggingFace Dataset
+dataset = Dataset.from_dict({"text": texts, "label": labels})
+dataset = dataset.map(tokenize_batch, batched=True)
+dataset = dataset.train_test_split(test_size=0.25)
+
+# Training configuration
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    preds = np.argmax(logits, axis=1)
+    return {
+        "accuracy": accuracy_score(labels, preds),
+        "f1": f1_score(labels, preds)
+    }
+
+args = TrainingArguments(
+    output_dir="./distilbert_sentiment",
+    num_train_epochs=3,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    evaluation_strategy="epoch",
+    save_strategy="epoch",
+    load_best_model_at_end=True,
+    logging_steps=10,
 )
-print(tokens.keys())  # input_ids, attention_mask
-print(tokens['input_ids'].shape)  # (2, 128)`}</Block>
 
-      <LH>5. NLP Metrics</LH>
-      <Block label="Evaluating NLP models">{`from sklearn.metrics import f1_score, classification_report
+trainer = Trainer(
+    model=model,
+    args=args,
+    train_dataset=dataset["train"],
+    eval_dataset=dataset["test"],
+    compute_metrics=compute_metrics,
+)
 
-y_true = [1, 0, 1, 1, 0, 1, 0, 0]
-y_pred = [1, 0, 1, 0, 0, 1, 1, 0]
+trainer.train()
+results = trainer.evaluate()
+print(f"Accuracy: {results['eval_accuracy']:.3f}")
+print(f"F1:       {results['eval_f1']:.3f}")`}</Block>
 
-# F1 macro — equal weight per class (balanced datasets)
-# F1 weighted — weight by class size (imbalanced datasets)
+      <LH>8. Evaluation Metrics for NLP</LH>
+      <Block label="Choosing the right NLP metric">{`from sklearn.metrics import (
+    f1_score, precision_score, recall_score,
+    classification_report, roc_auc_score
+)
+import numpy as np
+
+y_true = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]
+y_pred = [1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+
+# F1 — harmonic mean of precision and recall
+# macro: equal weight per class — use for balanced classes
+# weighted: weight by support — use for imbalanced classes
+# binary: for binary classification
 print(f"F1 macro:    {f1_score(y_true, y_pred, average='macro'):.3f}")
 print(f"F1 weighted: {f1_score(y_true, y_pred, average='weighted'):.3f}")
+print(f"F1 binary:   {f1_score(y_true, y_pred, average='binary'):.3f}")
+
+# Full classification report
 print(classification_report(y_true, y_pred,
-      target_names=['Negative','Positive']))`}</Block>
+      target_names=['Negative', 'Positive']))
+
+# For text generation (summarization, translation):
+# BLEU — n-gram precision overlap with reference
+# ROUGE — recall-oriented, common for summarization
+# Perplexity — model's surprise at test text, lower is better
+
+# Decision guide:
+# Sentiment classification → F1 (weighted if imbalanced)
+# Spam detection → Recall (missing spam is costly)
+# Translation → BLEU score
+# Summarization → ROUGE score
+# Topic modeling → coherence score`}</Block>
 
       <Quiz questions={[
-        {q:"TF-IDF gives high scores to words that are:",options:["Common in all documents","Frequent in one doc but rare across all docs","Only in training set","Short words"],answer:"Frequent in one doc but rare across all docs",explanation:"TF = frequency in this document. IDF = inverse of how many docs contain it. 'The' is everywhere (low IDF). 'transformer' in a tech review is rare globally but meaningful — high TF-IDF."},
-        {q:"What makes BERT different from Word2Vec?",options:["BERT is faster","BERT produces contextual embeddings — same word gets different vectors in different contexts","Word2Vec uses transformers","BERT only works for English"],answer:"BERT produces contextual embeddings — same word gets different vectors in different contexts",explanation:"Word2Vec gives 'bank' one fixed vector. BERT gives different vectors in 'river bank' vs 'bank account' because it reads full context. This makes BERT dramatically more powerful."},
-        {q:"You have 1000 labeled reviews. Best starting approach?",options:["Train BERT from scratch","Fine-tune DistilBERT","TF-IDF + Logistic Regression baseline first","Use GPT-4 API"],answer:"TF-IDF + Logistic Regression baseline first",explanation:"Always establish a simple baseline. TF-IDF + LR is fast, interpretable, and surprisingly strong. If it achieves 85%+ F1, you may not need BERT. Only upgrade when the baseline falls short."},
-        {q:"F1 weighted vs F1 macro — use weighted when:",options:["Always","Classes are balanced","Classes are imbalanced","You have more than 2 classes"],answer:"Classes are imbalanced",explanation:"F1 macro treats all classes equally regardless of size. Weighted accounts for class size — reflecting real distribution. Use weighted for imbalanced datasets like spam detection (90% not spam)."},
-        {q:"What is transfer learning in NLP?",options:["Transferring data between systems","Using a model pretrained on large text corpora and adapting it to your specific task","Moving models between cloud providers","Converting between programming languages"],answer:"Using a model pretrained on large text corpora and adapting it to your specific task",explanation:"BERT learned language structure from billions of words. Fine-tuning adapts this knowledge to your task with far less labeled data than training from scratch. This is the standard NLP approach in industry."},
+        {q:"TF-IDF gives 'the' a very low score because:",options:["It's a short word","It appears in almost every document — IDF penalizes common words","TF-IDF ignores articles","It's not in the vocabulary"],answer:"It appears in almost every document — IDF penalizes common words",explanation:"IDF = log(total docs / docs containing word). 'The' appears in nearly every document, so IDF ≈ log(1) = 0. TF-IDF = TF × IDF ≈ 0 for 'the'. Rare but informative words get high IDF scores."},
+        {q:"ngram_range=(1,2) in TfidfVectorizer means:",options:["Use words of length 1 to 2 characters","Include both single words AND two-word phrases as features","Process 1 to 2 documents at a time","Maximum 2 words per sentence"],answer:"Include both single words AND two-word phrases as features",explanation:"n-grams are contiguous word sequences. ngram_range=(1,2) includes unigrams ('machine','learning') and bigrams ('machine learning'). Bigrams capture meaning lost when words are split — 'not good' vs 'good'."},
+        {q:"BERT produces contextual embeddings. This means:",options:["BERT can only process context windows of fixed size","The same word gets different vector representations depending on surrounding context","BERT embeddings are always 768 dimensions","Contextual means the model reads left-to-right"],answer:"The same word gets different vector representations depending on surrounding context",explanation:"In 'river bank' vs 'bank account', BERT gives 'bank' completely different vectors because it reads all surrounding tokens via attention. Word2Vec gives 'bank' one fixed vector regardless of context — losing this crucial disambiguation."},
+        {q:"You have 500 labeled customer support tickets. Best approach?",options:["Train BERT from scratch","Fine-tune DistilBERT (much smaller than BERT, faster to fine-tune)","TF-IDF + Logistic Regression baseline first, then upgrade if needed","Use GPT-4 API with few-shot prompting"],answer:"TF-IDF + Logistic Regression baseline first, then upgrade if needed",explanation:"Always start simple. TF-IDF + LR is fast, interpretable, and surprisingly strong. With 500 examples it might achieve 85%+ F1. Only if it falls short, fine-tune DistilBERT. Never train transformers from scratch with small data."},
+        {q:"F1 macro vs F1 weighted: your dataset has 90% negative and 10% positive reviews. Which should you report?",options:["Always macro","F1 weighted — accounts for class imbalance, reflects real-world performance","They're always the same","F1 binary only for binary tasks"],answer:"F1 weighted — accounts for class imbalance, reflects real-world performance",explanation:"F1 macro gives equal weight to each class — 10% positive class counts as much as 90% negative. For imbalanced data this overweights the rare class. F1 weighted weights by support (class frequency), reflecting how the model actually performs in production where 90% of cases are negative."},
       ]}/>
 
       <CodeExercise
-        title="Build a TF-IDF sentiment classifier"
-        description="Build a TF-IDF + LogisticRegression pipeline, fit on training data, and predict sentiment for two new reviews."
+        title="Build a complete NLP classification pipeline"
+        description="Build a TF-IDF + LogisticRegression pipeline for sentiment classification. Tune the TF-IDF with ngram_range=(1,2) and sublinear_tf=True. Evaluate with classification_report and cross-validation."
         starterCode={`from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import classification_report
 
 train_texts = [
-    "absolutely love this product amazing quality",
-    "terrible waste of money broken on arrival",
-    "great customer service highly recommend",
-    "very disappointed would not buy again",
-    "exceeded all expectations fantastic",
-    "poor quality fell apart after one day",
+    "absolutely love this amazing high quality product",
+    "terrible waste of money broke immediately do not buy",
+    "great customer service fast shipping highly recommend",
+    "very disappointed quality nothing like advertised",
+    "exceeded all expectations works perfectly fantastic build",
+    "poor quality material fell apart after one week",
+    "best purchase ever made outstanding value for price",
+    "complete garbage avoid this seller at all costs",
+    "shipping fast product exactly as described happy",
+    "horrible customer service ignored all my emails",
+    "five stars perfect item exactly what I needed",
+    "one star avoid broken arrived damaged packaging",
 ]
-train_labels = [1, 0, 1, 0, 1, 0]
+labels = [1,0,1,0,1,0,1,0,1,0,1,0]
 
-test_texts  = ["really great product love it", "awful terrible experience"]
-test_labels = [1, 0]
+X_train, X_test, y_train, y_test = train_test_split(
+    train_texts, labels, test_size=0.25, random_state=42, stratify=labels
+)
 
 pipeline = Pipeline([
-    ('tfidf', TfidfVectorizer(___=5000)),
-    ('clf',   LogisticRegression(random_state=42))
+    ('tfidf', TfidfVectorizer(
+        max_features=___,
+        ngram_range=___,
+        sublinear_tf=___
+    )),
+    ('clf', LogisticRegression(C=___, max_iter=1000, random_state=42))
 ])
 
-pipeline.___(train_texts, train_labels)
-preds = pipeline.___(test_texts)
-print(f"Accuracy: {accuracy_score(test_labels, preds)}")
+pipeline.fit(X_train, y_train)
+preds = pipeline.predict(X_test)
+print(classification_report(y_test, preds, target_names=['Negative','Positive'],
+                             zero_division=0))
 
-new = ["outstanding product", "completely broken and useless"]
-print("New predictions:", pipeline.predict(___))`}
-        hint="max_features=5000. pipeline.fit(). pipeline.predict(). predict(new)."
-        validate={(out)=>out.includes("Accuracy:")&&out.includes("New predictions:")}
+cv = cross_val_score(pipeline, train_texts, labels, cv=3, scoring='f1')
+print(f"CV F1: {round(cv.mean(),3)} ± {round(cv.std(),3)}")`}
+        hint="max_features=5000. ngram_range=(1,2). sublinear_tf=True. C=1.0."
+        validate={(out)=>out.includes("Negative")&&out.includes("Positive")&&out.includes("CV F1:")}
       />
     </div>
   )},
-
   // ── LLMs & RAG
-  {id:"llm-lesson", phase:"🧠 Deep Learning", emoji:"🤖", color:"#34d399", title:"LLMs & RAG", subtitle:"Build AI-powered apps with language model APIs",
+  {id:"llm-lesson", phase:"🧠 Deep Learning", emoji:"🤖", color:"#34d399", title:"LLMs & RAG", subtitle:"Build production AI apps that work with your own data",
    body:()=>(
     <div>
-      <LP>Large Language Models have changed what's possible in data science. This lesson teaches you to build real LLM-powered applications — not just prompt ChatGPT, but build systems that work with YOUR data.</LP>
-      <Callout icon="🧠" color="#34d399" title="The key skill">The valuable skill is not using ChatGPT. It's connecting LLMs to real data sources, APIs, and workflows — building systems that companies can deploy.</Callout>
+      <LP>Large Language Models have fundamentally changed what's possible in data science and software engineering. Every company is either building with LLMs or getting left behind. This lesson teaches you to build real LLM-powered applications — not just prompt ChatGPT, but engineer systems that connect language models to your databases, documents, and workflows.</LP>
+      <Callout icon="🧠" color="#34d399" title="The real skill gap">Everyone can use ChatGPT. Companies pay premium salaries for engineers who can build reliable, production-ready LLM systems — RAG pipelines, tool-using agents, evaluation frameworks, cost optimization. That's what this lesson teaches.</Callout>
 
-      <LH>1. How LLMs Work — intuition</LH>
+      <LH>1. How LLMs Work — the essential intuition</LH>
       <div style={{display:"grid",gap:8,margin:"12px 0"}}>
         {[
-          {n:"01",color:"#7eb8f7",title:"Tokenization",desc:"Text → tokens (roughly word-pieces). 'unhappy' → ['un','happy']. LLMs operate on token sequences, not characters."},
-          {n:"02",color:"#34d399",title:"Self-Attention",desc:"Every token attends to all others. This context-awareness is why LLMs understand nuance across long passages."},
-          {n:"03",color:"#f7c96e",title:"Next token prediction",desc:"LLMs predict the next token. Trained on trillions of tokens, they learn language, facts, and reasoning."},
-          {n:"04",color:"#c792ea",title:"Instruction tuning",desc:"Base models predict text. ChatGPT/Claude are further trained to follow instructions and be helpful."},
+          {n:"01",color:"#7eb8f7",title:"Tokenization",desc:"Text is split into tokens (roughly word-pieces). 'unhappiness' → ['un','happiness']. GPT-4 costs per token. 1000 tokens ≈ 750 words. Context limits (8k, 128k, 1M tokens) define how much the model 'remembers'."},
+          {n:"02",color:"#34d399",title:"Self-Attention — reading everything at once",desc:"Unlike humans who read left-to-right, transformers process all tokens simultaneously. Each token computes how much it should attend to every other token. 'bank' reads 'river' and 'account' in context to resolve its meaning."},
+          {n:"03",color:"#f7c96e",title:"Next-Token Prediction",desc:"LLMs are trained on one objective: predict the next token given all previous tokens. Do this on trillions of tokens and the model learns grammar, facts, reasoning, and even coding. The simplest task that produces the richest emergent capabilities."},
+          {n:"04",color:"#c792ea",title:"Instruction Tuning + RLHF",desc:"Base models just complete text. GPT-4 and Claude are then fine-tuned to follow instructions (supervised fine-tuning) and reinforced with human feedback to be helpful, harmless, and honest. This transforms text completors into AI assistants."},
+          {n:"05",color:"#f472b6",title:"Emergent Capabilities",desc:"At sufficient scale, LLMs develop capabilities not explicitly trained: multi-step reasoning, code generation, few-shot learning, math, and more. These emerge from scale alone — a key reason larger models keep surprising researchers."},
         ].map((s,i)=>(
           <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",background:"#0d1520",borderRadius:8,border:`1px solid ${s.color}22`}}>
             <div style={{width:28,height:28,borderRadius:"50%",background:s.color+"22",border:`1px solid ${s.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"monospace",fontSize:10,color:s.color,fontWeight:700}}>{s.n}</div>
@@ -5934,305 +6457,1011 @@ print("New predictions:", pipeline.predict(___))`}
         ))}
       </div>
 
-      <LH>2. Prompt Engineering</LH>
-      <Block label="Prompt patterns that work">{`# Pattern 1: System prompt + user message
-messages = [
-    {"role": "system", "content": "You are a senior data scientist. "
-     "Give concise, technically accurate answers."},
-    {"role": "user",   "content": "Explain overfitting in one sentence."}
+      <LH>2. Prompt Engineering — the craft of talking to LLMs</LH>
+      <LP>Prompt engineering is the skill of communicating with LLMs to get reliable, high-quality outputs. Good prompts dramatically outperform bad prompts on the same model.</LP>
+      <Block label="The 4 essential prompt patterns">{`import os
+
+# ── PATTERN 1: System prompt + user message
+# System prompt sets the persona and constraints
+# User message is the actual task
+messages_1 = [
+    {
+        "role": "system",
+        "content": (
+            "You are a senior data scientist with 10 years of experience. "
+            "Give concise, technically accurate answers. "
+            "When giving code, use Python with sklearn. "
+            "Always mention trade-offs and failure modes."
+        )
+    },
+    {
+        "role": "user",
+        "content": "When should I use Random Forest vs XGBoost?"
+    }
 ]
 
-# Pattern 2: Few-shot — show examples in the prompt
-few_shot = """Classify sentiment.
-Review: "Amazing product!" → Positive
-Review: "Terrible quality" → Negative
-Review: "It's okay" → Neutral
+# ── PATTERN 2: Few-shot prompting
+# Show examples of input → expected output format
+few_shot_prompt = """Classify customer support tickets into categories.
+
+Examples:
+Ticket: "My order hasn't arrived after 2 weeks"
+Category: SHIPPING
+
+Ticket: "The app crashes every time I open it"  
+Category: TECHNICAL
+
+Ticket: "I was charged twice for the same order"
+Category: BILLING
 
 Now classify:
-Review: "Best purchase of my life!"
-Answer:"""
+Ticket: "I can't log into my account, password reset isn't working"
+Category:"""
 
-# Pattern 3: Chain of thought
-cot = """Analyze this data and identify the top issue.
+# ── PATTERN 3: Chain of Thought (CoT)
+# Tell the model to reason step by step before answering
+cot_prompt = """Analyze this sales data and recommend an action.
 Think step by step:
-1. What are the key metrics?
-2. What changed vs last month?
-3. Most likely root cause?
+1. What changed compared to last period?
+2. What's the most likely root cause?
+3. What's the recommended action and why?
+4. What would you monitor to verify the fix?
 
-Data: Revenue -23%, signups flat, churn +15%"""
+Data:
+- Monthly revenue: $1.2M (down 23% vs last month)
+- New signups: 450 (flat vs last month)  
+- Churn rate: 8.3% (up from 5.1% last month)
+- Average order value: $267 (down 4%)
+- Support tickets: up 340% (mostly about feature X being removed)
 
-# Pattern 4: Structured output
-structured = """Extract from this complaint.
-Return ONLY valid JSON: {"issue": ..., "severity": 1-5, "department": ...}
+Analysis:"""
 
-Complaint: "Order arrived broken, support ignored me for 3 days."
+# ── PATTERN 4: Structured output
+# Force JSON output for programmatic use
+structured_prompt = """Extract information from this customer complaint.
+Return ONLY valid JSON with these exact keys:
+{
+    "issue_type": "billing|technical|shipping|product|other",
+    "severity": 1-5,
+    "sentiment": "positive|neutral|negative",
+    "requires_escalation": true|false,
+    "summary": "one sentence summary"
+}
+
+No preamble, no explanation. JSON only.
+
+Complaint: "I've been charged $299 three times this month for a subscription 
+that should be $99. I've called support 4 times and no one has resolved it. 
+This is completely unacceptable. I'm considering disputing all charges with 
+my credit card company and filing a complaint with the BBB."
 """`}</Block>
 
-      <LH>3. RAG — Retrieval-Augmented Generation</LH>
-      <LP>RAG solves the biggest LLM limitation: they only know training data. RAG gives the LLM access to YOUR documents at query time.</LP>
-      <Block label="RAG pipeline step by step">{`# RAG = Retrieve relevant chunks → Augment prompt → Generate answer
+      <LH>3. Calling LLM APIs in Python</LH>
+      <Block label="OpenAI and Anthropic API patterns">{`import os
+import json
 
-from sentence_transformers import SentenceTransformer
-import numpy as np
+# ── OpenAI API
+from openai import OpenAI
 
-# Your knowledge base
-documents = [
-    "ZeroToDS offers a structured data science curriculum.",
-    "The platform includes Python, SQL, Statistics, and ML lessons.",
-    "Interactive coding exercises run Python in the browser.",
-    "The Guided Cohort is $99 and includes weekly live sessions.",
-    "Free accounts access the full Python for DS phase.",
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+def call_gpt(prompt, system="You are a helpful data scientist.", 
+             model="gpt-4o-mini", temperature=0.1):
+    """
+    temperature: 0=deterministic, 1=creative. 
+    Use 0-0.3 for analysis tasks, 0.7-1.0 for creative tasks.
+    """
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user",   "content": prompt}
+        ],
+        temperature=temperature,
+        max_tokens=1000,
+    )
+    return response.choices[0].message.content
+
+# ── Structured JSON output (OpenAI)
+def extract_structured(text):
+    prompt = f"""Extract from this text as JSON with keys:
+    issue, severity (1-5), department
+    
+    Text: {text}
+    JSON only:"""
+    
+    raw = call_gpt(prompt, temperature=0)
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # Fallback: find JSON in response
+        import re
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        return json.loads(match.group()) if match else {}
+
+# ── Cost estimation before you run
+# gpt-4o-mini: ~$0.15/1M input tokens, $0.60/1M output tokens
+# gpt-4o:     ~$5/1M input tokens, $15/1M output tokens
+# Estimate tokens: len(text.split()) * 1.33 ≈ tokens
+
+def estimate_cost(prompt, model="gpt-4o-mini"):
+    tokens = len(prompt.split()) * 1.33
+    if "mini" in model:
+        cost = (tokens / 1_000_000) * 0.15
+    else:
+        cost = (tokens / 1_000_000) * 5
+    print(f"Estimated input cost: {cost:.6f}")`}</Block>
+
+      <LH>4. RAG — Retrieval-Augmented Generation</LH>
+      <LP>RAG is the most important LLM architecture pattern for production systems. It solves the core problem: LLMs only know what was in their training data. RAG lets you give the model access to YOUR documents, databases, and real-time information — at query time, not training time.</LP>
+      <Block label="Why RAG beats fine-tuning for most cases">{`# ── THE PROBLEM ──
+# User: "What is our refund policy for enterprise customers?"
+# LLM without RAG: "I don't have information about your specific policies."
+# LLM with RAG:  *retrieves relevant policy doc* → "Based on your enterprise 
+#                agreement, enterprise customers can request refunds within 90 days..."
+
+# ── RAG vs FINE-TUNING ──
+# Fine-tuning:
+#   ✓ Fast inference (knowledge in weights)
+#   ✗ Expensive: $500-5000+ per training run
+#   ✗ Knowledge is frozen at training time
+#   ✗ Need to retrain when info changes
+#   ✗ Can hallucinate "trained" information
+#   → Use for: style transfer, domain-specific reasoning
+
+# RAG:
+#   ✓ Free to update (just add new docs)
+#   ✓ Citable: can show source documents
+#   ✓ No hallucinations about document content
+#   ✓ Works with any LLM
+#   ✗ Slower (retrieval adds latency)
+#   ✗ Quality depends on retrieval quality
+#   → Use for: document Q&A, knowledge bases, support bots
+
+# RAG wins for: FAQ bots, document search, knowledge management
+# Fine-tuning wins for: consistent tone/style, specialized reasoning`}</Block>
+
+      <LH>5. Building a RAG Pipeline from Scratch</LH>
+      <Block label="Complete RAG implementation">{`import numpy as np
+from typing import List, Tuple
+
+class SimpleRAG:
+    """
+    A complete RAG pipeline without external dependencies.
+    In production: use LangChain + FAISS + OpenAI embeddings.
+    """
+    
+    def __init__(self, embedding_dim=64):
+        self.documents = []
+        self.embeddings = []
+        self.embedding_dim = embedding_dim
+        np.random.seed(42)
+    
+    def _embed(self, text: str) -> np.ndarray:
+        """
+        Simulate text embedding.
+        In production: use SentenceTransformer or OpenAI embeddings.
+        Real embeddings: all-MiniLM-L6-v2 (384d, fast)
+                        text-embedding-3-small (1536d, OpenAI)
+        """
+        # Deterministic hash-based fake embedding for demo
+        words = text.lower().split()
+        vec = np.zeros(self.embedding_dim)
+        for i, word in enumerate(words):
+            np.random.seed(hash(word) % 2**31)
+            vec += np.random.randn(self.embedding_dim) / (i + 1)
+        norm = np.linalg.norm(vec)
+        return vec / norm if norm > 0 else vec
+    
+    def add_documents(self, docs: List[str]):
+        """Index documents — call once at startup."""
+        for doc in docs:
+            self.documents.append(doc)
+            self.embeddings.append(self._embed(doc))
+        self.embeddings = np.array(self.embeddings)
+        print(f"Indexed {len(docs)} documents. Ready to query.")
+    
+    def retrieve(self, query: str, top_k: int = 3) -> List[Tuple[str, float]]:
+        """Find most relevant documents using cosine similarity."""
+        query_emb = self._embed(query)
+        # Cosine similarity: dot product of normalized vectors
+        similarities = self.embeddings @ query_emb
+        top_indices = np.argsort(similarities)[-top_k:][::-1]
+        return [(self.documents[i], float(similarities[i])) 
+                for i in top_indices]
+    
+    def build_prompt(self, query: str, context_docs: List[str]) -> str:
+        """Build the augmented prompt with retrieved context."""
+        context = "\n\n".join([f"[Doc {i+1}]: {doc}" 
+                               for i, doc in enumerate(context_docs)])
+        return f"""You are a helpful assistant. Answer the question based ONLY 
+on the provided context. If the answer isn't in the context, say 
+"I don't have information about that in the provided documents."
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+    
+    def query(self, question: str, top_k: int = 3) -> dict:
+        """Full RAG pipeline: retrieve + augment + generate."""
+        # Step 1: Retrieve relevant documents
+        retrieved = self.retrieve(question, top_k=top_k)
+        
+        # Step 2: Build augmented prompt
+        docs = [doc for doc, score in retrieved]
+        prompt = self.build_prompt(question, docs)
+        
+        # Step 3: In production, send to LLM API
+        # response = call_gpt(prompt)
+        
+        return {
+            "question":   question,
+            "retrieved":  retrieved,
+            "prompt":     prompt,
+            "answer":     "[Would call LLM API here]"
+        }
+
+# Build the RAG system
+rag = SimpleRAG()
+
+# Your knowledge base — could be from PDFs, databases, docs
+knowledge_base = [
+    "ZeroToDS offers a structured data science curriculum from beginner to advanced.",
+    "The platform includes Python, SQL, Statistics, Machine Learning, and Deep Learning lessons.",
+    "Free accounts get access to the complete Python for Data Science phase with 5 lessons.",
+    "The Full Access plan costs $29 per month and includes all 40+ lessons and projects.",
+    "The Guided Cohort costs $99 one-time and includes weekly live sessions with the instructor.",
+    "Cohort enrollment is limited to 10 students per cohort to ensure personal attention.",
+    "Lessons include interactive Python code execution directly in the browser.",
+    "The platform tracks your progress and marks roadmap tasks complete as you finish lessons.",
+    "Students can message the instructor directly through the platform messaging feature.",
+    "The AI Career Coach chatbot is available 24/7 to all enrolled students.",
 ]
 
-# Embed all documents once
-model = SentenceTransformer('all-MiniLM-L6-v2')
-doc_embeddings = model.encode(documents)
+rag.add_documents(knowledge_base)
 
-def retrieve(query, top_k=2):
-    """Find most relevant documents for a query."""
-    q_emb = model.encode([query])
-    # Cosine similarity
-    sims = np.dot(doc_embeddings, q_emb.T).flatten()
-    top_idx = sims.argsort()[-top_k:][::-1]
-    return [documents[i] for i in top_idx]
-
-# Ask a question
-question = "How much does the cohort cost?"
-context  = retrieve(question)
-print("Retrieved:", context)
-
-# Build prompt for LLM
-prompt = f"""Answer using only this context:
-{chr(10).join(context)}
-
-Question: {question}"""
-# Send prompt to OpenAI/Anthropic API → get answer`}</Block>
-      <Callout icon="★" color="#f7c96e" title="RAG vs Fine-tuning">Fine-tuning bakes knowledge into weights — expensive, slow, knowledge gets stale. RAG retrieves fresh information at query time. For document Q&A, knowledge bases, support bots — RAG is faster, cheaper, and more accurate.</Callout>
-
-      <LH>4. Vector Search with FAISS</LH>
-      <Block label="Production-grade vector search">{`import numpy as np
-import faiss  # pip install faiss-cpu
-from sentence_transformers import SentenceTransformer
-
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
-docs = [
-    "The average data scientist salary is $120,000.",
-    "Python is the most popular language for data science.",
-    "SQL is required in 85% of data science job postings.",
-    "Remote data science jobs increased 300% since 2020.",
+# Query the system
+questions = [
+    "How much does the cohort cost?",
+    "What is included in the free plan?",
+    "How many students per cohort?",
 ]
 
-# Build FAISS index
-embeddings = model.encode(docs).astype('float32')
-dim   = embeddings.shape[1]
-index = faiss.IndexFlatL2(dim)
-index.add(embeddings)
+for q in questions:
+    result = rag.query(q, top_k=2)
+    print(f"\nQ: {q}")
+    for doc, score in result['retrieved']:
+        print(f"  [{score:.3f}] {doc[:70]}...")`}</Block>
 
-# Search
-query = "What language should I learn?"
-q_emb = model.encode([query]).astype('float32')
-distances, indices = index.search(q_emb, k=2)
+      <LH>6. Production RAG with FAISS and LangChain</LH>
+      <Block label="Real production stack">{`# pip install langchain faiss-cpu sentence-transformers openai
 
-for i, idx in enumerate(indices[0]):
-    print(f"Result {i+1}: {docs[idx]}")
-    print(f"Distance: {distances[0][i]:.3f}")`}</Block>
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+import os
 
-      <LH>5. Fine-tuning vs RAG</LH>
-      <Compare items={[
-        {label:"Use RAG", color:"#6dd6a0", text:"Documents to search. Knowledge changes. Need citations. Limited compute. Most business use cases."},
-        {label:"Use Fine-tuning", color:"#f7c96e", text:"Need specific style/tone. Specialized reasoning. 1000s of labeled examples. Latency-critical."},
-        {label:"Use both", color:"#c792ea", text:"Complex enterprise. Domain reasoning (fine-tune) + fresh data (RAG). Production at scale."},
-      ]}/>
+# ── STEP 1: Load and chunk documents
+def load_and_chunk(text: str, chunk_size=500, chunk_overlap=50):
+    """
+    Chunking strategy matters:
+    - Too small: individual chunks lose context
+    - Too large: retrieval returns too much irrelevant text
+    - 300-700 tokens is usually optimal
+    - Overlap helps prevent losing information at chunk boundaries
+    """
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        separators=["\n\n", "\n", ". ", " ", ""]
+    )
+    return splitter.create_documents([text])
+
+# ── STEP 2: Embed and store in FAISS vector database
+embedding_model = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+    # Fast, 384-dimensional, good quality for most tasks
+    # Alternative: "sentence-transformers/all-mpnet-base-v2" (slower, better)
+    # OpenAI alternative: OpenAIEmbeddings() (best quality, costs $)
+)
+
+your_documents = "Your company documents, PDFs, knowledge base content here..."
+chunks = load_and_chunk(your_documents)
+
+# Build FAISS index — stored in memory, can also save to disk
+vectorstore = FAISS.from_documents(chunks, embedding_model)
+
+# ── STEP 3: Set up retrieval chain
+retriever = vectorstore.as_retriever(
+    search_type="similarity",   # or "mmr" for diversity
+    search_kwargs={"k": 4}      # retrieve top 4 chunks
+)
+
+# ── STEP 4: Full RAG chain
+llm = OpenAI(api_key=os.environ["OPENAI_API_KEY"], 
+             model="gpt-4o-mini", temperature=0)
+
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",     # "stuff" = concatenate all docs into prompt
+    retriever=retriever,
+    return_source_documents=True
+)
+
+# ── STEP 5: Query
+result = qa_chain({"query": "What is our refund policy?"})
+print("Answer:", result["result"])
+print("\nSources:")
+for doc in result["source_documents"]:
+    print(f"  - {doc.page_content[:100]}...")`}</Block>
+
+      <LH>7. LLM Evaluation — measuring output quality</LH>
+      <Block label="How to evaluate LLM systems">{`import numpy as np
+
+# ── PROBLEM: LLM output is text, not a single number ──
+# You can't just compute accuracy. You need to evaluate:
+# 1. Faithfulness: Is the answer grounded in the retrieved docs?
+# 2. Answer relevance: Does the answer address the question?
+# 3. Context relevance: Did we retrieve the right docs?
+
+# ── PRACTICAL EVALUATION APPROACHES ──
+
+# Approach 1: LLM-as-judge (most common in production)
+def llm_judge(question, answer, context, model="gpt-4o-mini"):
+    prompt = f"""Rate this RAG system response on a scale of 1-5.
+
+Question: {question}
+Retrieved Context: {context}
+System Answer: {answer}
+
+Criteria:
+- Faithfulness (1-5): Is the answer grounded in the context?
+- Relevance (1-5): Does the answer actually address the question?
+- Completeness (1-5): Does the answer cover all important points?
+
+Return JSON: {{"faithfulness": N, "relevance": N, "completeness": N, "reasoning": "..."}}
+JSON only:"""
+    # return call_gpt(prompt, temperature=0)
+    return '{"faithfulness":4,"relevance":5,"completeness":3,"reasoning":"Good"}'
+
+# Approach 2: RAGAS framework (automated RAG evaluation)
+# pip install ragas
+# from ragas import evaluate
+# from ragas.metrics import faithfulness, answer_relevancy, context_recall
+
+# Approach 3: Test set with known answers
+test_cases = [
+    {
+        "question": "What does the full access plan cost?",
+        "expected_answer": "$29",
+        "expected_in_answer": ["29", "$29", "29 per month"]
+    },
+]
+
+def evaluate_test_set(rag_system, test_cases):
+    results = []
+    for case in test_cases:
+        result = rag_system.query(case["question"])
+        # Check if expected answer appears in response
+        answer = result.get("answer", "").lower()
+        correct = any(exp.lower() in answer 
+                      for exp in case["expected_in_answer"])
+        results.append({"correct": correct, "question": case["question"]})
+    
+    accuracy = sum(r["correct"] for r in results) / len(results)
+    print(f"Test accuracy: {accuracy:.1%} ({sum(r['correct'] for r in results)}/{len(results)})")
+    return results`}</Block>
 
       <Quiz questions={[
-        {q:"What is tokenization in LLMs?",options:["Splitting data into train/test","Converting text into numerical token IDs for model input","Encrypting API keys","Splitting a model into smaller parts"],answer:"Converting text into numerical token IDs for model input",explanation:"LLMs can't process raw text. Tokenization splits text into sub-word pieces and maps them to integer IDs. Token count affects API cost and context length limits."},
-        {q:"RAG stands for:",options:["Retrieval-Augmented Generation","Random Attention Graph","Recursive Autoregressive Generation","Real-time AI Generation"],answer:"Retrieval-Augmented Generation",explanation:"RAG retrieves relevant documents from a knowledge base, then augments the LLM prompt with that context. This gives LLMs access to external, up-to-date knowledge without retraining."},
-        {q:"Few-shot prompting means:",options:["Using a small model","Providing input-output examples in the prompt","Training on few examples","Making few API calls"],answer:"Providing input-output examples in the prompt",explanation:"Few-shot includes 2-5 task examples directly in the prompt. 'Review: Amazing → Positive. Review: Terrible → Negative. Now: Review: Great →'. This dramatically improves output quality without any training."},
-        {q:"For a company FAQ chatbot, which approach is best?",options:["Train custom LLM from scratch","Fine-tune GPT","RAG — embed FAQ docs, retrieve per query","Keyword matching"],answer:"RAG — embed FAQ docs, retrieve per query",explanation:"FAQ content changes frequently. RAG retrieves fresh content at query time. Fine-tuning needs retraining with every FAQ update. RAG is the standard pattern for document Q&A."},
-        {q:"Vector similarity search finds documents by:",options:["Exact keyword matching","Comparing embedding vectors — similar text has similar vectors","Alphabetical ordering","Document length"],answer:"Comparing embedding vectors — similar text has similar vectors",explanation:"Embedding models map text to vectors where semantic similarity = vector proximity. 'Car' and 'automobile' get similar vectors. This finds semantically related content even with different wording."},
+        {q:"A context window of 128k tokens means:",options:["The model can only generate 128k tokens","The model can process up to 128,000 tokens of input + output combined","The model has 128k parameters","Maximum 128k words in training data"],answer:"The model can process up to 128,000 tokens of input + output combined",explanation:"Context window is the maximum sequence length a model can handle in one API call (input + output combined). 128k tokens ≈ 96,000 words ≈ 300 pages. Larger context windows allow more documents in RAG prompts, longer conversations, and bigger codebases."},
+        {q:"Chain-of-Thought prompting improves LLM performance on complex tasks by:",options:["Making the model faster","Instructing the model to show its reasoning steps before giving a final answer","Reducing API costs","Using multiple models simultaneously"],answer:"Instructing the model to show its reasoning steps before giving a final answer",explanation:"CoT prompting ('Let's think step by step') dramatically improves accuracy on multi-step reasoning tasks (math, logic, analysis). The model's intermediate reasoning steps catch errors that direct answering would miss. Especially effective for GPT-4 and similar large models."},
+        {q:"Chunking strategy in RAG: what is chunk overlap and why does it matter?",options:["The percentage of documents retrieved","Text shared between adjacent chunks to prevent losing context at boundaries","The similarity threshold for retrieval","Number of chunks per document"],answer:"Text shared between adjacent chunks to prevent losing context at boundaries",explanation:"When splitting documents into chunks, a key sentence might fall at a boundary. With overlap=50 tokens, adjacent chunks share 50 tokens. This ensures important context isn't lost when a relevant sentence happens to span a chunk boundary."},
+        {q:"Your RAG system returns answers that sound plausible but contradict the source documents. This is called:",options:["Overfitting","Hallucination — the model generates confident-sounding false information","Retrieval failure","Context overflow"],answer:"Hallucination — the model generates confident-sounding false information",explanation:"LLMs can generate fluent, confident text even when it contradicts retrieved documents. Mitigation: explicit 'answer only from context' prompts, faithfulness evaluation, returning source citations, using temperature=0 for factual tasks."},
+        {q:"When should you use RAG instead of fine-tuning?",options:["Always use RAG","Always fine-tune","RAG when knowledge changes frequently or you need citations; fine-tune for style/tone/specialized reasoning","Fine-tune for all enterprise applications"],answer:"RAG when knowledge changes frequently or you need citations; fine-tune for style/tone/specialized reasoning",explanation:"RAG excels when: knowledge changes (product catalog, policies), you need to cite sources, you have no labeled training data. Fine-tuning excels when: you need consistent output style, domain-specific reasoning patterns, high-volume inference where RAG latency is costly."},
       ]}/>
 
       <CodeExercise
-        title="Build a semantic search system"
-        description="Given document and query embeddings, compute cosine similarity for each document and return the index and text of the most relevant one."
+        title="Build and query a RAG pipeline"
+        description="Complete the RAG system: implement the retrieve method to find the top-k most similar documents using cosine similarity, then use it to answer a question."
         starterCode={`import numpy as np
 
-documents = [
-    "Python is great for data science",
-    "SQL is used for database queries",
-    "Neural networks need lots of data",
-    "Feature engineering improves models",
-    "Docker makes deployment reproducible",
-]
+class MiniRAG:
+    def __init__(self):
+        self.documents = []
+        self.embeddings = []
+    
+    def _embed(self, text):
+        """Fake embedder — returns deterministic vector based on word hash."""
+        words = text.lower().split()
+        vec = np.zeros(32)
+        for i, w in enumerate(words):
+            np.random.seed(abs(hash(w)) % 10000)
+            vec += np.random.randn(32) * (1/(i+1))
+        norm = np.linalg.norm(vec)
+        return vec / norm if norm > 0 else vec
+    
+    def add(self, docs):
+        self.documents = docs
+        self.embeddings = np.array([self._embed(d) for d in docs])
+    
+    def retrieve(self, query, top_k=2):
+        q_emb = self._embed(___)
+        # Cosine similarity = dot product of normalized vectors
+        sims = self.embeddings @ ___
+        top_idx = np.argsort(sims)[___][::-1]  # top_k highest
+        return [(self.documents[i], float(sims[i])) for i in top_idx]
 
-np.random.seed(42)
-doc_embeddings   = np.random.randn(5, 64)
-# Query similar to doc 0
-query_embedding  = doc_embeddings[0] + np.random.randn(64) * 0.3
+rag = MiniRAG()
+rag.add([
+    "Python is the most popular language for data science and machine learning.",
+    "SQL is required in over 80 percent of data science job postings worldwide.",
+    "The average data scientist salary in the US is around 120000 dollars per year.",
+    "Neural networks are the foundation of deep learning and modern AI systems.",
+    "Feature engineering often has more impact on model performance than algorithm choice.",
+])
 
-def cosine_sim(a, b):
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-# Compute similarity to all docs
-similarities = [cosine_sim(___, ___) for doc_emb in doc_embeddings]
-
-best_idx = np.argmax(___)
-print(f"Best match: '{documents[best_idx]}'")
-print(f"Score: {round(similarities[best_idx], 3)}")`}
-        hint="cosine_sim(query_embedding, doc_emb). np.argmax(similarities)."
-        validate={(out)=>out.includes("Best match:")&&out.includes("Score:")}
+results = rag.retrieve("What salary does a data scientist earn?", top_k=___)
+print("Query: What salary does a data scientist earn?")
+for doc, score in results:
+    print(f"  [{score:.3f}] {doc}")`}
+        hint="self._embed(query). q_emb after computing it. [-top_k:] to get top_k indices. top_k=2."
+        validate={(out)=>out.includes("Query:")&&out.includes("salary")&&out.includes("0.")}
       />
     </div>
   )},
-
   // ── MLOPS
-  {id:"mlops-lesson", phase:"🚀 MLOps", emoji:"⚙️", color:"#fb923c", title:"MLOps — Notebook to Production", subtitle:"FastAPI, Docker, and deployment — make your model live",
+  {id:"mlops-lesson", phase:"🚀 MLOps", emoji:"⚙️", color:"#fb923c", title:"MLOps — From Notebook to Production", subtitle:"FastAPI, Docker, monitoring, and CI/CD — make your model live",
    body:()=>(
     <div>
-      <LP>Training a model is 20% of the job. Getting it into production is the other 80%. MLOps is what separates data scientists who ship from those who only explore. This lesson teaches the full deployment stack.</LP>
-      <Callout icon="🧠" color="#fb923c" title="The career differentiator">'I built this, you can use it right now at this URL' is the most powerful thing you can say in a data science interview. Most candidates can't say it.</Callout>
+      <LP>Training a model is 20% of the work. Getting it into production — where real users interact with it reliably, at scale, with monitoring and automatic retraining — is the other 80%. MLOps is the discipline that bridges the gap between a Jupyter notebook and a production system. This is what companies actually pay for.</LP>
+      <Callout icon="🧠" color="#fb923c" title="The career differentiator">'I deployed this model, here's the live API endpoint, here are the monitoring metrics, and here's the alert system for when it degrades' — almost no junior candidates can say this. It instantly sets you apart.</Callout>
 
-      <LH>1. FastAPI — serve your model as an API</LH>
-      <Block label="main.py — complete model API">{`from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+      <LH>1. The ML Production Gap — why notebooks aren't enough</LH>
+      <Compare items={[
+        {label:"Notebook (Research)", color:"#f28b82", text:"Runs once. Interactive. Cells run out of order. Data loaded manually. No error handling. Not reproducible. Can't serve predictions."},
+        {label:"Production System", color:"#6dd6a0", text:"Runs continuously. Automated. Handles bad inputs. Reproducible anywhere. Serves 1000s of predictions/second. Monitored. Auto-alerts on failures."},
+        {label:"The Gap", color:"#f7c96e", text:"Packaging (joblib/pickle). API layer (FastAPI). Containerization (Docker). CI/CD (GitHub Actions). Monitoring (logs, drift detection). Retraining pipeline."},
+      ]}/>
+      <Block label="The minimal production stack">{`# What you need for a production ML system:
+# 1. Trained model saved as artifact (joblib/pickle/ONNX)
+# 2. FastAPI to serve predictions via HTTP API
+# 3. Input validation (Pydantic schemas)
+# 4. Docker container (reproducible environment)
+# 5. Cloud deployment (Railway, AWS, GCP, Azure)
+# 6. Logging and monitoring
+# 7. Health check endpoint
+
+# This lesson covers all of these step by step.
+# By the end, you'll have a template you can use for every project.`}</Block>
+
+      <LH>2. Saving Models — doing it right</LH>
+      <Block label="Save and load models properly">{`import joblib
+import json
+import os
+from datetime import datetime
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
+import numpy as np
+
+# Train a model
+np.random.seed(42)
+X = np.random.randn(1000, 5)
+y = (X[:, 0] + X[:, 1] > 0).astype(int)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', RandomForestClassifier(n_estimators=100, random_state=42))
+])
+pipeline.fit(X_train, y_train)
+
+test_auc = roc_auc_score(y_test, pipeline.predict_proba(X_test)[:,1])
+
+# Save model with metadata
+os.makedirs("models", exist_ok=True)
+version = datetime.now().strftime("%Y%m%d_%H%M%S")
+model_path = f"models/churn_pipeline_v{version}.pkl"
+
+joblib.dump(pipeline, model_path)
+
+# Always save metadata alongside the model
+metadata = {
+    "model_version": version,
+    "model_type": "RandomForest",
+    "n_features": 5,
+    "feature_names": ["tenure", "charges", "services", "contract", "senior"],
+    "training_samples": len(X_train),
+    "test_auc": round(test_auc, 4),
+    "sklearn_version": "1.4.0",
+    "trained_at": datetime.now().isoformat(),
+    "model_path": model_path,
+}
+
+with open(f"models/metadata_v{version}.json", "w") as f:
+    json.dump(metadata, f, indent=2)
+
+print(f"Model saved: {model_path}")
+print(f"Test AUC: {test_auc:.4f}")
+
+# Load model
+loaded_pipeline = joblib.load(model_path)
+# Verify it works
+sample = np.array([[12, 75.5, 3, 0, 0]])
+prob = loaded_pipeline.predict_proba(sample)[0][1]
+print(f"Sample prediction: {prob:.3f}")`}</Block>
+
+      <LH>3. FastAPI — building a production ML API</LH>
+      <Block label="main.py — complete production API">{`# main.py — save this in your project root
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, validator
 import joblib
 import pandas as pd
+import numpy as np
+import logging
+import os
+import json
+from datetime import datetime
+from typing import Optional
 
-app = FastAPI(title="Churn Prediction API")
-model = joblib.load("churn_pipeline.pkl")
+# ── Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
+# ── Initialize FastAPI
+app = FastAPI(
+    title="Churn Prediction API",
+    description="Predict customer churn probability",
+    version="1.0.0",
+    docs_url="/docs",      # Swagger UI at /docs
+    redoc_url="/redoc",    # ReDoc at /redoc
+)
+
+# ── CORS — allow frontend apps to call this API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],   # restrict to your domain in production
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# ── Load model once at startup (not on every request!)
+@app.on_event("startup")
+async def load_model():
+    global model, model_metadata
+    try:
+        model = joblib.load(os.environ.get("MODEL_PATH", "churn_pipeline.pkl"))
+        logger.info("Model loaded successfully")
+    except Exception as e:
+        logger.error(f"Failed to load model: {e}")
+        raise
+
+# ── Input schema with validation
 class CustomerInput(BaseModel):
-    tenure: int
-    monthly_charges: float
-    contract: str
+    tenure: int = Field(..., ge=0, le=120, description="Months as customer")
+    monthly_charges: float = Field(..., ge=0, le=500, description="Monthly bill")
+    num_services: int = Field(..., ge=0, le=10, description="Number of services")
+    contract_type: str = Field(..., description="Month-to-month, One year, Two year")
+    is_senior: int = Field(default=0, ge=0, le=1)
+    
+    @validator('contract_type')
+    def validate_contract(cls, v):
+        valid = {'Month-to-month', 'One year', 'Two year'}
+        if v not in valid:
+            raise ValueError(f"contract_type must be one of {valid}")
+        return v
 
+# ── Output schema
 class PredictionOutput(BaseModel):
-    churn_prediction: int
+    customer_id: Optional[str]
     churn_probability: float
+    churn_prediction: int
     risk_level: str
+    confidence: str
+    model_version: str
+
+# ── Prediction count for monitoring
+prediction_count = 0
 
 @app.get("/health")
-def health():
-    return {"status": "healthy"}
+async def health_check():
+    """Health check — load balancers ping this endpoint."""
+    return {
+        "status": "healthy",
+        "model_loaded": model is not None,
+        "predictions_served": prediction_count,
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 @app.post("/predict", response_model=PredictionOutput)
-def predict(customer: CustomerInput):
+async def predict(customer: CustomerInput, customer_id: Optional[str] = None):
+    """
+    Predict churn probability for a single customer.
+    Returns probability, binary prediction, and risk level.
+    """
+    global prediction_count
+    
     try:
-        df   = pd.DataFrame([customer.dict()])
+        # Build feature DataFrame
+        contract_map = {"Month-to-month": 0, "One year": 1, "Two year": 2}
+        df = pd.DataFrame([{
+            "tenure":          customer.tenure,
+            "monthly_charges": customer.monthly_charges,
+            "num_services":    customer.num_services,
+            "contract_enc":    contract_map[customer.contract_type],
+            "senior_citizen":  customer.is_senior,
+        }])
+        
+        # Predict
         prob = float(model.predict_proba(df)[0][1])
-        pred = int(prob > 0.5)
-        risk = "High" if prob > 0.7 else "Medium" if prob > 0.4 else "Low"
+        pred = int(prob >= 0.5)
+        
+        # Risk segmentation
+        if prob >= 0.75:
+            risk = "Critical"
+            confidence = "High"
+        elif prob >= 0.5:
+            risk = "High"
+            confidence = "High" if prob >= 0.65 else "Medium"
+        elif prob >= 0.3:
+            risk = "Medium"
+            confidence = "Medium"
+        else:
+            risk = "Low"
+            confidence = "High" if prob <= 0.15 else "Medium"
+        
+        # Log prediction
+        prediction_count += 1
+        logger.info(f"Prediction: customer={customer_id}, prob={prob:.3f}, risk={risk}")
+        
         return PredictionOutput(
+            customer_id=customer_id,
+            churn_probability=round(prob, 4),
             churn_prediction=pred,
-            churn_probability=round(prob, 3),
-            risk_level=risk
+            risk_level=risk,
+            confidence=confidence,
+            model_version="1.0.0"
         )
+    
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
-# Run: uvicorn main:app --reload
-# Docs: http://localhost:8000/docs`}</Block>
+@app.post("/predict/batch")
+async def predict_batch(customers: list[CustomerInput]):
+    """Predict for multiple customers at once — more efficient than multiple /predict calls."""
+    if len(customers) > 1000:
+        raise HTTPException(status_code=400, detail="Max 1000 customers per batch")
+    
+    results = []
+    for i, customer in enumerate(customers):
+        pred = await predict(customer, customer_id=str(i))
+        results.append(pred)
+    return {"predictions": results, "count": len(results)}
 
-      <LH>2. Testing your API</LH>
-      <Block label="Test with Python requests">{`import requests
+# Run with: uvicorn main:app --reload --port 8000`}</Block>
 
-# Health check
-print(requests.get("http://localhost:8000/health").json())
+      <LH>4. Testing Your API</LH>
+      <Block label="Comprehensive API testing">{`import requests
+import json
 
-# Prediction
-data = {
+BASE_URL = "http://localhost:8000"
+
+# ── 1. Health check
+health = requests.get(f"{BASE_URL}/health")
+print("Health:", health.status_code, health.json())
+
+# ── 2. Single prediction
+customer = {
     "tenure": 3,
-    "monthly_charges": 85.5,
-    "contract": "Month-to-month"
+    "monthly_charges": 89.5,
+    "num_services": 2,
+    "contract_type": "Month-to-month",
+    "is_senior": 0
 }
-response = requests.post("http://localhost:8000/predict", json=data)
-print(response.json())
-# {"churn_prediction": 1, "churn_probability": 0.742, "risk_level": "High"}`}</Block>
+response = requests.post(f"{BASE_URL}/predict", json=customer,
+                          params={"customer_id": "CUST-001"})
+print("Status:", response.status_code)
+print("Prediction:", json.dumps(response.json(), indent=2))
 
-      <LH>3. Docker — containerize everything</LH>
-      <Block label="Dockerfile">{`FROM python:3.11-slim
+# ── 3. Test validation
+invalid_customer = {**customer, "contract_type": "invalid_type"}
+response = requests.post(f"{BASE_URL}/predict", json=invalid_customer)
+print("Validation error:", response.status_code, response.json())
+
+# ── 4. Batch prediction
+batch = [
+    {"tenure": 1,  "monthly_charges": 95.0, "num_services": 1, "contract_type": "Month-to-month", "is_senior": 0},
+    {"tenure": 48, "monthly_charges": 42.0, "num_services": 5, "contract_type": "Two year",        "is_senior": 0},
+    {"tenure": 12, "monthly_charges": 65.0, "num_services": 3, "contract_type": "One year",        "is_senior": 1},
+]
+batch_response = requests.post(f"{BASE_URL}/predict/batch", json=batch)
+print("Batch:", batch_response.json()["count"], "predictions")`}</Block>
+
+      <LH>5. Docker — containerize for reproducibility</LH>
+      <Block label="Dockerfile and docker-compose">{`# Dockerfile — save in project root
+FROM python:3.11-slim
+
+# Set working directory
 WORKDIR /app
 
-# Dependencies first — Docker caches this layer
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── IMPORTANT: Copy requirements BEFORE code
+# Docker caches layers. If requirements don't change,
+# pip install is reused even when code changes.
+# This makes rebuilds 10x faster.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy code after dependencies
+# Copy application code
 COPY . .
 
+# Create non-root user for security
+RUN useradd -m apiuser && chown -R apiuser:apiuser /app
+USER apiuser
+
+# Expose port
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]`}</Block>
-      <Block label="Build and run">{`# requirements.txt
+
+# Health check — Docker will restart container if this fails
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Start server
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]`}</Block>
+      <Block label="requirements.txt and Docker commands">{`# requirements.txt
 fastapi==0.109.0
-uvicorn==0.27.0
+uvicorn[standard]==0.27.0
 scikit-learn==1.4.0
 pandas==2.1.4
+numpy==1.26.3
 joblib==1.3.2
+pydantic==2.5.3
 
-# Build
-docker build -t churn-api .
+# ── Build and run locally
+docker build -t churn-api:latest .
+docker run -p 8000:8000 -e MODEL_PATH=/app/churn_pipeline.pkl churn-api:latest
 
-# Run locally
-docker run -p 8000:8000 churn-api
+# ── Test the container
+curl http://localhost:8000/health
 
-# Test
-curl http://localhost:8000/health`}</Block>
-      <Callout icon="★" color="#f7c96e" title="Docker layer caching">Always copy requirements.txt and pip install BEFORE copying your code. If requirements don't change, Docker reuses the cached pip layer — rebuilds become 10x faster.</Callout>
+# ── docker-compose.yml for local development
+# version: '3.8'
+# services:
+#   api:
+#     build: .
+#     ports: ["8000:8000"]
+#     environment:
+#       - MODEL_PATH=/app/models/churn_pipeline.pkl
+#     volumes:
+#       - ./models:/app/models  # mount model files
+#     restart: unless-stopped
 
-      <LH>4. Deploy to Railway — free in 2 minutes</LH>
-      <Block label="Deployment steps">{`# 1. Push to GitHub
-git add . && git commit -m "Add FastAPI app" && git push
+# ── Push to Docker Hub for deployment
+docker tag churn-api:latest yourusername/churn-api:v1.0
+docker push yourusername/churn-api:v1.0`}</Block>
 
+      <LH>6. Deployment — getting a live URL</LH>
+      <Block label="Deploy to Railway, Render, or AWS">{`# ── OPTION 1: Railway (easiest, free tier)
+# 1. Push code + Dockerfile to GitHub
 # 2. railway.app → New Project → Deploy from GitHub
-# 3. Select repo → Railway detects Dockerfile automatically
-# 4. Get live URL: yourapp.railway.app
+# 3. Select repo → Railway detects Dockerfile
+# 4. Add env vars: MODEL_PATH=...
+# 5. Get URL: https://yourapp.railway.app
 
-# Other free options:
-# - Render.com — similar to Railway
-# - Hugging Face Spaces — best for ML demos (Streamlit/Gradio)
+# ── OPTION 2: Render (also free)
+# render.com → New → Web Service → GitHub repo
+# Environment: Docker
+# Build command: docker build -t app .
+# Start command: docker run -p $PORT:8000 app
 
-# Project structure:
-# churn_api/
-# ├── main.py
-# ├── churn_pipeline.pkl
-# ├── requirements.txt
-# ├── Dockerfile
-# └── README.md`}</Block>
+# ── OPTION 3: AWS EC2 (more control, slightly complex)
+# 1. Launch EC2 instance (t3.micro = free tier)
+# 2. SSH in: ssh -i key.pem ec2-user@your-ip
+# 3. Install Docker on EC2:
+#    sudo yum update -y && sudo yum install -y docker
+#    sudo systemctl start docker
+# 4. Pull and run your image:
+#    docker pull yourusername/churn-api:v1
+#    docker run -d -p 80:8000 yourusername/churn-api:v1
+# 5. Your API is live at: http://your-ec2-ip/predict
 
-      <LH>5. MLflow — experiment tracking</LH>
-      <Block label="Track every experiment">{`import mlflow
+# ── OPTION 4: Hugging Face Spaces (best for demos)
+# Supports Streamlit, Gradio, Docker
+# Free GPU tier available
+# Great for ML demos in portfolio`}</Block>
+
+      <LH>7. MLflow — track every experiment</LH>
+      <Block label="Production experiment tracking">{`import mlflow
 import mlflow.sklearn
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
+from sklearn.model_selection import train_test_split
+import numpy as np
+import pandas as pd
 
-mlflow.set_experiment("churn_prediction")
+# mlflow ui  ← run this in terminal to see dashboard at localhost:5000
 
-with mlflow.start_run(run_name="rf_v1"):
-    params = {"n_estimators": 100, "max_depth": 5}
-    mlflow.log_params(params)
+mlflow.set_tracking_uri("./mlruns")     # local storage
+mlflow.set_experiment("churn_prediction_v2")
 
-    model = RandomForestClassifier(**params, random_state=42)
-    model.fit(X_train, y_train)
+# Compare multiple models systematically
+models_to_compare = [
+    ("LogisticRegression", LogisticRegression(C=1.0, class_weight='balanced', 
+                                               max_iter=1000, random_state=42)),
+    ("RandomForest_100",   RandomForestClassifier(n_estimators=100, max_depth=6,
+                                                   class_weight='balanced', random_state=42)),
+    ("RandomForest_200",   RandomForestClassifier(n_estimators=200, max_depth=8,
+                                                   class_weight='balanced', random_state=42)),
+    ("GradientBoosting",   GradientBoostingClassifier(n_estimators=100, learning_rate=0.1,
+                                                        max_depth=4, random_state=42)),
+]
 
-    train_auc = roc_auc_score(y_train, model.predict_proba(X_train)[:,1])
-    test_auc  = roc_auc_score(y_test,  model.predict_proba(X_test)[:,1])
-    mlflow.log_metric("train_auc", train_auc)
-    mlflow.log_metric("test_auc",  test_auc)
-    mlflow.sklearn.log_model(model, "model")
+best_auc = 0
+best_run_id = None
 
-    print(f"Train AUC: {train_auc:.3f} | Test AUC: {test_auc:.3f}")
+for model_name, model in models_to_compare:
+    with mlflow.start_run(run_name=model_name):
+        # Log model parameters
+        mlflow.log_params(model.get_params())
+        mlflow.log_param("model_type", type(model).__name__)
+        
+        # Train
+        model.fit(X_train, y_train)
+        
+        # Evaluate
+        train_probs = model.predict_proba(X_train)[:, 1]
+        test_probs  = model.predict_proba(X_test)[:, 1]
+        test_preds  = model.predict(X_test)
+        
+        metrics = {
+            "train_auc":  roc_auc_score(y_train, train_probs),
+            "test_auc":   roc_auc_score(y_test, test_probs),
+            "test_f1":    f1_score(y_test, test_preds),
+            "precision":  precision_score(y_test, test_preds),
+            "recall":     recall_score(y_test, test_preds),
+            "overfit_gap": roc_auc_score(y_train, train_probs) - roc_auc_score(y_test, test_probs)
+        }
+        mlflow.log_metrics(metrics)
+        
+        # Save model as MLflow artifact
+        mlflow.sklearn.log_model(model, "model")
+        
+        # Track best model
+        if metrics["test_auc"] > best_auc:
+            best_auc = metrics["test_auc"]
+            best_run_id = mlflow.active_run().info.run_id
+        
+        print(f"{model_name}: AUC={metrics['test_auc']:.4f}, "
+              f"F1={metrics['test_f1']:.4f}, "
+              f"Overfit={metrics['overfit_gap']:.4f}")
 
-# mlflow ui → compare all runs at localhost:5000`}</Block>
+print(f"\nBest model: run_id={best_run_id}, AUC={best_auc:.4f}")
+# Load best model from MLflow
+best_model = mlflow.sklearn.load_model(f"runs:/{best_run_id}/model")
+joblib.dump(best_model, "churn_pipeline.pkl")`}</Block>
 
-      <LH>6. The Full MLOps Workflow</LH>
+      <LH>8. Monitoring — detect when your model degrades</LH>
+      <Block label="Data drift and performance monitoring">{`import numpy as np
+import pandas as pd
+from scipy import stats
+
+class ModelMonitor:
+    """
+    Simple production model monitoring.
+    In production: use Evidently, WhyLogs, or MLflow monitoring.
+    """
+    def __init__(self, reference_data: pd.DataFrame):
+        """Reference data = training data statistics."""
+        self.reference_stats = {
+            col: {
+                "mean": reference_data[col].mean(),
+                "std":  reference_data[col].std(),
+                "min":  reference_data[col].min(),
+                "max":  reference_data[col].max(),
+            }
+            for col in reference_data.select_dtypes(include=[np.number]).columns
+        }
+        self.prediction_log = []
+    
+    def check_data_drift(self, new_data: pd.DataFrame, alpha=0.05) -> dict:
+        """
+        Kolmogorov-Smirnov test for distribution shift.
+        Compares new data distribution to reference (training) data.
+        If p < alpha: distributions are significantly different → drift detected.
+        """
+        drift_results = {}
+        for col in self.reference_stats:
+            if col not in new_data.columns:
+                continue
+            ref_mean = self.reference_stats[col]["mean"]
+            ref_std  = self.reference_stats[col]["std"]
+            
+            # Simulate reference distribution
+            ref_samples = np.random.normal(ref_mean, ref_std, 1000)
+            new_samples = new_data[col].dropna().values
+            
+            # KS test
+            ks_stat, p_value = stats.ks_2samp(ref_samples, new_samples)
+            drift_results[col] = {
+                "ks_statistic":  round(ks_stat, 4),
+                "p_value":       round(p_value, 4),
+                "drift_detected": p_value < alpha,
+                "new_mean":      round(new_data[col].mean(), 2),
+                "ref_mean":      round(ref_mean, 2),
+            }
+        return drift_results
+    
+    def log_prediction(self, features: dict, prediction: float, actual: int = None):
+        """Log predictions for performance tracking."""
+        self.prediction_log.append({
+            "timestamp":  pd.Timestamp.now(),
+            "prediction": prediction,
+            "actual":     actual,
+            **features
+        })
+    
+    def prediction_drift(self) -> dict:
+        """Check if prediction distribution has shifted."""
+        if len(self.prediction_log) < 100:
+            return {"status": "insufficient_data"}
+        
+        df = pd.DataFrame(self.prediction_log)
+        recent    = df.tail(100)["prediction"]
+        historical = df.head(len(df)-100)["prediction"] if len(df) > 200 else recent
+        
+        return {
+            "recent_avg_prob":    round(recent.mean(), 4),
+            "historical_avg_prob": round(historical.mean(), 4),
+            "shift":              round(abs(recent.mean() - historical.mean()), 4),
+            "alert":              abs(recent.mean() - historical.mean()) > 0.05
+        }
+
+# Usage
+reference_df = pd.DataFrame({
+    "tenure":          np.random.randint(1, 72, 1000),
+    "monthly_charges": np.random.uniform(20, 120, 1000),
+})
+
+monitor = ModelMonitor(reference_df)
+
+# Check new data in production
+new_data = pd.DataFrame({
+    "tenure":          np.random.randint(1, 24, 200),   # newer customers
+    "monthly_charges": np.random.uniform(60, 150, 200), # higher charges (drift!)
+})
+
+drift = monitor.check_data_drift(new_data)
+for feature, result in drift.items():
+    status = "⚠ DRIFT" if result["drift_detected"] else "✓ OK"
+    print(f"{status} {feature}: ref_mean={result['ref_mean']}, "
+          f"new_mean={result['new_mean']}, p={result['p_value']}")`}</Block>
+
+      <LH>9. The Complete MLOps Workflow</LH>
       <div style={{display:"grid",gap:8,margin:"12px 0"}}>
         {[
-          {n:"01",color:"#7eb8f7",title:"Train & Track",desc:"Train models. Log everything with MLflow. Pick best by AUC or business metric."},
-          {n:"02",color:"#6dd6a0",title:"Package",desc:"Save with joblib. Write FastAPI app. Test /health and /predict locally."},
-          {n:"03",color:"#f7c96e",title:"Containerize",desc:"Write Dockerfile. Build and test locally. Push to Docker Hub."},
-          {n:"04",color:"#fb923c",title:"Deploy",desc:"Push to GitHub. Connect Railway/Render. Get live URL. Share it everywhere."},
-          {n:"05",color:"#c792ea",title:"Monitor",desc:"Log predictions. Track data drift. Set alerts. Retrain when performance drops."},
+          {n:"01",color:"#7eb8f7",title:"Experiment Tracking (MLflow)",desc:"Train multiple models. Log all parameters, metrics, and artifacts. Pick the best by test AUC. Never lose an experiment."},
+          {n:"02",color:"#6dd6a0",title:"Model Packaging (joblib + metadata)",desc:"Save model + metadata (version, features, metrics, timestamp). Always save metadata alongside the model file."},
+          {n:"03",color:"#f7c96e",title:"API Layer (FastAPI + Pydantic)",desc:"Serve predictions via HTTP. Validate inputs. Handle errors gracefully. Add /health and /predict endpoints. Log every prediction."},
+          {n:"04",color:"#fb923c",title:"Containerization (Docker)",desc:"Write Dockerfile. Copy requirements before code (caching). Add health check. Build, test locally, push to Docker Hub."},
+          {n:"05",color:"#f472b6",title:"Deployment (Railway/AWS/GCP)",desc:"Connect GitHub → Railway detects Dockerfile. Set environment variables. Get live URL. Add to portfolio and LinkedIn."},
+          {n:"06",color:"#c792ea",title:"Monitoring (Drift + Performance)",desc:"Log predictions to database. Run drift tests weekly. Alert when model performance drops below threshold. Retrain on schedule."},
         ].map((s,i)=>(
           <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",background:"#0d1520",borderRadius:8,border:`1px solid ${s.color}22`}}>
             <div style={{width:28,height:28,borderRadius:"50%",background:s.color+"22",border:`1px solid ${s.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"monospace",fontSize:10,color:s.color,fontWeight:700}}>{s.n}</div>
@@ -6242,49 +7471,57 @@ with mlflow.start_run(run_name="rf_v1"):
       </div>
 
       <Quiz questions={[
-        {q:"What does Pydantic BaseModel do in FastAPI?",options:["Trains the ML model","Validates and parses request/response data automatically","Handles database connections","Manages Docker containers"],answer:"Validates and parses request/response data automatically",explanation:"Pydantic BaseModel defines expected data structure with types. FastAPI uses it to validate incoming JSON, parse it into Python objects, and return helpful error messages for invalid input — no manual validation needed."},
-        {q:"Why use Docker instead of just requirements.txt?",options:["Docker is faster than pip","Docker packages OS, Python version, and all deps — runs identically anywhere","Docker is required by cloud providers","requirements.txt doesn't work on Linux"],answer:"Docker packages OS, Python version, and all deps — runs identically anywhere",explanation:"requirements.txt only captures Python packages. Different machines have different Python versions, system libraries, OS configs. Docker containerizes the entire runtime — guaranteeing identical behavior everywhere."},
-        {q:"In your Dockerfile, why copy requirements.txt and pip install BEFORE copying code?",options:["Required by Docker","Docker caches each layer — pip install is reused if requirements don't change","requirements.txt must exist before code","Docker processes files alphabetically"],answer:"Docker caches each layer — pip install is reused if requirements don't change",explanation:"Docker caches layers. If only your code changes (not requirements), Docker reuses the cached pip install layer and rebuilds only from COPY . . onward — 10x faster builds."},
-        {q:"MLflow experiment tracking helps you:",options:["Deploy models faster","Compare runs — parameters, metrics, artifacts in one dashboard","Train in parallel","Replace Docker"],answer:"Compare runs — parameters, metrics, artifacts in one dashboard",explanation:"Without tracking, you lose context. MLflow logs every run's parameters (n_estimators=100), metrics (AUC=0.87), and saved models. The UI lets you compare all experiments and find the best configuration reproducibly."},
-        {q:"What is the @app.get('/health') endpoint for?",options:["Serves predictions","Load balancers ping it to verify the API is alive","Returns model metrics","Authenticates users"],answer:"Load balancers ping it to verify the API is alive",explanation:"Health check endpoints are production standard. Load balancers and monitoring tools check /health to know if an instance is alive. It's the first endpoint you add to any API — simple 200 OK is enough."},
+        {q:"In FastAPI, what does @app.on_event('startup') do?",options:["Runs when the first request arrives","Runs once when the server starts — ideal for loading the model into memory","Runs every request","Runs on server shutdown"],answer:"Runs once when the server starts — ideal for loading the model into memory",explanation:"Loading a model takes time (0.5-30 seconds). If you load it inside the predict function, every request would wait for it. @app.on_event('startup') loads it once at server start, then all requests reuse it from memory — much faster."},
+        {q:"In your Dockerfile, why copy requirements.txt and pip install BEFORE copying your code?",options:["Required by Docker specification","Docker caches each layer — unchanged requirements.txt means pip install is cached even when code changes","requirements.txt must exist before Python can run","Docker alphabetically processes COPY commands"],answer:"Docker caches each layer — unchanged requirements.txt means pip install is cached even when code changes",explanation:"Docker builds in layers. If you change app.py but not requirements.txt, Docker reuses the cached pip install layer — only rebuilding from 'COPY . .' onward. Without this ordering, pip reinstalls on every code change — builds take 3-10 minutes instead of 15 seconds."},
+        {q:"Data drift means:",options:["Your model's code has a bug","The statistical properties of production data have shifted from training data","The model is making more predictions","The API is returning errors"],answer:"The statistical properties of production data have shifted from training data",explanation:"Models are trained on historical data but serve predictions on future data. If customer behavior changes (e.g., new pricing plan causes average charges to shift), the model sees input distributions it wasn't trained on — performance degrades. Regular drift monitoring catches this early."},
+        {q:"MLflow experiment tracking helps you avoid:",options:["Overfitting","Losing track of which hyperparameters produced your best model","Data leakage","Slow API responses"],answer:"Losing track of which hyperparameters produced your best model",explanation:"Without tracking, you run experiments and forget what worked. MLflow logs every run's parameters, metrics, and artifacts. When your manager asks 'why did you choose 200 trees?', you can show the comparison dashboard proving it outperformed 100 trees by 2.3% AUC."},
+        {q:"Your prediction endpoint returns 200 OK but predictions are confidently wrong for new customers. What's the first thing to check?",options:["Increase model complexity","Check for data drift — production data may have shifted from training distribution","Restart the Docker container","Add more features"],answer:"Check for data drift — production data may have shifted from training distribution",explanation:"Confident wrong predictions on new data while historical performance was good = classic data drift symptom. Run KS tests comparing current production inputs to training data distributions. If distributions differ significantly, retrain on more recent data or investigate what changed in the business."},
       ]}/>
 
       <CodeExercise
-        title="Complete a FastAPI prediction endpoint"
-        description="Fill in the blanks to complete a FastAPI app that accepts customer input, runs a mock prediction, and returns a probability and risk label."
-        starterCode={`from fastapi import FastAPI
-from pydantic import BaseModel
+        title="Build a complete FastAPI ML endpoint with validation"
+        description="Complete the FastAPI app: fill in the Pydantic input model, the prediction logic, and the health endpoint. The predict function should validate inputs, make a prediction, and return a structured response."
+        starterCode={`from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+import numpy as np
 
-app = FastAPI()
+app = FastAPI(title="Churn API")
 
-class MockModel:
-    def predict_proba(self, tenure, charges):
-        import numpy as np
-        np.random.seed(int(tenure))
-        p = np.random.uniform(0.1, 0.9)
-        return p
+# Simulate a trained model
+class FakeModel:
+    def predict_proba(self, features):
+        np.random.seed(int(features[0][0]) % 100)
+        p = np.random.uniform(0.05, 0.95)
+        return [[1-p, p]]
 
-model = MockModel()
+model = FakeModel()
 
-class CustomerInput(BaseModel):
-    tenure: int
-    monthly_charges: float
+class CustomerInput(___):
+    tenure: int = Field(___, ge=0, le=120)
+    monthly_charges: float = Field(___, ge=0, le=500)
+    contract_type: str
 
-class PredictionOutput(BaseModel):
-    probability: float
-    risk: str
+class PredictionOutput(___):
+    churn_probability: float
+    risk_level: str
+
+@app.get("/___")
+def health():
+    return {"status": "healthy"}
 
 @app.post("/predict", response_model=___)
 def predict(customer: ___):
-    prob = round(model.predict_proba(customer.___, customer.___), 3)
-    risk = "High" if prob > 0.7 else "Medium" if prob > 0.4 else ___
-    return ___(probability=prob, risk=risk)
-
-@app.get("/health")
-def health():
-    return {"status": ___}`}
-        hint="PredictionOutput. CustomerInput. customer.tenure. customer.monthly_charges. 'Low'. PredictionOutput(...). 'healthy'."
-        validate={(out)=>out.includes("PredictionOutput")&&out.includes("CustomerInput")&&out.includes("healthy")}
+    contract_map = {"Month-to-month": 0, "One year": 1, "Two year": 2}
+    if customer.contract_type not in contract_map:
+        raise HTTPException(status_code=___, detail="Invalid contract type")
+    
+    features = [[customer.___, customer.___, contract_map[customer.contract_type]]]
+    prob = round(float(model.predict_proba(features)[0][1]), 3)
+    risk = "High" if prob > 0.6 else "Medium" if prob > 0.3 else "Low"
+    
+    return ___(churn_probability=prob, risk_level=risk)`}
+        hint="BaseModel. ...(description). PredictionOutput. 'health'. PredictionOutput. CustomerInput. 400. customer.tenure. customer.monthly_charges. PredictionOutput(...)."
+        validate={(out)=>out.includes("BaseModel")&&out.includes("PredictionOutput")&&out.includes("health")}
       />
     </div>
   )},
@@ -6394,29 +7631,54 @@ function LearnTab({currentUser, activeId, setActiveId, onLessonComplete}) {
   };
 
   return (
-    <div style={{display:"flex",height:"calc(100vh - 110px)"}}>
-      {/* Sidebar */}
-      <div style={{width:200,borderRight:`1px solid ${T.border}`,padding:"14px 10px",overflowY:"auto",background:T.bgDeep,flexShrink:0}}>
-        <div style={{fontSize:9,color:T.textFade,letterSpacing:"0.12em",marginBottom:14,paddingLeft:6}}>LESSONS — {totalDone}/{LESSONS.length} DONE</div>
-        {LEARN_PHASES.map(phase=>(
-          <div key={phase.label} style={{marginBottom:8}}>
-            <div style={{fontSize:9,color:T.textFade,fontWeight:700,letterSpacing:"0.07em",padding:"3px 6px",marginBottom:3}}>{phase.label}</div>
-            {phase.ids.map(id=>{
-              const l = LESSONS.find(x=>x.id===id);
-              const active = id===activeId;
-              return (
-                <button key={id} onClick={()=>setActiveId(id)} style={{display:"flex",alignItems:"center",gap:6,width:"100%",padding:"6px 8px",borderRadius:6,border:"none",cursor:"pointer",background:active?`${l.color}18`:"transparent",borderLeft:active?`2px solid ${l.color}`:"2px solid transparent",textAlign:"left",marginBottom:1}}>
-                  <span style={{fontSize:12}}>{l.emoji}</span>
-                  <span style={{flex:1,color:active?T.text:T.textDim,fontSize:11,fontWeight:active?600:400,lineHeight:1.3}}>{l.title}</span>
-                  {done[id]&&<span style={{color:T.good,fontSize:10}}>✓</span>}
-                </button>
-              );
-            })}
-          </div>
-        ))}
+    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 110px)"}}>
+      <style>{`
+        @media (min-width: 769px) { .learn-mobile-strip { display: none !important; } }
+        @media (max-width: 768px) { .learn-desktop-sidebar { display: none !important; } .learn-content { padding: 16px !important; } }
+      `}</style>
+
+      {/* MOBILE LESSON PICKER — horizontal scroll strip */}
+      <div className="learn-mobile-strip" style={{background:T.bgDeep,borderBottom:`1px solid ${T.border}`,overflowX:"auto",WebkitOverflowScrolling:"touch",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,padding:"10px 12px",minWidth:"max-content"}}>
+          <span style={{fontSize:9,color:T.textFade,letterSpacing:"0.1em",flexShrink:0,marginRight:4}}>{totalDone}/{LESSONS.length}</span>
+          {LESSONS.map(l=>{
+            const active=l.id===activeId;
+            const isDone=done[l.id];
+            return(
+              <button key={l.id} onClick={()=>setActiveId(l.id)} style={{display:"flex",alignItems:"center",gap:5,padding:"6px 10px",borderRadius:20,border:`1px solid ${active?l.color+"88":T.border}`,background:active?l.color+"18":T.bgCard,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
+                <span style={{fontSize:13}}>{l.emoji}</span>
+                <span style={{fontSize:10,color:active?T.text:T.textDim,fontWeight:active?600:400}}>{l.title}</span>
+                {isDone&&<span style={{fontSize:9,color:T.good}}>✓</span>}
+              </button>
+            );
+          })}
+        </div>
       </div>
-      {/* Content */}
-      <div style={{flex:1,overflowY:"auto",padding:"24px 32px"}}>
+
+      {/* DESKTOP LAYOUT */}
+      <div style={{display:"flex",flex:1,overflow:"hidden"}}>
+        {/* Desktop Sidebar */}
+        <div className="learn-desktop-sidebar" style={{width:200,borderRight:`1px solid ${T.border}`,padding:"14px 10px",overflowY:"auto",background:T.bgDeep,flexShrink:0}}>
+          <div style={{fontSize:9,color:T.textFade,letterSpacing:"0.12em",marginBottom:14,paddingLeft:6}}>LESSONS — {totalDone}/{LESSONS.length} DONE</div>
+          {LEARN_PHASES.map(phase=>(
+            <div key={phase.label} style={{marginBottom:8}}>
+              <div style={{fontSize:9,color:T.textFade,fontWeight:700,letterSpacing:"0.07em",padding:"3px 6px",marginBottom:3}}>{phase.label}</div>
+              {phase.ids.map(id=>{
+                const l = LESSONS.find(x=>x.id===id);
+                const active = id===activeId;
+                return (
+                  <button key={id} onClick={()=>setActiveId(id)} style={{display:"flex",alignItems:"center",gap:6,width:"100%",padding:"6px 8px",borderRadius:6,border:"none",cursor:"pointer",background:active?`${l.color}18`:"transparent",borderLeft:active?`2px solid ${l.color}`:"2px solid transparent",textAlign:"left",marginBottom:1}}>
+                    <span style={{fontSize:12}}>{l.emoji}</span>
+                    <span style={{flex:1,color:active?T.text:T.textDim,fontSize:11,fontWeight:active?600:400,lineHeight:1.3}}>{l.title}</span>
+                    {done[id]&&<span style={{color:T.good,fontSize:10}}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        {/* Content */}
+        <div className="learn-content" style={{flex:1,overflowY:"auto",padding:"24px 32px"}}>
         <div style={{maxWidth:700}}>
           <div style={{marginBottom:4}}>
             <span style={{background:`${lesson.color}20`,color:lesson.color,fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,letterSpacing:"0.08em"}}>{lesson.phase}</span>
@@ -6437,7 +7699,8 @@ function LearnTab({currentUser, activeId, setActiveId, onLessonComplete}) {
             </button>
           </div>
         </div>
-      </div>
+        </div>{/* end desktop layout */}
+      </div>{/* end flex wrapper */}
     </div>
   );
 }
