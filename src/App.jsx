@@ -477,11 +477,11 @@ function StickyBar({onSignup}){
   },[]);
   if(!visible)return null;
   return(
-    <div className="sticky-bar" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(17,16,28,0.97)",backdropFilter:"blur(20px)",borderTop:"1px solid #2a2845",padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-      <div style={{fontSize:13,color:"#7b78a0"}}>
-        <span style={{color:"#e8e4ff",fontWeight:600}}>DS Academy</span> — Free access to the Python phase. No card needed.
+    <div className="sticky-bar" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(17,16,28,0.97)",backdropFilter:"blur(20px)",borderTop:"1px solid #2a2845",padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+      <div className="sticky-bar-text" style={{fontSize:13,color:"#7b78a0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>
+        <span style={{color:"#e8e4ff",fontWeight:600}}>DS Academy</span><span> — Free Python phase. No card.</span>
       </div>
-      <button onClick={onSignup} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"10px 24px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
+      <button onClick={onSignup} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"10px 20px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,whiteSpace:"nowrap",flexShrink:0}}>
         Start Free →
       </button>
     </div>
@@ -600,6 +600,10 @@ function LoginPage(){
           .testimonials-grid { grid-template-columns: 1fr !important; }
           .faq-grid { grid-template-columns: 1fr !important; }
           .stat-box { flex: 1 1 60px !important; }
+          .nav-links { display: none !important; }
+          .nav-start-btn { padding: 8px 14px !important; font-size: 12px !important; }
+          .sticky-bar-text { font-size: 11px !important; }
+          .sticky-bar-text span { display: none !important; }
         }
       `}</style>
       <ScrollProgress />
@@ -617,7 +621,7 @@ function LoginPage(){
           <button onClick={()=>setShowBlog(true)} style={{background:"none",border:"none",color:"#7b78a0",cursor:"pointer",fontSize:13,fontWeight:500}}>Blog</button>
           <a href="#apply" style={{background:"none",border:"none",color:"#7b78a0",cursor:"pointer",fontSize:13,fontWeight:500,textDecoration:"none"}}>Pricing</a>
           <button onClick={()=>openModal("login")} style={{background:"none",border:"1px solid #2a2845",color:"#7b78a0",padding:"9px 16px",borderRadius:6,cursor:"pointer",fontSize:13}}>Login</button>
-          <button onClick={()=>openModal("signup")} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"9px 20px",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:600}}>Start Free →</button>
+          <button onClick={()=>openModal("signup")} className="nav-start-btn" style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"9px 20px",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:600}}>Start Free →</button>
         </div>
       </nav>
 
@@ -1126,15 +1130,33 @@ function LoginPage(){
 
       {/* FOOTER */}
       <div style={{borderTop:"1px solid #1e1c35",background:"#0b0a12"}}>
-        <div style={{maxWidth:1000,margin:"0 auto",padding:"48px 32px 32px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:40}}>
+        <div style={{maxWidth:1000,margin:"0 auto",padding:"48px 32px 32px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:40}}>
+          {/* Brand */}
           <div>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
               <div style={{width:8,height:8,background:"#8b7cf6",borderRadius:"50%",boxShadow:"0 0 10px #8b7cf6"}}/>
               <div style={{fontWeight:800,fontSize:16,color:"#e8e4ff"}}>DS Academy</div>
             </div>
-            <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.7,marginBottom:16}}>A structured, practical path from zero to job-ready data scientist. No tutorial hell — just what employers hire for.</div>
-            <div style={{fontFamily:"monospace",fontSize:10,color:"#3a3860"}}>Zero → Competitive Candidate</div>
+            <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.8,marginBottom:16}}>A structured, practical path from zero to job-ready data scientist. No tutorial hell — just what employers hire for.</div>
+            <div style={{fontFamily:"monospace",fontSize:10,color:"#3a3860",marginBottom:20}}>Zero → Competitive Candidate</div>
+            {/* Social links */}
+            <div style={{display:"flex",gap:10}}>
+              {[
+                {label:"LinkedIn",icon:"in",url:"https://www.linkedin.com/in/radwan-rima/",color:"#7eb8f7"},
+                {label:"TikTok",icon:"♪",url:"https://www.tiktok.com/@zero_to_ds",color:"#f472b6"},
+                {label:"WhatsApp",icon:"💬",url:"https://wa.me/96170895652",color:"#25D366"},
+              ].map((s,i)=>(
+                <a key={i} href={s.url} target="_blank" rel="noreferrer"
+                  style={{width:34,height:34,borderRadius:8,background:s.color+"15",border:`1px solid ${s.color}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:s.color,textDecoration:"none",fontWeight:700,transition:"all 0.2s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.background=s.color+"30";e.currentTarget.style.transform="translateY(-2px)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background=s.color+"15";e.currentTarget.style.transform="translateY(0)";}}>
+                  {s.icon}
+                </a>
+              ))}
+            </div>
           </div>
+
+          {/* Built by */}
           <div>
             <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:14}}>BUILT BY</div>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
@@ -1142,29 +1164,63 @@ function LoginPage(){
                 <img src="/radwan.jpg" alt="Radwan" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top"}}/>
               </div>
               <div>
-                <div style={{fontSize:13,fontWeight:600,color:"#e8e4ff"}}>Radwan</div>
+                <div style={{fontSize:13,fontWeight:600,color:"#e8e4ff"}}>Radwan Rima</div>
                 <div style={{fontSize:11,color:"#7b78a0"}}>Researcher → Data Scientist</div>
               </div>
             </div>
             <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.6,marginBottom:14}}>I built DS Academy because I couldn't find a structured path that actually prepares you for the job market.</div>
-            <a href="https://wa.me/96181590474" target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(37,211,102,0.08)",border:"1px solid rgba(37,211,102,0.25)",color:"#25d366",padding:"7px 14px",borderRadius:7,fontSize:12,fontWeight:600,textDecoration:"none"}}>
-              💬 WhatsApp
+            <a href="https://wa.me/96170895652?text=Hi%20Radwan!%20I%20have%20a%20question%20about%20DS%20Academy." target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(37,211,102,0.08)",border:"1px solid rgba(37,211,102,0.25)",color:"#25d366",padding:"7px 14px",borderRadius:7,fontSize:12,fontWeight:600,textDecoration:"none"}}>
+              💬 Message Radwan
             </a>
           </div>
+
+          {/* Quick Links */}
           <div>
-            <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:14}}>QUICK LINKS</div>
-            {["#curriculum","#apply"].map((href,i)=>(
-              <a key={i} href={href} style={{display:"block",fontSize:12,color:"#7b78a0",textDecoration:"none",marginBottom:8,transition:"color 0.2s"}}
+            <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:14}}>PLATFORM</div>
+            {[
+              {label:"View Curriculum",href:"#curriculum"},
+              {label:"Pricing & Plans",href:"#apply"},
+              {label:"Blog",href:"#blog"},
+              {label:"Free Python Phase",href:"#"},
+              {label:"AI Job Scanner",href:"#"},
+            ].map((l,i)=>(
+              <a key={i} href={l.href} style={{display:"block",fontSize:12,color:"#7b78a0",textDecoration:"none",marginBottom:9,transition:"color 0.2s"}}
                 onMouseEnter={e=>e.target.style.color="#e8e4ff"}
                 onMouseLeave={e=>e.target.style.color="#7b78a0"}>
-                {i===0?"→ View Curriculum":"→ Apply for Access"}
+                → {l.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Contact */}
+          <div>
+            <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:14}}>CONTACT</div>
+            <div style={{fontSize:12,color:"#7b78a0",lineHeight:1.8,marginBottom:16}}>
+              Questions? Message Radwan directly — response within 24 hours.
+            </div>
+            {[
+              {label:"radwanrima0@gmail.com",icon:"✉",href:"mailto:radwanrima0@gmail.com",color:"#8b7cf6"},
+              {label:"WhatsApp",icon:"💬",href:"https://wa.me/96170895652",color:"#25D366"},
+              {label:"LinkedIn",icon:"in",href:"https://www.linkedin.com/in/radwan-rima/",color:"#7eb8f7"},
+            ].map((c,i)=>(
+              <a key={i} href={c.href} target="_blank" rel="noreferrer"
+                style={{display:"flex",alignItems:"center",gap:8,fontSize:11,color:"#7b78a0",textDecoration:"none",marginBottom:10,transition:"color 0.2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.color=c.color;}}
+                onMouseLeave={e=>{e.currentTarget.style.color="#7b78a0";}}>
+                <span style={{fontSize:13}}>{c.icon}</span>{c.label}
               </a>
             ))}
           </div>
         </div>
+
+        {/* Bottom bar */}
         <div style={{borderTop:"1px solid #1e1c35",padding:"16px 32px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
-          <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>© 2025 DS Academy</div>
-          <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>Built in Lebanon 🇱🇧</div>
+          <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>© 2026 DS Academy — All rights reserved</div>
+          <div style={{display:"flex",gap:16,alignItems:"center"}}>
+            <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>Built in Lebanon 🇱🇧</div>
+            <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>·</div>
+            <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>Powered by Firebase + Netlify</div>
+          </div>
         </div>
       </div>
 
