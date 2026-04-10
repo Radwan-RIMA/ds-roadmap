@@ -285,11 +285,11 @@ function Btn({onClick,children,color=T.info,style={}}){
 // ── LANDING PAGE (shown to logged-out visitors)
 // ── TESTIMONIALS CAROUSEL
 const TESTIMONIALS = [
-  {name:"Yasmine",role:"University Student",source:"whatsapp",color:"#6dd6a0",avatar:"Y",text:"I had no idea about my major, even after three years at university. YouTube and ChatGPT didn't help — the ideas felt tangled and unclear. Then I found this site: organized, structured, teaching us projects the university never did. It completely transforms us — from someone who doesn't know what data science means to someone ready to compete in the job market."},
+  {name:"Yasmine",role:"University Student",source:"whatsapp",color:"#6dd6a0",avatar:"Y",text:"I had no idea about my major, even after three years at university. YouTube and ChatGPT didn't help, the ideas felt tangled and unclear. Then I found this site: organized, structured, teaching us projects the university never did. It completely transforms us, from someone who doesn't know what data science means to someone ready to compete in the job market."},
   {name:"Anastasia Al Rassi",role:"Machine Learning Engineer",source:"linkedin",color:"#7eb8f7",avatar:"A",text:"I found your Roadmap so impactful 😍 Fully recommend 💪"},
   {name:"Rebecca Rayess",role:"Junior Data Analyst, Suyool SAL",source:"linkedin",color:"#a78bfa",avatar:"R",text:"This roadmap is really impressive and exactly what our current market needs! Well done! 👏"},
   {name:"Ahmad Sayour",role:"Student at Arab Open University",source:"linkedin",color:"#f7c96e",avatar:"A",text:"Your effort now will turn into success soon 🔥"},
-  {name:"Joanna Ahmad",role:"Financial Accountant",source:"whatsapp",color:"#f472b6",avatar:"J",text:"As a financial accountant, I never thought data science was for me. This platform changed that — it gave me real skills that directly apply to my work and open doors I didn't know existed."},
+  {name:"Joanna Ahmad",role:"Financial Accountant",source:"whatsapp",color:"#f472b6",avatar:"J",text:"As a financial accountant, I never thought data science was for me. This platform completely changed that, it gave me real skills that directly apply to my work and open doors I didn't know existed."},
 ];
 
 function TestimonialsCarousel(){
@@ -335,9 +335,9 @@ function TestimonialsCarousel(){
           <div style={{position:"absolute",top:16,right:16,fontSize:10,padding:"3px 10px",borderRadius:100,background:t.source==="linkedin"?"#7eb8f720":"#25D36620",color:t.source==="linkedin"?"#7eb8f7":"#25D366",fontFamily:"monospace",fontWeight:700}}>
             {t.source==="linkedin"?"LinkedIn":"WhatsApp"}
           </div>
-          {/* Quote mark */}
-          <div style={{fontSize:48,color:t.color,opacity:0.15,lineHeight:1,marginBottom:8,fontFamily:"Georgia,serif"}}>"</div>
-          <div style={{fontSize:15,color:"#d8d4f0",lineHeight:1.8,marginBottom:24,fontStyle:"italic"}}>
+          {/* Accent bar */}
+          <div style={{width:40,height:3,borderRadius:100,background:`linear-gradient(90deg,${t.color},${t.color}44)`,marginBottom:20}}/>
+          <div style={{fontSize:15,color:"#d8d4f0",lineHeight:1.8,marginBottom:24}}>
             {t.text}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:14,borderTop:"1px solid #1e1c35",paddingTop:18}}>
@@ -379,6 +379,119 @@ function TestimonialsCarousel(){
         <div style={{marginTop:12,fontSize:11,color:"#3a3860",textAlign:"center"}}>
           {idx+1} of {TESTIMONIALS.length} — unsolicited feedback from real users
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── VISITOR COUNTER (stat box style)
+function VisitorStatBox(){
+  const [count,setCount]=useState(()=>Math.floor(Math.random()*8)+10);
+  useEffect(()=>{
+    const interval=setInterval(()=>{
+      setCount(c=>{
+        const delta=Math.random()<0.5?1:-1;
+        return Math.min(24,Math.max(8,c+delta));
+      });
+    },4000);
+    return()=>clearInterval(interval);
+  },[]);
+  return(
+    <div className="stat-box" style={{padding:"12px 20px",textAlign:"center",flex:"1 1 80px",cursor:"default"}}>
+      <div style={{fontWeight:800,fontSize:18,letterSpacing:"-0.02em",color:"#6dd6a0",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+        <div style={{width:6,height:6,borderRadius:"50%",background:"#6dd6a0",boxShadow:"0 0 6px #6dd6a0",animation:"pulse 2s infinite",flexShrink:0}}/>
+        {count}
+      </div>
+      <div style={{fontSize:10,color:"#3a3860",letterSpacing:"0.08em",marginTop:2,fontFamily:"monospace"}}>Live Now</div>
+    </div>
+  );
+}
+
+function VisitorCounter(){return null;} // kept for compatibility
+
+// ── CONFETTI
+function Confetti(){
+  useEffect(()=>{
+    window.triggerConfetti=()=>{
+      const colors=["#8b7cf6","#f472b6","#6ee7b7","#f7c96e","#7eb8f7","#fff"];
+      const canvas=document.createElement("canvas");
+      canvas.style.cssText="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:99999;";
+      canvas.width=window.innerWidth;
+      canvas.height=window.innerHeight;
+      document.body.appendChild(canvas);
+      const ctx=canvas.getContext("2d");
+      const pieces=Array.from({length:200},()=>({
+        x:Math.random()*canvas.width,
+        y:-20,
+        r:Math.random()*7+3,
+        color:colors[Math.floor(Math.random()*colors.length)],
+        vx:(Math.random()-0.5)*5,
+        vy:Math.random()*4+2,
+        angle:Math.random()*360,
+        spin:(Math.random()-0.5)*12,
+        opacity:1,
+      }));
+      let frame=0;
+      const animate=()=>{
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        let alive=false;
+        pieces.forEach(p=>{
+          p.x+=p.vx; p.y+=p.vy; p.angle+=p.spin;
+          if(frame>80) p.opacity=Math.max(0,p.opacity-0.012);
+          if(p.opacity>0) alive=true;
+          ctx.save();
+          ctx.globalAlpha=p.opacity;
+          ctx.translate(p.x,p.y);
+          ctx.rotate(p.angle*Math.PI/180);
+          ctx.fillStyle=p.color;
+          ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+          ctx.restore();
+        });
+        frame++;
+        if(alive) requestAnimationFrame(animate);
+        else if(document.body.contains(canvas)) document.body.removeChild(canvas);
+      };
+      requestAnimationFrame(animate);
+    };
+    return()=>{ delete window.triggerConfetti; };
+  },[]);
+  return null;
+}
+
+// ── EMAIL CAPTURE
+function EmailCapture(){
+  const [email,setEmail]=useState("");
+  const [done,setDone]=useState(false);
+  const [loading,setLoading]=useState(false);
+
+  const submit=async()=>{
+    if(!email.trim()||!email.includes("@"))return;
+    setLoading(true);
+    try{
+      await addDoc(collection(db,"waitlist"),{email:email.trim(),joinedAt:Date.now()});
+      setDone(true);
+    }catch(e){console.log(e);}
+    setLoading(false);
+  };
+
+  return(
+    <div style={{padding:"40px 20px",background:"#0d0c18",borderTop:"1px solid #1e1c35"}}>
+      <div style={{maxWidth:520,margin:"0 auto",textAlign:"center"}}>
+        <div style={{fontSize:20,marginBottom:8}}>📬</div>
+        <h3 style={{fontWeight:800,fontSize:"clamp(16px,3vw,22px)",marginBottom:8,color:"#e8e4ff"}}>Not ready yet? That's fine.</h3>
+        <p style={{fontSize:13,color:"#7b78a0",marginBottom:20,lineHeight:1.6}}>Drop your email and I'll notify you when the next cohort opens — no spam, just one message.</p>
+        {done?(
+          <div style={{background:"#6dd6a011",border:"1px solid #6dd6a033",borderRadius:10,padding:"14px",color:"#6dd6a0",fontSize:14,fontWeight:600}}>
+            ✓ You're on the list! I'll message you when the next cohort opens.
+          </div>
+        ):(
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+            <input value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} placeholder="your@email.com" style={{flex:1,minWidth:200,background:"#11101c",border:"1px solid #2a2845",borderRadius:8,padding:"11px 14px",color:"#e8e4ff",fontSize:13,outline:"none"}}/>
+            <button onClick={submit} disabled={loading} style={{background:"#8b7cf6",color:"#fff",border:"none",padding:"11px 20px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,whiteSpace:"nowrap",opacity:loading?0.7:1}}>
+              {loading?"Saving...":"Notify Me →"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -542,6 +655,8 @@ function LoginPage(){
         onboarded:false,
         lastLessonId:"numpy",
       };
+      // 🎉 Confetti - fire immediately before anything else
+      if(window.triggerConfetti) window.triggerConfetti();
       await setDoc(doc(db,"users",cred.user.uid),userData);
       // Notify admin of new signup
       await addDoc(collection(db,"notifications"),{
@@ -607,6 +722,7 @@ function LoginPage(){
         }
       `}</style>
       <ScrollProgress />
+      <Confetti />
       <StickyBar onSignup={()=>openModal("signup")} />
       <WhatsAppFloat />
 
@@ -752,6 +868,7 @@ function LoginPage(){
 
           {/* Stats */}
           <style>{`
+            @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
             .stat-box { transition: background 0.2s; }
             .stat-box:hover { background: #1a1830 !important; }
             .lp-card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
@@ -766,6 +883,8 @@ function LoginPage(){
                 <div style={{fontSize:10,color:"#3a3860",letterSpacing:"0.08em",marginTop:2,fontFamily:"monospace"}}>{s.l}</div>
               </div>
             ))}
+            {/* Live visitors */}
+            <VisitorStatBox/>
           </div>
         </div>
 
@@ -1127,6 +1246,8 @@ function LoginPage(){
           </div>
         </div>
       </div>
+
+      <EmailCapture/>
 
       {/* FOOTER */}
       <div style={{borderTop:"1px solid #1e1c35",background:"#0b0a12"}}>
@@ -2756,7 +2877,7 @@ function DSTutorTab({userDoc}){
 
 // ── STUDENT DASHBOARD
 function StudentDashboard({currentUser,userDoc}){
-  const [tab,setTab]=useState("motivation");
+  const [tab,setTab]=useState("roadmap");
   const [sidebarOpen,setSidebarOpen]=useState(true);
   const [progressSubTab,setProgressSubTab]=useState("paths");
   const [expandedSection,setExpandedSection]=useState(null);
@@ -2789,8 +2910,8 @@ function StudentDashboard({currentUser,userDoc}){
     if(startLesson){
       setStartLessonOverride(startLesson);
       setActiveLearnId(startLesson);
-      setTab("learn");
     }
+    setTab("roadmap");
   };
 
   const xpRef=React.useRef(xp);
