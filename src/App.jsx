@@ -3163,7 +3163,7 @@ function StudentDashboard({currentUser,userDoc}){
       )}
 
       {/* SIDEBAR */}
-      <div className="ds-sidebar" style={{width:sidebarOpen?220:60,flexShrink:0,background:T.bgDeep,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,transition:"width 0.25s",overflow:"hidden",zIndex:50}}>
+      <div className="ds-sidebar" style={{width:tab==="learn"?0:sidebarOpen?220:60,flexShrink:0,background:T.bgDeep,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,transition:"width 0.25s",overflow:"hidden",zIndex:50}}>
         <div style={{padding:"16px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
           {sidebarOpen&&<div style={{display:"flex",alignItems:"center",gap:7,overflow:"hidden"}}><div style={{width:7,height:7,background:"#8b7cf6",borderRadius:"50%",flexShrink:0,boxShadow:"0 0 8px #8b7cf6"}}/><span style={{fontSize:13,fontWeight:800,color:T.text,whiteSpace:"nowrap",letterSpacing:"-0.02em"}}>DS Academy</span></div>}
           <button onClick={()=>setSidebarOpen(o=>!o)} style={{background:"none",border:`1px solid ${T.border}`,color:T.textFade,borderRadius:6,padding:"4px 7px",cursor:"pointer",fontSize:12,flexShrink:0,lineHeight:1}}>{sidebarOpen?"←":"→"}</button>
@@ -3215,7 +3215,7 @@ function StudentDashboard({currentUser,userDoc}){
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="ds-main" style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",height:"100vh",overflowY:"auto"}}>
+      <div className="ds-main" style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",height:"100vh",overflowY:tab==="learn"?"hidden":"auto"}}>
       <div style={{flex:1}}>
         {/* LEARN TAB */}
         {tab==="learn"&&(()=>{
