@@ -7189,7 +7189,7 @@ const LESSON_COMPLETES_TASK = {
 };
 
 // ── LEARN TAB ─────────────────────────────────────────────────────────────────
-function LearnTab({currentUser, activeId, setActiveId, onLessonComplete}) {
+function LearnTab({currentUser, activeId, setActiveId, onLessonComplete, onBack}) {
   const [done,setDone] = useState({});
 
   useEffect(()=>{
@@ -7263,6 +7263,7 @@ function LearnTab({currentUser, activeId, setActiveId, onLessonComplete}) {
         {/* Content */}
         <div className="learn-content" style={{flex:1,overflowY:"auto",padding:"24px 32px"}}>
         <div style={{maxWidth:700}}>
+          {onBack&&<button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"transparent",border:"1px solid "+T.border,color:T.textDim,padding:"6px 12px",borderRadius:7,cursor:"pointer",fontSize:12,marginBottom:16,fontWeight:500}}>← Back to Roadmap</button>}
           <div style={{marginBottom:4}}>
             <span style={{background:`${lesson.color}20`,color:lesson.color,fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,letterSpacing:"0.08em"}}>{lesson.phase}</span>
           </div>
