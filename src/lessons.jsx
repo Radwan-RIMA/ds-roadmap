@@ -7261,33 +7261,34 @@ function LearnTab({currentUser, activeId, setActiveId, onLessonComplete, onBack}
           ))}
         </div>
         {/* Content */}
-        <div className="learn-content" style={{flex:1,overflowY:"auto",padding:"24px 32px"}}>
-        <div style={{maxWidth:700}}>
-          {onBack&&<button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"transparent",border:"1px solid "+T.border,color:T.textDim,padding:"6px 12px",borderRadius:7,cursor:"pointer",fontSize:12,marginBottom:16,fontWeight:500}}>← Back to Roadmap</button>}
-          <div style={{marginBottom:4}}>
+        <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+          {onBack&&<div style={{padding:"8px 32px",borderBottom:`1px solid ${T.border}`,background:T.bgDeep,flexShrink:0}}>
+            <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"transparent",border:"none",color:T.textDim,padding:"4px 0",cursor:"pointer",fontSize:12,fontWeight:500}}>← Back to Roadmap</button>
+          </div>}
+        <div className="learn-content" style={{flex:1,overflowY:"auto",padding:"32px 40px"}}>
+        <div style={{maxWidth:720}}>
+          <div style={{marginBottom:6}}>
             <span style={{background:`${lesson.color}20`,color:lesson.color,fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,letterSpacing:"0.08em"}}>{lesson.phase}</span>
           </div>
-          <div style={{display:"flex",alignItems:"flex-start",gap:12,margin:"8px 0 4px 0"}}>
-            <span style={{fontSize:28}}>{lesson.emoji}</span>
-            <div style={{flex:1}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
-                <h2 style={{margin:0,fontSize:21,fontWeight:700,color:T.text,lineHeight:1.2}}>{lesson.title}</h2>
-                <span style={{fontSize:11,color:"#6dd6a0",background:"#6dd6a010",border:"1px solid #6dd6a025",borderRadius:100,padding:"3px 10px",whiteSpace:"nowrap"}}>👥 {(idx*47+312).toLocaleString()} students completed this</span>
-              </div>
-              <p style={{margin:"4px 0 0 0",color:T.textDim,fontSize:12,fontFamily:"monospace"}}>{lesson.subtitle}</p>
+          <div style={{display:"flex",alignItems:"flex-start",gap:14,margin:"10px 0 6px 0"}}>
+            <span style={{fontSize:32}}>{lesson.emoji}</span>
+            <div>
+              <h2 style={{margin:0,fontSize:27,fontWeight:700,color:T.text,lineHeight:1.15,letterSpacing:"-0.03em"}}>{lesson.title}</h2>
+              <p style={{margin:"8px 0 0 0",color:T.textDim,fontSize:12,fontFamily:"monospace"}}>{lesson.subtitle}</p>
             </div>
           </div>
-          <div style={{height:1,background:T.border,margin:"16px 0"}}/>
+          <div style={{height:1,background:T.border,margin:"20px 0"}}/>
           <Body/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:28,paddingTop:16,borderTop:`1px solid ${T.border}`}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:36,paddingTop:20,borderTop:`1px solid ${T.border}`}}>
             <button onClick={()=>idx>0&&setActiveId(LESSONS[idx-1].id)} style={{background:T.bgCard,color:idx>0?T.textDim:T.textFade,border:`1px solid ${T.border}`,padding:"8px 16px",borderRadius:7,cursor:idx>0?"pointer":"default",fontSize:12}}>← prev</button>
             <button onClick={markDone} style={{background:lesson.color,color:"#000",border:"none",padding:"9px 22px",borderRadius:7,cursor:"pointer",fontWeight:700,fontSize:12}}>
               {done[activeId]?"✓ done":idx<LESSONS.length-1?"got it, next →":"complete ✓"}
             </button>
           </div>
         </div>
-        </div>{/* end desktop layout */}
-      </div>{/* end flex wrapper */}
+        </div>{/* end learn-content */}
+        </div>{/* end content column */}
+      </div>{/* end desktop layout */}
     </div>
   );
 }

@@ -3315,8 +3315,8 @@ function StudentDashboard({currentUser,userDoc}){
         .ds-bottom-nav {
           position: fixed;
           bottom: 0; left: 0; right: 0;
-          height: 60px;
-          background: #161320;
+          height: 64px;
+          background: #111020;
           border-top: 1px solid #2a2540;
           display: none;
           align-items: center;
@@ -3337,7 +3337,23 @@ function StudentDashboard({currentUser,userDoc}){
           padding: 6px 4px;
           border-radius: 8px;
           min-width: 0;
+          transition: opacity 0.15s;
         }
+        .ds-bottom-nav button.nav-learn {
+          flex: 0 0 64px;
+          position: relative;
+          top: -14px;
+          background: #8b7cf6;
+          border-radius: 50%;
+          width: 52px;
+          height: 52px;
+          box-shadow: 0 4px 20px rgba(139,124,246,0.5);
+          flex-direction: column;
+          gap: 0;
+          padding: 0;
+        }
+        .ds-bottom-nav button.nav-learn .nav-icon { font-size: 22px; }
+        .ds-bottom-nav button.nav-learn .nav-label { display: none; }
         .ds-bottom-nav button .nav-icon { font-size: 18px; line-height: 1; }
         .ds-bottom-nav button .nav-label { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52px; }
       `}</style>
@@ -3636,7 +3652,7 @@ function StudentDashboard({currentUser,userDoc}){
               {roadmap.map((ph,i)=>{const p2=getPP(ph);const a=i===activePhase;const locked=!isPhaseUnlocked(i);return(
                 <button key={i} onClick={()=>{if(!locked){setActivePhase(i);setExpandedSection(null);}}} style={{width:"100%",background:a?ph.color+"15":locked?"#0f0e1a":"transparent",border:`1px solid ${a?ph.color+"55":locked?T.border:"transparent"}`,color:locked?T.textFade:a?ph.color:T.textDim,padding:"8px 12px",borderRadius:7,cursor:locked?"not-allowed":"pointer",fontSize:11,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,textAlign:"left",opacity:locked?0.5:1}}>
                   <span>{locked?"🔒 ":""}{ph.title}</span>
-                  <span style={{fontSize:10,background:ph.color+"18",color:ph.color,padding:"1px 5px",borderRadius:3}}>{locked?"locked":p2.pct+"%"}</span>
+                  {locked?<span style={{fontSize:9,color:T.textFade}}>locked</span>:<ProgressRing pct={p2.pct} color={ph.color} size={26} stroke={3}/>}
                 </button>
               );})}
               <div className="ds-roadmap-inner-sections" style={{borderTop:`1px solid ${T.border}`,marginTop:8,paddingTop:12}}>
@@ -4085,11 +4101,13 @@ function StudentDashboard({currentUser,userDoc}){
         {tabs.map(t=>{
           const active=tab===t.id;
           const badge=t.id==="messages"&&unreadCount>0?unreadCount:0;
+          const isLearn=t.id==="learn";
           return(
             <button key={t.id} onClick={()=>{setTab(t.id);if(t.id==="messages")markMessagesRead();}}
-              style={{color:active?T.p1:T.textFade}}>
+              className={isLearn?"nav-learn":""}
+              style={{color:isLearn?"#fff":active?T.p1:T.textFade}}>
               <span className="nav-icon">{t.icon}</span>
-              <span className="nav-label">{t.label.replace(/\s*\(.*\)/,"")}</span>
+              {!isLearn&&<span className="nav-label">{t.label.replace(/\s*\(.*\)/,"")}</span>}
               {badge>0&&<span style={{position:"absolute",top:4,background:T.warn,color:"#fff",borderRadius:10,fontSize:8,padding:"1px 4px",fontWeight:700}}>{badge}</span>}
             </button>
           );
