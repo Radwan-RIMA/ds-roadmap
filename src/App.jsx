@@ -185,7 +185,12 @@ function AIJobCalculator(){
               </div>
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <a href="#apply" style={{flex:1,minWidth:140,background:"#8b7cf6",color:"#fff",border:"none",padding:"11px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,textDecoration:"none",textAlign:"center"}}>Apply for Access →</a>
-                <button onClick={()=>{setResult(null);setJob("");}} style={{padding:"11px 16px",background:"none",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:8,cursor:"pointer",fontSize:13}}>Try another job</button>
+                <button onClick={()=>{
+                  const text=`🤖 AI will replace ${result.risk}% of ${job} jobs.\n\nSkills that protect you: ${result.skills.slice(0,3).join(", ")}.\n\nI checked mine on ZeroToDS → zerotods.com`;
+                  if(navigator.share){navigator.share({title:"My AI Job Risk Score",text});}
+                  else{navigator.clipboard.writeText(text).then(()=>alert("Copied to clipboard! Paste it on LinkedIn or Twitter."));}
+                }} style={{padding:"11px 14px",background:"none",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:8,cursor:"pointer",fontSize:13}}>📤 Share</button>
+                <button onClick={()=>{setResult(null);setJob("");}} style={{padding:"11px 16px",background:"none",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:8,cursor:"pointer",fontSize:13}}>Try another</button>
               </div>
             </div>
           )}
@@ -639,6 +644,7 @@ function LoginPage(){
     setLoading(true);
     try{
       const cred=await createUserWithEmailAndPassword(auth,email.trim(),password);
+      const refCode=new URLSearchParams(window.location.search).get("ref")||null;
       const userData={
         uid:cred.user.uid,
         email:email.trim(),
@@ -653,6 +659,9 @@ function LoginPage(){
         completedProjects:{},
         onboarded:false,
         lastLessonId:"numpy",
+        referralCode:cred.user.uid.slice(0,6).toUpperCase(),
+        referredBy:refCode,
+        referralCount:0,
       };
       // 🎉 Confetti - fire immediately before anything else
       if(window.triggerConfetti) window.triggerConfetti();
@@ -821,6 +830,9 @@ function LoginPage(){
 
         <div style={{position:"relative",zIndex:1,maxWidth:720}}>
 
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#8b7cf615",border:"1px solid #8b7cf630",borderRadius:100,padding:"5px 16px",marginBottom:16,fontSize:13}}>
+            <span style={{direction:"rtl",fontFamily:"serif",color:"#a78bfa",letterSpacing:"0.02em"}}>طريقك لعلم البيانات — من الصفر للاحتراف</span>
+          </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(32px, 6vw, 58px)",lineHeight:1.05,letterSpacing:"-0.03em",marginBottom:14}}>
             Still lost after months of tutorials?<br/>
             <span style={{background:"linear-gradient(135deg, #8b7cf6, #f472b6, #6ee7b7)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
@@ -845,7 +857,7 @@ function LoginPage(){
             </button>
           </div>
           <div style={{fontSize:12,color:"#4a4665",marginBottom:20,textAlign:"center"}}>
-            Instant access to the full Python phase — 6 lessons, no card required · <a href="#curriculum" style={{color:"#8b7cf6",textDecoration:"none"}}>See curriculum ↓</a>
+            Instant access to the full Python phase — 12 lessons, no card required · <a href="#curriculum" style={{color:"#8b7cf6",textDecoration:"none"}}>See curriculum ↓</a>
           </div>
 
           {/* Stats */}
@@ -964,42 +976,48 @@ function LoginPage(){
                 desc:"Predict which customers will leave before they do. Calculate the dollar value of retention. Deploy as a live Streamlit app.",
                 stack:["Python","XGBoost","Streamlit","Pandas"],
                 color:"#7eb8f7",
-                outcome:"Live demo URL you can share in interviews"
+                outcome:"Live demo URL you can share in interviews",
+                colab:"https://colab.research.google.com/github/topics/customer-churn"
               },
               {
                 icon:"🔍",title:"Fraud Detection Model",
                 desc:"Handle 99.8% class imbalance on real credit card data. Optimize for recall. Build a pipeline that works in production.",
                 stack:["sklearn","SMOTE","Random Forest","Pipelines"],
                 color:"#f472b6",
-                outcome:"Kaggle dataset, real business framing"
+                outcome:"Kaggle dataset, real business framing",
+                colab:"https://colab.research.google.com/github/topics/fraud-detection"
               },
               {
                 icon:"📊",title:"Full A/B Test Analysis",
                 desc:"Go beyond the p-value. Calculate confidence intervals, practical significance, and write a recommendation memo to a PM.",
                 stack:["Python","NumPy","Statistics","scipy"],
                 color:"#6dd6a0",
-                outcome:"Business memo + technical notebook"
+                outcome:"Business memo + technical notebook",
+                colab:"https://colab.research.google.com/github/topics/ab-testing"
               },
               {
                 icon:"🗄️",title:"Business KPI Dashboard in SQL",
                 desc:"Answer 10 real business questions using CTEs, window functions, and joins on a real music store database.",
                 stack:["SQL","CTEs","Window Functions","Chinook DB"],
                 color:"#f7c96e",
-                outcome:"Portfolio-ready SQL showcase"
+                outcome:"Portfolio-ready SQL showcase",
+                colab:"https://colab.research.google.com/github/topics/sql"
               },
               {
                 icon:"🤖",title:"RAG-Powered Document Q&A",
                 desc:"Build a system that lets users ask questions about any document. Uses embeddings, vector search, and an LLM API.",
                 stack:["LangChain","FAISS","OpenAI API","Streamlit"],
                 color:"#a78bfa",
-                outcome:"Deployed on Hugging Face Spaces"
+                outcome:"Deployed on Hugging Face Spaces",
+                colab:"https://colab.research.google.com/github/topics/rag"
               },
               {
                 icon:"🧠",title:"Fine-tuned BERT Classifier",
                 desc:"Fine-tune a pretrained BERT model on real domain text. Wrap in FastAPI and deploy to Hugging Face Spaces.",
                 stack:["Hugging Face","BERT","FastAPI","NLP"],
                 color:"#34d399",
-                outcome:"Live API endpoint + model card"
+                outcome:"Live API endpoint + model card",
+                colab:"https://colab.research.google.com/github/topics/bert"
               },
             ].map((p,i)=>(
               <div key={i} className="lp-card" style={{background:"#11101c",border:"1px solid #1e1c35",borderRadius:12,padding:"22px",position:"relative",overflow:"hidden"}}>
@@ -1012,8 +1030,9 @@ function LoginPage(){
                     <span key={s} style={{fontSize:10,fontFamily:"monospace",padding:"2px 8px",borderRadius:100,background:p.color+"15",color:p.color}}>{s}</span>
                   ))}
                 </div>
-                <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace",borderTop:"1px solid #1e1c35",paddingTop:10}}>
-                  ✓ {p.outcome}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",borderTop:"1px solid #1e1c35",paddingTop:10,gap:8,flexWrap:"wrap"}}>
+                  <div style={{fontSize:11,color:"#3a3860",fontFamily:"monospace"}}>✓ {p.outcome}</div>
+                  <a href={p.colab} target="_blank" rel="noopener noreferrer" style={{fontSize:10,color:p.color,background:p.color+"12",border:`1px solid ${p.color}33`,borderRadius:6,padding:"3px 10px",textDecoration:"none",fontWeight:600,whiteSpace:"nowrap"}}>▶ Open in Colab</a>
                 </div>
               </div>
             ))}
@@ -1216,7 +1235,7 @@ function LoginPage(){
               {q:"How much time per day do I need?",a:"Around 1–2 hours per day is ideal. The curriculum is designed for students and working professionals. There are no live deadlines on the self-paced plan."},
               {q:"What if I have zero coding experience?",a:"Perfect — that's exactly who this is built for. Phase 1 starts from Python absolute zero. If you can use WhatsApp, you can start this."},
               {q:"How is this different from Coursera or YouTube?",a:"Coursera gives you disconnected courses. YouTube gives you tutorials with no structure. DS Academy gives you one connected path with projects, XP tracking, a roadmap, and direct access to a real instructor."},
-              {q:"What happens after I sign up for free?",a:"You get instant access to the full Python for Data Science phase — 6 lessons with interactive code exercises, quizzes, and a portfolio project. No credit card, no trial period."},
+              {q:"What happens after I sign up for free?",a:"You get instant access to the full Python phase — 12 lessons covering Python Core, NumPy, Pandas, SQL, EDA, Visualization, and Probability — with interactive code exercises, quizzes, and a portfolio project. No credit card, no trial period."},
             ].map((f,i)=>(
               <FAQItem key={i} q={f.q} a={f.a}/>
             ))}
@@ -1726,12 +1745,28 @@ function PublicBlogPage({onBack}){
 }
 
 // ── STUDENT BLOG TAB (read-only)
+const SEO_POSTS=[
+  {id:"seo-1",title:"How to Become a Data Scientist in Saudi Arabia (2025 Guide)",excerpt:"A step-by-step roadmap for Saudi students and professionals who want to break into data science — from zero to first job.",coverEmoji:"🇸🇦",tags:["Career","Saudi Arabia","Roadmap"],publishedAt:"2025-01-15T00:00:00Z",published:true,
+   content:`## Why Data Science in Saudi Arabia?\n\nSaudi Arabia's Vision 2030 is creating massive demand for data professionals. Banks, telecom companies, oil firms, and government agencies are all hiring — and paying well.\n\n**Average salaries:** SAR 12,000–30,000/month for mid-level roles.\n\n## The Roadmap\n\n**Phase 1 (Months 1–3): Foundations**\n- Python basics (variables, loops, functions)\n- NumPy and Pandas for data manipulation\n- SQL for querying databases\n- Basic statistics and probability\n\n**Phase 2 (Months 3–6): Machine Learning**\n- Scikit-learn for ML models\n- Linear/logistic regression, decision trees\n- Model evaluation and cross-validation\n\n**Phase 3 (Months 6–12): Advanced + Portfolio**\n- XGBoost, feature engineering\n- Build 3 portfolio projects with real datasets\n- Deploy a Streamlit app live\n\n## Top Companies Hiring in KSA\n- Saudi Aramco (data & AI team)\n- STC (telecom analytics)\n- ZATCA (tax authority)\n- Noon.com (e-commerce)\n- Saudi National Bank\n\n## Where to Start\n\nStart with Python. No prior experience needed. The entire roadmap above is exactly what ZeroToDS covers — built specifically for Arab students starting from zero.`},
+  {id:"seo-2",title:"Data Science Salaries in UAE: What You Can Earn in 2025",excerpt:"Realistic salary ranges for data analysts, data scientists, and ML engineers in Dubai, Abu Dhabi, and across the UAE.",coverEmoji:"🇦🇪",tags:["Career","UAE","Salary"],publishedAt:"2025-02-01T00:00:00Z",published:true,
+   content:`## Data Science Salaries in UAE (2025)\n\nThe UAE has one of the highest-paying tech markets in the MENA region — and data science roles are in high demand.\n\n### Salary Ranges (AED/month)\n\n| Role | Junior | Mid | Senior |\n|------|--------|-----|--------|\n| Data Analyst | 8,000–12,000 | 14,000–22,000 | 25,000–35,000 |\n| Data Scientist | 12,000–18,000 | 20,000–32,000 | 35,000–55,000 |\n| ML Engineer | 15,000–22,000 | 25,000–40,000 | 45,000–70,000 |\n\n*Note: UAE has 0% income tax — these are take-home figures.*\n\n## Top Employers in UAE\n- Emirates Group (aviation analytics)\n- ADNOC (oil & gas AI)\n- Careem / Uber MENA\n- G42 (AI company in Abu Dhabi)\n- Dubai government entities (Smart Dubai)\n\n## Skills That Command Premium Salaries\n1. **Python + SQL** — non-negotiable baseline\n2. **Machine learning** (XGBoost, scikit-learn)\n3. **LLMs and RAG** — huge demand in 2025\n4. **MLOps** — deploying models to production\n5. **Arabic NLP** — rare and very well compensated\n\n## How Long Does It Take?\n\nWith a structured curriculum and 1–2 hours/day, most people reach an employable level in 6–12 months. The key is structure — not more tutorials.`},
+  {id:"seo-3",title:"Learn Python for Data Science in Arabic — Full Roadmap",excerpt:"Everything you need to learn Python for data science, explained in a way that works for Arabic speakers. No prior experience needed.",coverEmoji:"🐍",tags:["Python","Arabic","Beginners"],publishedAt:"2025-02-15T00:00:00Z",published:true,
+   content:`## لماذا Python لعلم البيانات؟\n\nPython هي اللغة الأكثر استخداماً في مجال علم البيانات. إذا كنت تريد العمل في هذا المجال، Python هي نقطة البداية.\n\n## الخطوات\n\n### المرحلة الأولى: أساسيات Python\n- المتغيرات والأنواع (Variables & Types)\n- الحلقات والشروط (Loops & Conditions)\n- الدوال (Functions)\n- القوائم والقواميس (Lists & Dicts)\n\n### المرحلة الثانية: Python لعلم البيانات\n- NumPy: العمليات على المصفوفات\n- Pandas: تحليل البيانات\n- Matplotlib/Seaborn: الرسوم البيانية\n\n### المرحلة الثالثة: Machine Learning\n- Scikit-learn\n- نماذج التصنيف والانحدار\n- تقييم النماذج\n\n## Common Mistakes Arabic Learners Make\n\n1. **Watching too many tutorials without coding** — you must type the code yourself\n2. **Skipping math** — basic statistics matters for ML\n3. **No projects** — employers want to see code, not certificates\n4. **Translating everything to Arabic mentally** — think in Python\n\n## الموارد المتاحة\n\nمنصة ZeroToDS مبنية خصيصاً للطلاب العرب — المحتوى بالإنجليزية لكن الشرح والدعم بالعربية.`},
+  {id:"seo-4",title:"How Long Does It Take to Learn Data Science from Zero?",excerpt:"An honest, realistic breakdown of how long it takes to go from complete beginner to job-ready data scientist.",coverEmoji:"⏱️",tags:["Beginners","Career","Roadmap"],publishedAt:"2025-03-01T00:00:00Z",published:true,
+   content:`## The Honest Answer: 6–18 Months\n\nDepending on your time investment and approach, here's what's realistic:\n\n| Hours/week | Time to job-ready |\n|------------|-------------------|\n| 2–4 hours | 12–18 months |\n| 5–10 hours | 8–12 months |\n| 10–20 hours | 5–8 months |\n| 20+ hours | 3–5 months |\n\n## What "Job-Ready" Actually Means\n\nYou're job-ready when you can:\n- Write Python code without Googling basic syntax\n- Clean and analyze a dataset independently\n- Build and evaluate a machine learning model\n- Explain your work clearly to a non-technical person\n- Show 2–3 portfolio projects with deployed demos\n\n## Phase Breakdown\n\n**Month 1–2: Python + Data Tools**\nLearn Python, NumPy, Pandas, and SQL. This is the foundation everything else builds on.\n\n**Month 2–5: Machine Learning**\nClassification, regression, model evaluation, cross-validation. Scikit-learn is your main tool.\n\n**Month 5–8: Advanced + Deployment**\nXGBoost, feature engineering, Streamlit apps, ML pipelines.\n\n**Month 8+: Portfolio + Job Search**\nBuild real projects. Polish GitHub. Start applying.\n\n## The #1 Reason People Take Longer\n\n**Tutorial hell.** Watching video after video without building anything real. The students who get hired fastest are the ones who spend 70% of their time coding and 30% learning theory.`},
+  {id:"seo-5",title:"Data Science vs Machine Learning: What's the Difference?",excerpt:"A clear, practical explanation of the difference between data science and machine learning — and which path is right for you.",coverEmoji:"🤖",tags:["Career","ML","Data Science"],publishedAt:"2025-03-15T00:00:00Z",published:true,
+   content:`## The Short Answer\n\n**Data Science** is the broad field of extracting insights from data. **Machine Learning** is one technique used within data science.\n\nThink of it this way:\n- Data Science = the job\n- Machine Learning = one of the tools\n\n## What Data Scientists Actually Do\n\n- Clean and explore messy datasets\n- Build dashboards and visualizations\n- Run statistical analyses (A/B tests, forecasting)\n- Build ML models when needed\n- Communicate findings to business stakeholders\n\n## What ML Engineers Actually Do\n\n- Take ML models from notebooks to production\n- Build data pipelines and model serving infrastructure\n- Optimize model performance and latency\n- Monitor models in production (MLOps)\n\n## Which Path Should You Choose?\n\n**Choose Data Scientist if you:**\n- Like working with business problems\n- Enjoy communicating insights and telling stories with data\n- Want to work across many industries\n\n**Choose ML Engineer if you:**\n- Have a software engineering background\n- Enjoy building systems and infrastructure\n- Want to specialize deeply in AI/ML\n\n## In MENA: Start with Data Science\n\nIn the Arab market, pure ML Engineer roles are rare outside of a few large tech companies. Most job postings are looking for Data Scientists or Data Analysts who understand ML. Start there, then specialize.`},
+];
+
 function StudentBlogTab(){
   const [posts,setPosts]=useState([]);
   const [selected,setSelected]=useState(null);
   useEffect(()=>{
     const q=query(collection(db,"blog"),orderBy("publishedAt","desc"));
-    const unsub=onSnapshot(q,snap=>{setPosts(snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.published));});
+    const unsub=onSnapshot(q,snap=>{
+      const live=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.published);
+      setPosts(live.length>0?live:SEO_POSTS);
+    });
     return unsub;
   },[]);
 
@@ -1916,6 +1951,67 @@ function AdminBlogTab(){
   );
 }
 
+// ── ADMIN ANALYTICS TAB
+function AdminAnalyticsTab(){
+  const [events,setEvents]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{
+    const q=query(collection(db,"analytics"),orderBy("timestamp","desc"));
+    const unsub=onSnapshot(q,snap=>{
+      setEvents(snap.docs.map(d=>d.data()));
+      setLoading(false);
+    });
+    return unsub;
+  },[]);
+
+  const LESSON_ORDER=["pycore-basics","pycore-advanced","pycore-ds-patterns","numpy","pandas-basics","pandas-advanced","eda","visualization","sql-basics","sql-joins","sql-window","probability"];
+  const LESSON_NAMES={"pycore-basics":"Python Basics","pycore-advanced":"Python Intermediate","pycore-ds-patterns":"Python Patterns","numpy":"NumPy Arrays","pandas-basics":"Pandas Basics","pandas-advanced":"Pandas Advanced","eda":"EDA","visualization":"Visualization","sql-basics":"SQL Foundations","sql-joins":"SQL JOINs","sql-window":"Window Functions","probability":"Probability"};
+
+  const funnel=LESSON_ORDER.map(id=>({
+    id,
+    name:LESSON_NAMES[id]||id,
+    opens:events.filter(e=>e.lessonId===id&&e.event==="open").length,
+    completes:events.filter(e=>e.lessonId===id&&e.event==="complete").length,
+  }));
+  const maxOpens=Math.max(...funnel.map(f=>f.opens),1);
+
+  return(
+    <div className="ds-admin-content">
+      <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:6}}>// lesson funnel</div>
+      <div style={{fontSize:18,fontWeight:700,marginBottom:4,color:T.text}}>Lesson Drop-off Analysis</div>
+      <div style={{fontSize:12,color:T.textDim,marginBottom:20}}>See where students open vs complete each lesson.</div>
+      {loading?<div style={{color:T.textFade,fontSize:12}}>Loading...</div>:(
+        <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:12,overflow:"hidden"}}>
+          <div style={{display:"grid",gridTemplateColumns:"180px 1fr 60px 80px",gap:0,padding:"10px 20px",borderBottom:`1px solid ${T.border}`,fontSize:10,color:T.textFade,letterSpacing:"0.1em"}}>
+            <div>LESSON</div><div>OPENS</div><div style={{textAlign:"right"}}>OPENS</div><div style={{textAlign:"right"}}>DONE</div>
+          </div>
+          {funnel.map(f=>{
+            const dropPct=f.opens>0?Math.round((1-f.completes/f.opens)*100):0;
+            const barW=Math.round((f.opens/maxOpens)*100);
+            const completePct=f.opens>0?Math.round((f.completes/f.opens)*100):0;
+            return(
+              <div key={f.id} style={{display:"grid",gridTemplateColumns:"180px 1fr 60px 80px",gap:0,padding:"12px 20px",borderBottom:`1px solid ${T.border}`,alignItems:"center"}}>
+                <div style={{fontSize:12,fontWeight:500,color:T.text}}>{f.name}</div>
+                <div style={{paddingRight:16}}>
+                  <div style={{height:8,background:T.bgDeep,borderRadius:4,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${barW}%`,background:dropPct>60?"#f472b6":dropPct>30?"#f7c96e":"#6dd6a0",borderRadius:4,transition:"width 0.5s"}}/>
+                  </div>
+                </div>
+                <div style={{fontSize:13,fontWeight:700,color:T.text,textAlign:"right"}}>{f.opens}</div>
+                <div style={{textAlign:"right"}}>
+                  <span style={{fontSize:11,color:completePct>=50?"#6dd6a0":completePct>=25?"#f7c96e":"#f472b6",fontWeight:600}}>{completePct}%</span>
+                  <span style={{fontSize:10,color:T.textFade}}> ({f.completes})</span>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{padding:"12px 20px",fontSize:11,color:T.textFade}}>Total events tracked: {events.length}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── ADMIN DASHBOARD
 function AdminDashboard({currentUser}){
   const [tab,setTab]=useState("overview");
@@ -2001,7 +2097,7 @@ const unlockPhase=async(studentId,phaseIndex)=>{
   await updateDoc(studentRef,{unlockedPhases:[...current,phaseIndex]});
 };
   const inp={background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:7,padding:"8px 12px",color:T.text,fontSize:12,outline:"none"};
-  const tabs=[{id:"overview",label:"📈 Overview"},{id:"students",label:"👥 Students"},{id:"messages",label:"💬 Messages"},{id:"roadmap",label:"✅ Edit Roadmap"},{id:"blog",label:"📝 Blog"}];
+  const tabs=[{id:"overview",label:"📈 Overview"},{id:"students",label:"👥 Students"},{id:"analytics",label:"🔍 Lesson Funnel"},{id:"messages",label:"💬 Messages"},{id:"roadmap",label:"✅ Edit Roadmap"},{id:"blog",label:"📝 Blog"}];
 
   return(
     <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
@@ -2199,6 +2295,7 @@ const unlockPhase=async(studentId,phaseIndex)=>{
           </div>
         )}
         {tab==="blog"&&<AdminBlogTab/>}
+        {tab==="analytics"&&<AdminAnalyticsTab/>}
         {tab==="roadmap"&&(
           <div>
             <div style={{fontSize:13,color:T.textDim,marginBottom:20,background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:10,padding:"12px 16px"}}>✅ Changes here apply to all students immediately.</div>
@@ -2853,14 +2950,19 @@ function OnboardingQuiz({currentUser, userDoc, onComplete}){
 }
 
 // ── DS TUTOR CHATBOT
-function DSTutorTab({userDoc}){
-  const [messages,setMessages]=useState([
-    {role:"assistant",content:"Hey! I'm your ZeroToDS AI tutor 👋\n\nAsk me anything about Python, pandas, SQL, machine learning, statistics, or any concept you're stuck on. I'll explain it simply and clearly."}
-  ]);
+function DSTutorTab({userDoc, activeLessonId}){
+  const lessonTitles={"pycore-basics":"Python Basics","pycore-advanced":"Python Intermediate","pycore-ds-patterns":"Python Patterns for DS","numpy":"NumPy Arrays","pandas-basics":"Pandas: Loading & Exploring Data","pandas-advanced":"Pandas: Cleaning, Merging & Transforming","eda":"Exploratory Data Analysis","visualization":"Data Visualization","sql-basics":"SQL Foundations","sql-joins":"SQL JOINs & Subqueries","sql-window":"Window Functions","probability":"Probability & Bayes"};
+  const currentLesson=activeLessonId&&lessonTitles[activeLessonId]?lessonTitles[activeLessonId]:null;
+  const welcomeMsg=currentLesson
+    ?`Hey! I'm your ZeroToDS AI tutor 👋\n\nI can see you're working on **${currentLesson}**. Ask me anything about it — or any other data science concept you're stuck on.`
+    :"Hey! I'm your ZeroToDS AI tutor 👋\n\nAsk me anything about Python, pandas, SQL, machine learning, statistics, or any concept you're stuck on. I'll explain it simply and clearly.";
+  const [messages,setMessages]=useState([{role:"assistant",content:welcomeMsg}]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const bottomRef=useRef(null);
-  const SUGGESTIONS=["Explain what a p-value is","How does gradient descent work?","What's overfitting and how do I fix it?","Difference between precision and recall"];
+  const SUGGESTIONS=currentLesson
+    ?[`Explain the key concept in ${currentLesson}`,`What's the most common mistake in ${currentLesson}?`,"Explain what a p-value is","What's overfitting and how do I fix it?"]
+    :["Explain what a p-value is","How does gradient descent work?","What's overfitting and how do I fix it?","Difference between precision and recall"];
 
   useEffect(()=>{
     bottomRef.current?.scrollIntoView({behavior:"smooth"});
@@ -2887,7 +2989,7 @@ function DSTutorTab({userDoc}){
           model:"llama-3.3-70b-versatile",
           max_tokens:1024,
           messages:[
-            {role:"system",content:`You are a friendly, expert data science tutor for ZeroToDS — a platform helping Arab students in MENA learn data science from zero. The student's name is ${userDoc.username||"there"}.
+            {role:"system",content:`You are a friendly, expert data science tutor for ZeroToDS — a platform helping Arab students in MENA learn data science from zero. The student's name is ${userDoc.username||"there"}.${currentLesson?`\n\nThe student is currently working on the lesson: "${currentLesson}". If their question is about this lesson or related concepts, prioritize explaining it in that context.`:""}
 
 Your teaching style:
 - Explain concepts simply and clearly, like a patient friend
@@ -3049,7 +3151,8 @@ function StudentDashboard({currentUser,userDoc}){
     const key = `${mapping.section}-${mapping.task}`;
     if(!progress[key]){
       saveProgress({...progress,[key]:true});
-      awardXP(25,true); // true = lesson celebration
+      awardXP(25,true);
+      addDoc(collection(db,"analytics"),{uid:currentUser.uid,lessonId,event:"complete",timestamp:Date.now()}).catch(()=>{});
     }
   };
 
@@ -3253,7 +3356,7 @@ function StudentDashboard({currentUser,userDoc}){
             <div style={{position:"absolute",top:-1,left:"20%",right:"20%",height:2,background:"linear-gradient(90deg,transparent,#8b7cf6,#f472b6,transparent)"}}/>
             <div style={{fontSize:11,color:"#8b7cf6",letterSpacing:"0.12em",fontFamily:"monospace",marginBottom:12}}>// upgrade to full access</div>
             <div style={{fontSize:20,fontWeight:800,color:T.text,marginBottom:6,letterSpacing:"-0.02em"}}>Unlock the full roadmap</div>
-            <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7,marginBottom:20}}>You've used everything on the free plan — Python, SQL, and Probability. The full cohort unlocks Statistics, ML, Deep Learning, and 11 real projects.</div>
+            <div style={{fontSize:13,color:"#7b78a0",lineHeight:1.7,marginBottom:20}}>This lesson is part of the paid plan. Upgrade to unlock Statistics, ML, Deep Learning, and 11 real projects.</div>
             <div style={{background:"#0d0c18",border:"1px solid #1e1c35",borderRadius:10,padding:"16px",marginBottom:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
                 <div style={{fontSize:16,fontWeight:700,color:T.text}}>Guided Cohort</div>
@@ -3264,11 +3367,14 @@ function StudentDashboard({currentUser,userDoc}){
               ))}
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#6dd6a018",border:"1px solid #6dd6a055",color:"#6dd6a0",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
-                💬 Get Monthly Access — $19/mo →
-              </a>
-              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20Phase%201%20Cohort%20($99).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"12px",background:"#8b7cf6",border:"none",color:"#fff",borderRadius:9,cursor:"pointer",fontSize:13,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
-                💬 Join Phase 1 Cohort — $99 one-time →
+              <div style={{position:"relative"}}>
+                <div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(90deg,#8b7cf6,#f472b6)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 10px",borderRadius:100,whiteSpace:"nowrap",letterSpacing:"0.08em"}}>MOST POPULAR</div>
+                <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20to%20join%20the%20Phase%201%20Cohort%20($99).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"13px",background:"#8b7cf6",border:"2px solid #8b7cf6",color:"#fff",borderRadius:9,cursor:"pointer",fontSize:14,fontWeight:700,textDecoration:"none",textAlign:"center",boxSizing:"border-box",boxShadow:"0 0 24px rgba(139,124,246,0.35)"}}>
+                  💬 Join Phase 1 Cohort — $99 one-time →
+                </a>
+              </div>
+              <a href={"https://wa.me/96181590474?text=Hi%20Radwan!%20I%20want%20the%20DS%20Academy%20monthly%20plan%20($19/mo).%20My%20email%20is%20"+encodeURIComponent(currentUser?.email||"")} target="_blank" rel="noopener noreferrer" style={{display:"block",width:"100%",padding:"11px",background:"transparent",border:"1px solid #2a2845",color:"#7b78a0",borderRadius:9,cursor:"pointer",fontSize:12,fontWeight:600,textDecoration:"none",textAlign:"center",boxSizing:"border-box"}}>
+                Or try monthly — $19/mo, cancel anytime
               </a>
               <div style={{fontSize:11,color:"#4a4665",textAlign:"center",lineHeight:1.6}}>
                 Message Radwan on WhatsApp → confirm payment → activated within 24h
@@ -3336,14 +3442,15 @@ function StudentDashboard({currentUser,userDoc}){
         {/* LEARN TAB */}
         {tab==="learn"&&(()=>{
           const isFree=userDoc.role==="free"; // monthly + student + cohort = full access
-          const freeIds=["numpy","pandas-basics","pandas-advanced","eda","visualization","sql-basics","sql-joins","sql-window","probability"];
+          const freeIds=["pycore-basics","pycore-advanced","pycore-ds-patterns","numpy","pandas-basics","pandas-advanced","eda","visualization","sql-basics","sql-joins","sql-window","probability"];
           const handleSetActiveId=(id)=>{
             const isFullAccess=userDoc.role==="student"||userDoc.role==="monthly";
             if(isFree&&!isFullAccess&&!freeIds.includes(id)){setShowPaywall(true);return;}
             setActiveLearnId(id);
             updateDoc(doc(db,"users",currentUser.uid),{lastLessonId:id}).catch(()=>{});
+            addDoc(collection(db,"analytics"),{uid:currentUser.uid,lessonId:id,event:"open",timestamp:Date.now()}).catch(()=>{});
           };
-          const defaultId=startLessonOverride&&(freeIds.includes(startLessonOverride)||!isFree)?startLessonOverride:"numpy";
+          const defaultId=startLessonOverride&&(freeIds.includes(startLessonOverride)||!isFree)?startLessonOverride:"pycore-basics";
           return <LearnTab currentUser={currentUser} activeId={freeIds.includes(activeLearnId)||!isFree?activeLearnId:defaultId} setActiveId={handleSetActiveId} onLessonComplete={onLessonComplete} onBack={()=>setTab("roadmap")}/>;
         })()}
 
@@ -3837,27 +3944,43 @@ function StudentDashboard({currentUser,userDoc}){
           <div style={{padding:"24px"}}>
             <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,overflow:"hidden"}}>
               <div style={{padding:"18px 22px",borderBottom:`1px solid ${T.border}`}}><div style={{fontSize:15,fontWeight:700}}>🏅 Student Leaderboard</div></div>
-              {[...students].sort((a,b)=>(b.xp||0)-(a.xp||0)).map((u,i)=>{
-                const prog=getTotalProgress(u.progress||{},roadmap);const isMe=u.id===currentUser.uid;
-                const medals=["🥇","🥈","🥉"];const uLvl=getLevel(u.xp||0);
-                return(
-                  <div key={u.id} style={{padding:"14px 22px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:14,background:isMe?uLvl.color+"08":"transparent"}}>
-                    <div style={{width:30,fontSize:i<3?20:13,textAlign:"center"}}>{i<3?medals[i]:`#${i+1}`}</div>
-                    <div style={{width:36,height:36,borderRadius:"50%",background:uLvl.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:uLvl.color}}>{u.username[0].toUpperCase()}</div>
-                    <div style={{flex:1}}>
-                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                        <span style={{fontSize:13,fontWeight:isMe?700:500,color:isMe?uLvl.color:T.text}}>{u.username}{isMe?" (you)":""}</span>
-                        <span style={{fontSize:9,color:uLvl.color,background:uLvl.color+"18",padding:"1px 6px",borderRadius:3,border:`1px solid ${uLvl.color}33`}}>{uLvl.icon} {uLvl.label}</span>
+              {(()=>{
+                const sorted=[...students].sort((a,b)=>(b.xp||0)-(a.xp||0));
+                const activeStudents=sorted.filter(u=>(u.xp||0)>0);
+                if(activeStudents.length<3){
+                  return(
+                    <div style={{padding:"40px 24px",textAlign:"center"}}>
+                      <div style={{fontSize:36,marginBottom:12}}>🏆</div>
+                      <div style={{fontSize:15,fontWeight:700,color:T.text,marginBottom:8}}>The leaderboard is just getting started.</div>
+                      <div style={{fontSize:13,color:T.textDim,lineHeight:1.7,maxWidth:320,margin:"0 auto 20px"}}>Complete your first lesson to claim a top spot. Early students will be here forever.</div>
+                      <div style={{display:"inline-flex",gap:8,alignItems:"center",background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:100,padding:"8px 18px",fontSize:12,color:T.textDim}}>
+                        <span>👥</span> {sorted.length} student{sorted.length!==1?"s":""} enrolled so far
                       </div>
-                      <ProgressBar pct={prog.pct} color={uLvl.color}/>
                     </div>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontSize:18,fontWeight:700,color:uLvl.color}}>{(u.xp||0).toLocaleString()}</div>
-                      <div style={{fontSize:10,color:T.textFade}}>XP · {prog.pct}%</div>
+                  );
+                }
+                return sorted.map((u,i)=>{
+                  const prog=getTotalProgress(u.progress||{},roadmap);const isMe=u.id===currentUser.uid;
+                  const medals=["🥇","🥈","🥉"];const uLvl=getLevel(u.xp||0);
+                  return(
+                    <div key={u.id} style={{padding:"14px 22px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:14,background:isMe?uLvl.color+"08":"transparent"}}>
+                      <div style={{width:30,fontSize:i<3?20:13,textAlign:"center"}}>{i<3?medals[i]:`#${i+1}`}</div>
+                      <div style={{width:36,height:36,borderRadius:"50%",background:uLvl.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:uLvl.color}}>{u.username[0].toUpperCase()}</div>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                          <span style={{fontSize:13,fontWeight:isMe?700:500,color:isMe?uLvl.color:T.text}}>{u.username}{isMe?" (you)":""}</span>
+                          <span style={{fontSize:9,color:uLvl.color,background:uLvl.color+"18",padding:"1px 6px",borderRadius:3,border:`1px solid ${uLvl.color}33`}}>{uLvl.icon} {uLvl.label}</span>
+                        </div>
+                        <ProgressBar pct={prog.pct} color={uLvl.color}/>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:18,fontWeight:700,color:uLvl.color}}>{(u.xp||0).toLocaleString()}</div>
+                        <div style={{fontSize:10,color:T.textFade}}>XP · {prog.pct}%</div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
@@ -3866,7 +3989,7 @@ function StudentDashboard({currentUser,userDoc}){
         {tab==="blog"&&<StudentBlogTab/>}
 
         {/* AI TUTOR */}
-        {tab==="tutor"&&<DSTutorTab userDoc={userDoc}/>}
+        {tab==="tutor"&&<DSTutorTab userDoc={userDoc} activeLessonId={activeLearnId}/>}
 
         {/* PROGRESS HUB */}
         {tab==="progress"&&(
@@ -3874,7 +3997,7 @@ function StudentDashboard({currentUser,userDoc}){
             <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:6}}>// progress hub</div>
             <div style={{fontSize:18,fontWeight:700,marginBottom:16}}>Progress Hub</div>
             <div style={{display:"flex",gap:0,background:T.bgDeep,borderRadius:10,padding:4,marginBottom:24,flexWrap:"wrap"}}>
-              {[{id:"paths",label:"🗺 Career Paths"},{id:"quiz",label:"❓ Quizzes"},{id:"certs",label:"🎓 Certificates"},{id:"checkin",label:"📝 Check-in"},{id:"inbox",label:`💬 Inbox${unreadCount>0?" ("+unreadCount+")":""}`}].map(t=>(
+              {[{id:"paths",label:"🗺 Career Paths"},{id:"quiz",label:"❓ Quizzes"},{id:"certs",label:"🎓 Certificates"},{id:"checkin",label:"📝 Check-in"},{id:"refer",label:"🔗 Refer & Earn"},{id:"inbox",label:`💬 Inbox${unreadCount>0?" ("+unreadCount+")":""}`}].map(t=>(
                 <button key={t.id} onClick={()=>{setProgressSubTab(t.id);if(t.id==="inbox")markMessagesRead();}} style={{padding:"8px 16px",borderRadius:7,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,background:progressSubTab===t.id?T.bgCard:"transparent",color:progressSubTab===t.id?T.text:T.textDim,transition:"all 0.15s"}}>
                   {t.label}
                 </button>
@@ -3890,6 +4013,41 @@ function StudentDashboard({currentUser,userDoc}){
                   {thisWeekCheckin?(<div><div style={{fontSize:11,color:T.good,marginBottom:8}}>✅ Done this week!</div><div style={{fontSize:10,color:T.textDim,lineHeight:1.6,fontStyle:"italic"}}>"{thisWeekCheckin.learned.slice(0,120)}{thisWeekCheckin.learned.length>120?"...":""}"</div></div>):(<div><div style={{fontSize:12,color:T.textDim,marginBottom:14,lineHeight:1.6}}>Reflect on your week. Each check-in earns <span style={{color:T.good,fontWeight:700}}>+50 XP</span>.</div><button onClick={()=>setShowCheckin(true)} style={{background:T.good+"18",border:`1px solid ${T.good}55`,color:T.good,padding:"9px 20px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>+ Check In Now</button></div>)}
                 </div>
                 {checkins.length>0&&(<div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,padding:"18px 20px"}}><div style={{fontSize:11,fontWeight:600,marginBottom:14}}>📋 Past Check-ins</div>{checkins.slice(0,5).map((c,i)=>(<div key={i} style={{padding:"12px",background:T.bgDeep,borderRadius:10,marginBottom:8}}><div style={{fontSize:9,color:T.textFade,marginBottom:6}}>Week {c.week} — {new Date(c.date).toLocaleDateString()}</div><div style={{fontSize:11,color:T.good,marginBottom:4}}>✅ {c.learned}</div>{c.difficult&&<div style={{fontSize:11,color:T.warn,marginBottom:4}}>⚠ {c.difficult}</div>}{c.goal&&<div style={{fontSize:11,color:T.info}}>🎯 {c.goal}</div>}</div>))}</div>)}
+              </div>
+            )}
+            {progressSubTab==="refer"&&(
+              <div style={{maxWidth:560}}>
+                <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:14,padding:"24px",marginBottom:16}}>
+                  <div style={{fontSize:9,color:T.p1,letterSpacing:"0.15em",fontFamily:"monospace",marginBottom:8}}>// refer & earn</div>
+                  <div style={{fontSize:17,fontWeight:700,color:T.text,marginBottom:6}}>Get 1 month free for every friend you refer</div>
+                  <div style={{fontSize:13,color:T.textDim,lineHeight:1.7,marginBottom:20}}>Share your personal link. When a friend signs up and upgrades, you both get 1 month of full access free.</div>
+                  <div style={{background:T.bgDeep,border:`1px solid ${T.borderHi}`,borderRadius:10,padding:"14px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                    <div style={{flex:1,fontSize:13,fontFamily:"monospace",color:T.p1,wordBreak:"break-all"}}>zerotods.com?ref={userDoc.referralCode||currentUser.uid.slice(0,6).toUpperCase()}</div>
+                    <button onClick={()=>{
+                      navigator.clipboard.writeText(`https://zerotods.com?ref=${userDoc.referralCode||currentUser.uid.slice(0,6).toUpperCase()}`);
+                      alert("Referral link copied!");
+                    }} style={{background:T.p1,color:"#fff",border:"none",borderRadius:7,padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap"}}>Copy Link</button>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                    <div style={{background:T.bgDeep,borderRadius:10,padding:"16px",textAlign:"center"}}>
+                      <div style={{fontSize:28,fontWeight:800,color:T.p1}}>{userDoc.referralCount||0}</div>
+                      <div style={{fontSize:11,color:T.textDim,marginTop:4}}>friends referred</div>
+                    </div>
+                    <div style={{background:T.bgDeep,borderRadius:10,padding:"16px",textAlign:"center"}}>
+                      <div style={{fontSize:28,fontWeight:800,color:T.good}}>{userDoc.referralCount>0?`${userDoc.referralCount} mo`:"0 mo"}</div>
+                      <div style={{fontSize:11,color:T.textDim,marginTop:4}}>free months earned</div>
+                    </div>
+                  </div>
+                </div>
+                <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:12,padding:"16px 20px"}}>
+                  <div style={{fontSize:12,fontWeight:600,marginBottom:12,color:T.text}}>How it works</div>
+                  {[["Share your link","Send it to anyone learning data science or switching careers"],["They sign up","They use your link — no code needed, the link tracks it automatically"],["They upgrade","When they pay for any plan, you both get 1 month free added instantly"]].map(([title,desc],i)=>(
+                    <div key={i} style={{display:"flex",gap:12,marginBottom:12,alignItems:"flex-start"}}>
+                      <div style={{width:22,height:22,borderRadius:"50%",background:T.p1+"22",color:T.p1,fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</div>
+                      <div><div style={{fontSize:12,fontWeight:600,color:T.text,marginBottom:2}}>{title}</div><div style={{fontSize:11,color:T.textDim,lineHeight:1.5}}>{desc}</div></div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             {progressSubTab==="inbox"&&(

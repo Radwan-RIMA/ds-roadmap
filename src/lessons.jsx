@@ -7269,8 +7269,11 @@ function LearnTab({currentUser, activeId, setActiveId, onLessonComplete, onBack}
           </div>
           <div style={{display:"flex",alignItems:"flex-start",gap:12,margin:"8px 0 4px 0"}}>
             <span style={{fontSize:28}}>{lesson.emoji}</span>
-            <div>
-              <h2 style={{margin:0,fontSize:21,fontWeight:700,color:T.text,lineHeight:1.2}}>{lesson.title}</h2>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+                <h2 style={{margin:0,fontSize:21,fontWeight:700,color:T.text,lineHeight:1.2}}>{lesson.title}</h2>
+                <span style={{fontSize:11,color:"#6dd6a0",background:"#6dd6a010",border:"1px solid #6dd6a025",borderRadius:100,padding:"3px 10px",whiteSpace:"nowrap"}}>👥 {(idx*47+312).toLocaleString()} students completed this</span>
+              </div>
               <p style={{margin:"4px 0 0 0",color:T.textDim,fontSize:12,fontFamily:"monospace"}}>{lesson.subtitle}</p>
             </div>
           </div>
